@@ -1,0 +1,11 @@
+volumes/
+openclaw/agents/
+openclaw/cron/
+openclaw/canvas/
+openclaw/workspace/.git/
+openclaw/credentials/
+openclaw/telegram/
+openclaw/devices/
+openclaw/identity/
+openclaw/config.json
+openclaw/config.json.bak

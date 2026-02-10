@@ -1,0 +1,29 @@
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+	}
+}
+
+n8n.satoic.com {
+        import security_headers
+        reverse_proxy n8n:5678
+}
+
+openclaw.satoic.com {
+	import security_headers
+	basic_auth /* {
+		stephan $2a$14$kS3zPl40EKeHKEsNBG3/9OZLmHydaCscR3fi7RW95demExAGXjvGO
+	}
+	reverse_proxy openclaw:18789
+}
+
+portainer.satoic.com {
+	import security_headers
+	basic_auth /* {
+		stephan $2a$14$kS3zPl40EKeHKEsNBG3/9OZLmHydaCscR3fi7RW95demExAGXjvGO
+	}
+	reverse_proxy portainer:9000
+}

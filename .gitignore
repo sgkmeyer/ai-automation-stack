@@ -1,0 +1,11 @@
+automation/.env
+*.tar.gz
+automation_redacted/
+automation/openclaw/workspace/.git/
+automation/openclaw/config.json
+automation/openclaw/config.json.bak*
+automation/openclaw/credentials/
+automation/openclaw/devices/
+automation/openclaw/identity/
+automation/openclaw/telegram/
+automation/openclaw/workspace/memory/
