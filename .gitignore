@@ -9,3 +9,8 @@ automation/openclaw/devices/
 automation/openclaw/identity/
 automation/openclaw/telegram/
 automation/openclaw/workspace/memory/
+
+# runtime backups/logs
+automation/docker-compose.yml.bak.*
+automation/ops/*.txt
+automation/openclaw/workspace/.openclaw/
