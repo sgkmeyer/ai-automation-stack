@@ -8,4 +8,5 @@ openclaw/telegram/
 openclaw/devices/
 openclaw/identity/
 openclaw/config.json
-openclaw/config.json.bak
+openclaw/config.json.bak*
+openclaw/workspace/memory/
