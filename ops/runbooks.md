@@ -8,13 +8,21 @@
 ### Start or update stack
 ```bash
 cd /home/ubuntu/automation
-docker compose up -d
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.chromium-native.yml \
+  -f docker-compose.chromium-ip.yml \
+  up -d
 ```
 
 ### Stop stack
 ```bash
 cd /home/ubuntu/automation
-docker compose down
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.chromium-native.yml \
+  -f docker-compose.chromium-ip.yml \
+  down
 ```
 
 ### Restart one service
@@ -31,10 +39,15 @@ docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
 ## Health Checks
 ```bash
 cd /home/ubuntu/automation
-docker compose ps
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.chromium-native.yml \
+  -f docker-compose.chromium-ip.yml \
+  ps
 docker logs --tail 80 automation-caddy-1
 docker logs --tail 80 automation-n8n-1
 docker logs --tail 80 automation-openclaw-1
+docker logs --tail 80 automation-chromium-1
 docker logs --tail 80 automation-portainer-1
 ```
 
@@ -51,10 +64,10 @@ Expected:
 - `portainer.satoic.com`: `401` before basic auth
 
 ## Backup
-### Config backup
+### Config backup (full, includes protected files)
 ```bash
 cd /home/ubuntu
-sudo tar czf automation-config-$(date +%F-%H%M).tar.gz automation
+sudo tar czf automation-full-$(date +%F-%H%M).tar.gz automation
 ```
 
 ### Postgres volume backup
@@ -67,7 +80,15 @@ docker run --rm \
 
 ### Verify backup artifacts
 ```bash
-ls -lh /home/ubuntu/automation-config-*.tar.gz /home/ubuntu/automation-db-*.tar.gz
+ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz
+```
+
+### Runtime log snapshots
+```bash
+cd /home/ubuntu/automation
+mkdir -p /home/ubuntu/automation/ops
+docker logs --tail 80 automation-openclaw-1 2>&1 | sudo tee /home/ubuntu/automation/ops/openclaw-log-snapshot.txt >/dev/null
+docker logs --tail 80 automation-chromium-1 2>&1 | sudo tee /home/ubuntu/automation/ops/chromium-log-snapshot.txt >/dev/null
 ```
 
 ## Sync Workflow
@@ -114,3 +135,16 @@ Then immediately complete setup.
 ### n8n proxy/rate-limit warnings
 - Ensure n8n reverse-proxy env settings are present in `docker-compose.yml`.
 - Recreate `n8n` and `n8n-worker`.
+
+### Openclaw browser tool fails
+1. Confirm Openclaw can reach n8n and Chromium:
+```bash
+docker exec -i automation-openclaw-1 sh -lc 'node -e "fetch(\"http://n8n:5678/healthz\").then(r=>r.text()).then(t=>console.log(t.slice(0,120))).catch(e=>{console.error(e);process.exit(1)})"'
+docker exec -i automation-openclaw-1 sh -lc 'node -e "fetch(\"http://172.30.0.10:9222/json/version\").then(r=>r.text()).then(t=>console.log(t.slice(0,120))).catch(e=>{console.error(e);process.exit(1)})"'
+```
+2. Confirm CDP URL:
+```bash
+docker exec -i automation-openclaw-1 sh -lc 'node dist/index.js config get browser.cdpUrl'
+```
+Expected value:
+`http://172.30.0.10:9222`
