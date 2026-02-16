@@ -1,0 +1,9 @@
+2026-02-16T04:23:27.128Z [canvas] host mounted at http://0.0.0.0:18789/__openclaw__/canvas/ (root /home/node/.openclaw/canvas)
+2026-02-16T04:23:27.215Z [heartbeat] started
+2026-02-16T04:23:27.219Z [gateway] agent model: openai-codex/gpt-5.2
+2026-02-16T04:23:27.221Z [gateway] listening on ws://0.0.0.0:18789 (PID 14)
+2026-02-16T04:23:27.223Z [gateway] log file: /tmp/openclaw/openclaw-2026-02-16.log
+2026-02-16T04:23:27.252Z [browser/service] Browser control service ready (profiles=2)
+2026-02-16T04:23:27.643Z [telegram] [default] starting provider (@sg_tar_bot)
+2026-02-16T04:23:27.660Z [telegram] autoSelectFamily=false (default-node22)
+2026-02-16T04:23:58.442Z [ws] ⇄ res ✓ config.get 707ms conn=fbf35d50…dc95 id=b348d3e4…6abc

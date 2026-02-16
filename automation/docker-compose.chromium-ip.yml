@@ -1,0 +1,16 @@
+services:
+  chromium:
+    networks:
+      cdp_net:
+        ipv4_address: 172.30.0.10
+
+  openclaw:
+    networks:
+      - cdp_net
+
+networks:
+  cdp_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24

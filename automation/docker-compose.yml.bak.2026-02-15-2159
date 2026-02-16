@@ -220,14 +220,10 @@ services:
       dockerfile: Dockerfile
     image: satoic/openclaw-cap:latest
     restart: unless-stopped
-    depends_on:
-      - chromium
     environment:
       - NODE_ENV=production
       - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
       - OPENCLAW_CONFIG_PATH=/home/node/.openclaw/config.json
-      - BRAVE_API_KEY=${BRAVE_API_KEY}
-      - BROWSERLESS_TOKEN=${BROWSERLESS_TOKEN}
     volumes:
       - ./openclaw:/home/node/.openclaw
 
@@ -271,31 +267,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
 
-  #############################################
-  # CHROMIUM — HEADLESS BROWSER RUNTIME
-  #############################################
-  # Isolated browser engine for Openclaw web tasks.
-  #
-  # Used for:
-  # - web page rendering/scraping
-  # - JavaScript-heavy site navigation
-  # - deterministic browser automation
-  #
-  # SECURITY NOTE:
-  # - No public ports exposed
-  # - Internal Docker network access only
-  # - Protected with Browserless token
-  #############################################
-  chromium:
-    image: ghcr.io/browserless/chromium:latest
-    restart: unless-stopped
-    environment:
-      - TOKEN=${BROWSERLESS_TOKEN}
-      - CONCURRENT=5
-      - TIMEOUT=120000
-      - PREBOOT=true
-      - ENABLE_DEBUGGER=false
-
 
 #############################################
 # PERSISTENT VOLUMES
@@ -303,7 +274,7 @@ services:
 # These survive container restarts.
 #
 # db_storage     → PostgreSQL data
-# reodis_data     → Redis queue
+# redis_data     → Redis queue
 # n8n_data       → workflows/config
 # caddy_data     → TLS certs
 # caddy_config   → Caddy runtime state
