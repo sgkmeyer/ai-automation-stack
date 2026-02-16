@@ -215,7 +215,10 @@ services:
   # not replace them.
   #############################################
   openclaw:
-    image: alpine/openclaw:latest
+    build:
+      context: ./openclaw-image
+      dockerfile: Dockerfile
+    image: satoic/openclaw-cap:latest
     restart: unless-stopped
     environment:
       - NODE_ENV=production
@@ -284,6 +287,5 @@ volumes:
   caddy_config:
   portainer_data:
   redis_data:
-
 
 

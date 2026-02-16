@@ -1,0 +1,7 @@
+requests
+pandas
+beautifulsoup4
+lxml
+openpyxl
+psycopg2-binary
+python-dateutil
