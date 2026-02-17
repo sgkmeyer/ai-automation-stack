@@ -133,6 +133,7 @@ services:
       - WEBHOOK_URL=https://${N8N_HOST}/
       - N8N_EDITOR_BASE_URL=https://${N8N_HOST}/
 
+
       # ---- Queue / Worker mode ----
       - EXECUTIONS_MODE=queue
       - QUEUE_BULL_REDIS_HOST=redis
@@ -228,6 +229,9 @@ services:
       - OPENCLAW_CONFIG_PATH=/home/node/.openclaw/config.json
       - BRAVE_API_KEY=${BRAVE_API_KEY}
       - BROWSERLESS_TOKEN=${BROWSERLESS_TOKEN}
+      - N8N_BASE_URL=http://n8n:5678
+      - N8N_API_KEY=${N8N_API_KEY}
+
     volumes:
       - ./openclaw:/home/node/.openclaw
 

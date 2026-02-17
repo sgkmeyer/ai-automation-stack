@@ -99,6 +99,12 @@ cd /Users/sgkmeyer/ai-automation-stack
 ./scripts/sync-to-vm.sh
 ```
 
+## Session Handoff Workflow
+At end of each work session:
+1. Copy `ops/SESSION-TEMPLATE.md` to `ops/SESSION-YYYY-MM-DD.md`.
+2. Fill in scope, changes, validations, risks, and next steps.
+3. Update the "latest session handoff summary" pointer in `README.md`.
+
 ## Credential Rotation
 ### Openclaw gateway token
 1. Generate new token.

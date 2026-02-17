@@ -6,6 +6,7 @@ services:
 
   openclaw:
     networks:
+      - default
       - cdp_net
 
 networks:

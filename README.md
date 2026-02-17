@@ -8,6 +8,7 @@ This repository is the operational source of truth for the Satoic automation sta
 - Queue/cache: Redis
 - Database: PostgreSQL
 - Agent gateway: Openclaw
+- Browser runtime: Chromium CDP sidecar
 - Container operations UI: Portainer
 
 ## Domains
@@ -18,7 +19,8 @@ This repository is the operational source of truth for the Satoic automation sta
 ## Repository Layout
 - `/Users/sgkmeyer/ai-automation-stack/automation` runtime stack files mirrored from VM
 - `/Users/sgkmeyer/ai-automation-stack/ops/runbooks.md` operational procedures
-- `/Users/sgkmeyer/ai-automation-stack/ops/SESSION-2026-02-09.md` latest session handoff summary
+- `/Users/sgkmeyer/ai-automation-stack/ops/SESSION-2026-02-17.md` latest session handoff summary
+- `/Users/sgkmeyer/ai-automation-stack/ops/SESSION-TEMPLATE.md` handoff template for new sessions
 - `/Users/sgkmeyer/ai-automation-stack/scripts` sync/deploy utility scripts
 - `/Users/sgkmeyer/ai-automation-stack/sql` schema scripts
 - `/Users/sgkmeyer/ai-automation-stack/workflows` workflow design notes
@@ -37,7 +39,16 @@ cd /Users/sgkmeyer/ai-automation-stack
 ./scripts/sync-to-vm.sh
 ```
 
-4. Apply/reload on VM as needed (`docker compose up -d`, Caddy reload).
+4. Apply/reload on VM as needed:
+```bash
+cd /home/ubuntu/automation
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.chromium-native.yml \
+  -f docker-compose.chromium-ip.yml \
+  up -d
+docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+```
 
 ## Current Auth Model
 - `n8n.satoic.com`: n8n native app authentication

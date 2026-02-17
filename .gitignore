@@ -7,8 +7,12 @@ automation/openclaw/config.json.bak*
 automation/openclaw/credentials/
 automation/openclaw/devices/
 automation/openclaw/identity/
+automation/openclaw/secrets/
+automation/openclaw/logs/
+automation/openclaw/delivery-queue/
 automation/openclaw/telegram/
 automation/openclaw/workspace/memory/
+automation/openclaw/workspace/*-response.json
 
 # runtime backups/logs
 automation/docker-compose.yml.bak.*
