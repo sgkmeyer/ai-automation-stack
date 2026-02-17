@@ -55,7 +55,8 @@ hr
 
 say "3) Update README 'latest session' pointer"
 if [[ -f "${repo_root}/README.md" ]]; then
-  perl -pi -e "s|^\\- `/Users/sgkmeyer/ai-automation-stack/ops/SESSION-[0-9]{4}-[0-9]{2}-[0-9]{2}\\.md` latest session handoff summary\\s*\$|- `/Users/sgkmeyer/ai-automation-stack/ops/SESSION-${today}.md` latest session handoff summary|g" "${repo_root}/README.md" || true
+  sed -i.bak -E "s|^- \`/Users/sgkmeyer/ai-automation-stack/ops/SESSION-[0-9]{4}-[0-9]{2}-[0-9]{2}\\.md\` latest session handoff summary$|- \`/Users/sgkmeyer/ai-automation-stack/ops/SESSION-${today}.md\` latest session handoff summary|" "${repo_root}/README.md" || true
+  rm -f "${repo_root}/README.md.bak"
   say "Updated README pointer to SESSION-${today}.md (if present)."
 else
   say "WARN: README.md not found; skipping."
