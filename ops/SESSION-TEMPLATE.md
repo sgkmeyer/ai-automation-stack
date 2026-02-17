@@ -18,12 +18,26 @@
 - Runbook and process updates.
 - Any command or checklist updates.
 
+## Deployment Notes
+- Deploy method used: rsync / gitops / none
+- VM apply performed: yes / no
+
 ## Validation Checks Passed
 - Command/output summary proving the change works.
 - External checks (domains, APIs) where applicable.
 
+## Backups Taken
+- Config backup: yes / no
+- DB volume backup: yes / no
+
 ## Known Risks / Notes
 - Security notes, temporary workarounds, or unresolved issues.
+- Secrets rotated (if exposed): yes / no / n/a
+
+## Rollback / Recovery
+- What to revert if this breaks.
+- Which service(s) to restart.
+- Where to look first (logs / health checks).
 
 ## Next Session Plan
 1. First concrete next step.

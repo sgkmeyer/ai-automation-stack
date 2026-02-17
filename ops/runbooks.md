@@ -99,6 +99,24 @@ cd /Users/sgkmeyer/ai-automation-stack
 ./scripts/sync-to-vm.sh
 ```
 
+## GitOps Deployment (Preferred)
+Goal: make the VM pull from GitHub and apply the stack from the repo checkout (single source of truth).
+
+### One-time VM setup
+1. Ensure repo exists on VM at `/home/ubuntu/ai-automation-stack` and has an SSH remote to GitHub.
+2. Ensure the stack directory `/home/ubuntu/automation` points at the repo's `automation/` folder:
+   - Recommended: symlink `/home/ubuntu/automation` -> `/home/ubuntu/ai-automation-stack/automation`
+3. Ensure required untracked secrets/config exist on VM (not in Git):
+   - `/home/ubuntu/automation/.env`
+   - `/home/ubuntu/automation/openclaw/config.json`
+   - other Openclaw runtime folders (`credentials/`, `telegram/`, etc.)
+
+### Deploy
+From laptop:
+```bash
+ssh satoic-vm /home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh
+```
+
 ## Session Handoff Workflow
 At end of each work session:
 1. Copy `ops/SESSION-TEMPLATE.md` to `ops/SESSION-YYYY-MM-DD.md`.
