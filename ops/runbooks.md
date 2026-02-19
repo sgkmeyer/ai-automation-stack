@@ -117,6 +117,25 @@ From laptop:
 ssh satoic-vm /home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh
 ```
 
+### Guarded VM Operations (Recommended)
+Use the local wrapper for explicit, approved VM actions:
+```bash
+cd /Users/sgkmeyer/ai-automation-stack
+./scripts/vm-safe.sh health
+./scripts/vm-safe.sh deploy
+./scripts/vm-safe.sh backup
+./scripts/vm-safe.sh dr-backup
+./scripts/vm-safe.sh restart openclaw
+./scripts/vm-safe.sh logs openclaw 30
+./scripts/vm-safe.sh ps
+./scripts/vm-safe.sh check-external
+```
+Notes:
+- Every action prints the exact command and requires explicit approval.
+- Actions are restricted to an allowlist to reduce accidental destructive changes.
+- For non-interactive runs, pass `--yes` (only for trusted contexts).
+- `dr-backup` creates VM archives, copies them to local `.dr-backups/`, and writes `ops/dr-manifests/dr-backup-*.md`.
+
 ## Session Handoff Workflow
 At end of each work session:
 1. Copy `ops/SESSION-TEMPLATE.md` to `ops/SESSION-YYYY-MM-DD.md`.

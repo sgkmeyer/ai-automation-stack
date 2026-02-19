@@ -19,7 +19,7 @@ This repository is the operational source of truth for the Satoic automation sta
 ## Repository Layout
 - `/Users/sgkmeyer/ai-automation-stack/automation` runtime stack files mirrored from VM
 - `/Users/sgkmeyer/ai-automation-stack/ops/runbooks.md` operational procedures
-- `/Users/sgkmeyer/ai-automation-stack/ops/SESSION-2026-02-17.md` latest session handoff summary
+- `/Users/sgkmeyer/ai-automation-stack/ops/SESSION-2026-02-19.md` latest session handoff summary
 - `/Users/sgkmeyer/ai-automation-stack/ops/SESSION-TEMPLATE.md` handoff template for new sessions
 - `/Users/sgkmeyer/ai-automation-stack/scripts` sync/deploy utility scripts
 - `/Users/sgkmeyer/ai-automation-stack/sql` schema scripts

@@ -18,3 +18,5 @@ automation/openclaw/workspace/*-response.json
 automation/docker-compose.yml.bak.*
 automation/ops/*.txt
 automation/openclaw/workspace/.openclaw/
+ops/start-session-*.log
+.dr-backups/
