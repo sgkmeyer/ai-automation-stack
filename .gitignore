@@ -20,3 +20,4 @@ automation/ops/*.txt
 automation/openclaw/workspace/.openclaw/
 ops/start-session-*.log
 .dr-backups/
+.claude/
