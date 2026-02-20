@@ -16,15 +16,20 @@ jobs:
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
+      - name: Verify Tailscale connection
+        run: tailscale status
+
       - name: Load SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.VM_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          printf '%s\n' "${{ secrets.VM_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          ssh-keygen -l -f ~/.ssh/id_rsa
 
       - name: Deploy via GitOps
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.VM_TAILSCALE_HOST }} \
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
+            ubuntu@${{ secrets.VM_TAILSCALE_HOST }} \
             '/home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh'
 
   smoke-test:
