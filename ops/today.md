@@ -30,6 +30,9 @@
 - [x] Phase 2: Dev/prod lanes (docker-compose.dev.yml, Caddyfile.dev, vm-safe.sh)
 - [x] Phase 3: Tailscale — VM IP: 100.82.169.113, hostname: satoic-production
 - [x] Phase 4: GitHub CI/CD — CI green, GitOps deploy green, smoke test green
+- [x] Phase 5: Secrets rotation (POSTGRES_PASSWORD, N8N_ENCRYPTION_KEY)
+- [x] Phase 6: Dev GitOps lane (dev branch, deploy-dev.yml, gitops-deploy-dev.sh)
+- [x] Phase 7: Tailscale LaunchDaemon on Mac (auto-start at boot)
 
 ---
 
@@ -72,9 +75,9 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 ## Open Items / Known Risks
 
 - **SSH key rotation due ~2026-03-20** — rotate `satoic_operator` and `satoic_ci` (see SSH Key Inventory above)
-- **Dev/prod GitOps lanes** — `dev` branch + `deploy-dev.yml` planned for next session
+- **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green ✅
 - **Tailscale authkey** — rotated to new reusable/ephemeral key (expires 2026-05-21); OAuth migration deferred until May ✅
-- **Dev stack not yet started on VM** — run `./scripts/vm-safe.sh deploy-dev` to bring it up
+- **Dev stack running on VM** — port 5679 (Tailscale only), project `automation-dev` ✅
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM (see Backup & Recovery Model above)
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json` (2026-02-20) ✅
 - **Secrets rotated** — `POSTGRES_PASSWORD` and `N8N_ENCRYPTION_KEY` rotated 2026-02-20; n8n MFA cleared and ready to re-enroll ✅
