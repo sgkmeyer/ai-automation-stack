@@ -1,0 +1,46 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: GitOps deploy
+    runs-on: ubuntu-latest
+    environment: production      # manual approval gate — configure in GitHub repo settings
+
+    steps:
+      - name: Connect Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          # Ephemeral auth key — create one at https://login.tailscale.com/admin/settings/keys
+
+      - name: Deploy via GitOps
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.VM_TAILSCALE_IP }} \
+            '/home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh'
+
+  smoke-test:
+    name: Smoke test
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: External endpoint checks
+        run: |
+          check() {
+            local url="$1" expected="$2"
+            local code
+            code=$(curl -sf -o /dev/null -w "%{http_code}" "$url" || true)
+            if [[ "$code" == "$expected" ]]; then
+              echo "OK  $url -> $code"
+            else
+              echo "FAIL $url -> $code (expected $expected)"
+              exit 1
+            fi
+          }
+          check https://n8n.satoic.com 200
+          check https://openclaw.satoic.com 401
+          check https://portainer.satoic.com 401

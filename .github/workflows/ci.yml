@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint and validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: yamllint — compose files
+        run: |
+          pip install yamllint
+          yamllint automation/docker-compose*.yml
+
+      - name: shellcheck — scripts
+        run: |
+          sudo apt-get install -y shellcheck
+          shellcheck scripts/*.sh
+
+      - name: docker compose config — structural validation
+        run: |
+          # Validates compose file structure without requiring real env vars.
+          # Catches syntax errors, missing keys, and merge conflicts early.
+          docker compose \
+            -f automation/docker-compose.yml \
+            -f automation/docker-compose.chromium-native.yml \
+            -f automation/docker-compose.chromium-ip.yml \
+            --env-file /dev/null \
+            config > /dev/null
+          echo "Compose config: OK"
