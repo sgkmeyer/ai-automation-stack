@@ -1,7 +1,7 @@
 # Today — Current Build State
 
 > Manually maintained. Update at the end of each session alongside the dated session log.
-> Last updated: 2026-02-19
+> Last updated: 2026-02-20
 
 ---
 
@@ -29,7 +29,7 @@
 - [x] Phase 1: CLAUDE.md, ops/today.md, verify.sh, backup.sh
 - [x] Phase 2: Dev/prod lanes (docker-compose.dev.yml, Caddyfile.dev, vm-safe.sh)
 - [x] Phase 3: Tailscale — VM IP: 100.82.169.113, hostname: satoic-production
-- [x] Phase 4: GitHub CI/CD (.github/workflows/) — needs GitHub secrets + branch protection
+- [x] Phase 4: GitHub CI/CD — CI green, GitOps deploy green, smoke test green
 
 ---
 
@@ -57,7 +57,7 @@ ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz
 
 ## Open Items / Known Risks
 
-- **GitHub CI/CD needs 3 secrets + branch protection** — see below
+- **Tailscale authkey deprecated** — deploy workflow warns each run; migrate to OAuth client at tailscale.com/s/oauth-clients when convenient
 - **Dev stack not yet started on VM** — run `./scripts/vm-safe.sh deploy-dev` to bring it up
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM (see Backup & Recovery Model above)
 - **Gateway token mismatch** — `automation/.env` OPENCLAW_GATEWAY_TOKEN differs from `automation/openclaw/config.json` token; verify which is active and rotate if needed
