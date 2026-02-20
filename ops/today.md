@@ -55,8 +55,24 @@ ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz
 
 ---
 
+## SSH Key Inventory
+
+| Key | Purpose | Location |
+|-----|---------|----------|
+| `satoic_operator` | Personal Mac→VM (`ssh oracle`, `ssh satoic-production`) | `~/.ssh/satoic_operator` |
+| `satoic_ci` | GitHub Actions CI/CD only | `~/.ssh/satoic_ci` + GitHub secret `VM_SSH_PRIVATE_KEY` |
+| `id_ed25519_github` | GitHub git operations | `~/.ssh/id_ed25519_github` |
+
+**Next key rotation due: ~2026-03-20**
+To rotate `satoic_operator`: generate new key → add to VM `authorized_keys` → remove old entry → update `~/.ssh/config`.
+To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `authorized_keys` → remove old entry.
+
+---
+
 ## Open Items / Known Risks
 
+- **SSH key rotation due ~2026-03-20** — rotate `satoic_operator` and `satoic_ci` (see SSH Key Inventory above)
+- **Dev/prod GitOps lanes** — `dev` branch + `deploy-dev.yml` planned for next session
 - **Tailscale authkey deprecated** — deploy workflow warns each run; migrate to OAuth client at tailscale.com/s/oauth-clients when convenient
 - **Dev stack not yet started on VM** — run `./scripts/vm-safe.sh deploy-dev` to bring it up
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM (see Backup & Recovery Model above)
