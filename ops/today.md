@@ -73,11 +73,11 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 
 - **SSH key rotation due ~2026-03-20** — rotate `satoic_operator` and `satoic_ci` (see SSH Key Inventory above)
 - **Dev/prod GitOps lanes** — `dev` branch + `deploy-dev.yml` planned for next session
-- **Tailscale authkey deprecated** — deploy workflow warns each run; migrate to OAuth client at tailscale.com/s/oauth-clients when convenient
+- **Tailscale authkey** — rotated to new reusable/ephemeral key (expires 2026-05-21); OAuth migration deferred until May ✅
 - **Dev stack not yet started on VM** — run `./scripts/vm-safe.sh deploy-dev` to bring it up
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM (see Backup & Recovery Model above)
-- **Gateway token mismatch** — `automation/.env` OPENCLAW_GATEWAY_TOKEN differs from `automation/openclaw/config.json` token; verify which is active and rotate if needed
-- **Placeholder secrets in .env** — `POSTGRES_PASSWORD` and `N8N_ENCRYPTION_KEY` still use example-looking values; rotate before any production use
+- **Gateway token** — verified matching between `.env` and `openclaw/config.json` (2026-02-20) ✅
+- **Secrets rotated** — `POSTGRES_PASSWORD` and `N8N_ENCRYPTION_KEY` rotated 2026-02-20; n8n MFA cleared and ready to re-enroll ✅
 - **Pre-GitOps VM backup** — `/home/ubuntu/automation.pre-gitops-2026-02-16-2147` still on VM; safe to remove after one more healthy day
 - **Workflow #1 not yet built** — Openclaw → n8n → Postgres leads pipeline (next build priority after env upgrades)
 
