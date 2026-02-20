@@ -18,7 +18,7 @@ if [[ "$(id -u)" -ne 0 ]]; then
   exit 1
 fi
 
-echo "==> Creating Tailscale state directory: ${STATE_DIR}"
+echo "==> Creating Tailscale state and socket directories..."
 mkdir -p "${STATE_DIR}"
 chmod 700 "${STATE_DIR}"
 

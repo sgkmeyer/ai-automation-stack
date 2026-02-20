@@ -9,7 +9,7 @@
     <array>
         <string>/opt/homebrew/bin/tailscaled</string>
         <string>--statedir=/var/lib/tailscale</string>
-        <string>--socket=/var/run/tailscale/tailscaled.sock</string>
+        <string>--socket=/var/run/tailscaled.socket</string>
     </array>
 
     <key>RunAtLoad</key>
