@@ -1,0 +1,17 @@
+# Caddyfile.dev — Dev environment routing
+#
+# Tailscale-only access. No public TLS required.
+# Dev services are reachable from Mac at the VM's Tailscale IP.
+#
+# NOT deployed until Phase 3 (Tailscale is live).
+# After Tailscale is set up, replace <tailscale-ip> with the actual IP
+# and expand to proper subdomain routing as needed.
+#
+# To use: mount this file in the caddy container (or run a second caddy instance)
+# and access via http://<tailscale-ip>:8080
+
+:8080 {
+    # upstream is n8n:5678 — container listens on 5678 internally
+    # the host port 5679 mapping does not exist inside the Docker network
+    reverse_proxy n8n:5678
+}

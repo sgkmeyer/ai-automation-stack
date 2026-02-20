@@ -1,0 +1,48 @@
+# docker-compose.dev.yml — Dev environment overlay
+#
+# Apply with:
+#   docker compose \
+#     -f docker-compose.yml \
+#     -f docker-compose.chromium-native.yml \
+#     -f docker-compose.chromium-ip.yml \
+#     -f docker-compose.dev.yml \
+#     --project-name automation-dev \
+#     up -d
+#
+# This overlay:
+#   - Exposes n8n on host port 5679 (prod uses 5678 via Caddy internally)
+#   - Isolates app-stateful volumes: db, n8n, redis
+#   - Uses a separate Postgres database (n8n_dev)
+#   - Does NOT override Caddy or Portainer — one instance per VM is correct
+#   - N8N_EDITOR_BASE_URL / WEBHOOK_URL are intentionally NOT set here;
+#     set them after Tailscale is live (Phase 3) using the VM's Tailscale IP
+
+services:
+  n8n:
+    ports:
+      - "5679:5678"
+    environment:
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB_DEV:-n8n_dev}
+      - N8N_HOST=dev.n8n.satoic.com
+      # Set these in Phase 3 once Tailscale IP is known:
+      # - N8N_EDITOR_BASE_URL=http://<tailscale-ip>:5679/
+      # - WEBHOOK_URL=http://<tailscale-ip>:5679/
+
+  db:
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_DEV:-n8n_dev}
+
+  n8n-worker:
+    environment:
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB_DEV:-n8n_dev}
+
+volumes:
+  # Only isolate app-stateful components — each gets a dev_ prefixed named volume
+  db_storage:
+    name: dev_db_storage
+  n8n_data:
+    name: dev_n8n_data
+  redis_data:
+    name: dev_redis_data
+  # caddy_data, caddy_config, portainer_data intentionally NOT overridden
+  # Caddy and Portainer are shared VM-level services — one instance per VM

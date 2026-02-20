@@ -55,6 +55,12 @@ Actions:
   ps
     Show docker compose ps for the 3-file stack.
 
+  deploy-dev
+    Start or update the dev stack (automation-dev project) on VM.
+
+  ps-dev
+    Show docker compose ps for the dev stack.
+
   check-external
     Run endpoint checks from local machine (n8n/openclaw/portainer).
 EOF
@@ -212,6 +218,16 @@ EOF
     curl -I https://n8n.satoic.com
     curl -I https://openclaw.satoic.com
     curl -I https://portainer.satoic.com
+    ;;
+  deploy-dev)
+    run_vm_cmd \
+      "Start/update dev stack on VM (automation-dev project)" \
+      "set -euo pipefail; cd ${VM_DIR}; docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml -f docker-compose.dev.yml --project-name automation-dev up -d"
+    ;;
+  ps-dev)
+    run_vm_cmd \
+      "VM docker compose ps (dev stack)" \
+      "set -euo pipefail; cd ${VM_DIR}; docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml -f docker-compose.dev.yml --project-name automation-dev ps"
     ;;
   -h|--help|help)
     usage

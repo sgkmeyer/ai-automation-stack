@@ -1,4 +1,5 @@
 automation/.env
+automation/.env.dev
 *.tar.gz
 automation_redacted/
 automation/openclaw/workspace/.git/
