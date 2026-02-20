@@ -33,9 +33,37 @@
 
 ---
 
+## Backup & Recovery Model
+
+### Pre-Tailscale (current state)
+
+`scripts/backup.sh` and `vm-safe.sh dr-backup` **must be run from the local Mac**, not on the VM.
+They SSH outward to `satoic-vm` — running them on the VM itself causes SSH/hostname failures.
+
+**VM-local backup** (run directly in an SSH session on the VM when Mac-side scripts aren't available):
+```bash
+cd /home/ubuntu
+sudo tar czf automation-full-$(date +%F-%H%M).tar.gz automation
+docker run --rm \
+  -v automation_db_storage:/data \
+  -v /home/ubuntu:/backup \
+  busybox tar czf /backup/automation-db-$(date +%F-%H%M).tar.gz /data
+ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 4
+```
+
+This is the correct pre-Tailscale backup path. The output stays on the VM at `/home/ubuntu/`.
+
+### Post-Tailscale (once Phase 3 is complete)
+
+`./scripts/backup.sh` from the Mac will work end-to-end:
+SSH → VM backup → rsync artifacts to `.dr-backups/` locally → write manifest in `ops/dr-manifests/`.
+
+---
+
 ## Open Items / Known Risks
 
 - **Tailscale not yet installed** — dev stack not publicly accessible until then; use SSH tunnel in interim
+- **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM (see Backup & Recovery Model above)
 - **Gateway token mismatch** — `automation/.env` OPENCLAW_GATEWAY_TOKEN differs from `automation/openclaw/config.json` token; verify which is active and rotate if needed
 - **Placeholder secrets in .env** — `POSTGRES_PASSWORD` and `N8N_ENCRYPTION_KEY` still use example-looking values; rotate before any production use
 - **Pre-GitOps VM backup** — `/home/ubuntu/automation.pre-gitops-2026-02-16-2147` still on VM; safe to remove after one more healthy day

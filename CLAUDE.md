@@ -45,6 +45,31 @@ Secrets (`automation/.env`, `automation/openclaw/config.json`) are gitignored an
 
 ---
 
+## Backup Guardrails
+
+**`scripts/backup.sh` and `vm-safe.sh dr-backup` run from the local Mac only.**
+They SSH outward to `satoic-vm`. Running them on the VM itself will fail.
+
+**Never suggest running these backup commands on the VM.**
+
+### Pre-Tailscale backup (current state)
+If a backup is needed and the Mac-side scripts aren't available, the correct path is a
+VM-local tar — instruct the user to run this directly in their SSH session:
+```bash
+cd /home/ubuntu
+sudo tar czf automation-full-$(date +%F-%H%M).tar.gz automation
+docker run --rm \
+  -v automation_db_storage:/data \
+  -v /home/ubuntu:/backup \
+  busybox tar czf /backup/automation-db-$(date +%F-%H%M).tar.gz /data
+```
+Output stays on the VM at `/home/ubuntu/`. No rsync, no local copy until Tailscale is live.
+
+### Post-Tailscale backup
+`./scripts/backup.sh` from the Mac works end-to-end (SSH + rsync to `.dr-backups/` + manifest).
+
+---
+
 ## Secret Hygiene
 
 - `automation/.env` is gitignored — never commit it, never paste its contents in chat
