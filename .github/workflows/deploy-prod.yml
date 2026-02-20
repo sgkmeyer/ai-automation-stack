@@ -19,7 +19,7 @@ jobs:
 
       - name: Deploy via GitOps
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.VM_TAILSCALE_IP }} \
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.VM_TAILSCALE_HOST }} \
             '/home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh'
 
   smoke-test:
