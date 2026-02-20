@@ -1,5 +1,6 @@
+---
 services:
-#note to self, we went with HTTP instead of HTTPs since we aren't doing DNS yet
+# note to self, we went with HTTP instead of HTTPs since we aren't doing DNS yet
 
   #############################################
   # EDGE / INGRESS
@@ -149,7 +150,6 @@ services:
       - N8N_RUNNERS_ENABLED=true
       - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
       - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
-
 
 
     volumes:
@@ -320,5 +320,3 @@ volumes:
   caddy_config:
   portainer_data:
   redis_data:
-
-
