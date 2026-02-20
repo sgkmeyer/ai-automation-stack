@@ -52,9 +52,11 @@ They SSH outward to `satoic-vm`. Running them on the VM itself will fail.
 
 **Never suggest running these backup commands on the VM.**
 
-### Pre-Tailscale backup (current state)
-If a backup is needed and the Mac-side scripts aren't available, the correct path is a
-VM-local tar — instruct the user to run this directly in their SSH session:
+### Normal backup (Tailscale live — current state)
+`./scripts/backup.sh` from the Mac — SSH + rsync to `.dr-backups/` + manifest in `ops/dr-manifests/`.
+
+### VM-local fallback (if Mac-side unavailable — e.g., direct SSH session on VM)
+Instruct the user to run this in their SSH session on the VM:
 ```bash
 cd /home/ubuntu
 sudo tar czf automation-full-$(date +%F-%H%M).tar.gz automation
@@ -63,10 +65,7 @@ docker run --rm \
   -v /home/ubuntu:/backup \
   busybox tar czf /backup/automation-db-$(date +%F-%H%M).tar.gz /data
 ```
-Output stays on the VM at `/home/ubuntu/`. No rsync, no local copy until Tailscale is live.
-
-### Post-Tailscale backup
-`./scripts/backup.sh` from the Mac works end-to-end (SSH + rsync to `.dr-backups/` + manifest).
+Output stays on the VM at `/home/ubuntu/`. No local copy in this path.
 
 ---
 
@@ -112,7 +111,7 @@ Output stays on the VM at `/home/ubuntu/`. No rsync, no local copy until Tailsca
 | Openclaw | https://openclaw.satoic.com | Caddy basic auth + gateway token |
 | Portainer | https://portainer.satoic.com | Caddy basic auth + Portainer native |
 
-Dev stack (when running): n8n on VM port 5679, accessible via Tailscale or SSH tunnel.
+Dev stack (when running): `http://100.82.169.113:5679` (Tailscale direct access — no tunnel needed).
 
 ---
 

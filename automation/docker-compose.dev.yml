@@ -23,10 +23,9 @@ services:
       - "5679:5678"
     environment:
       - DB_POSTGRESDB_DATABASE=${POSTGRES_DB_DEV:-n8n_dev}
-      - N8N_HOST=dev.n8n.satoic.com
-      # Set these in Phase 3 once Tailscale IP is known:
-      # - N8N_EDITOR_BASE_URL=http://<tailscale-ip>:5679/
-      # - WEBHOOK_URL=http://<tailscale-ip>:5679/
+      - N8N_HOST=100.82.169.113
+      - N8N_EDITOR_BASE_URL=http://100.82.169.113:5679/
+      - WEBHOOK_URL=http://100.82.169.113:5679/
 
   db:
     environment:

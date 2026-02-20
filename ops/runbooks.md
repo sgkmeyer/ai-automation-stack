@@ -4,6 +4,28 @@
 - VM stack directory: `/home/ubuntu/automation`
 - Local mirror directory: `/Users/sgkmeyer/ai-automation-stack/automation`
 
+## Tailscale Network
+- VM Tailscale IP: `100.82.169.113`
+- VM Tailscale hostname: `satoic-production`
+- SSH via Tailscale: `ssh ubuntu@100.82.169.113` or use the `satoic-vm` alias (see below)
+
+### SSH config (`~/.ssh/config`)
+```
+# Primary: route satoic-vm through Tailscale (works from anywhere on the mesh)
+Host satoic-vm
+  HostName 100.82.169.113
+  User ubuntu
+
+# Canonical Tailscale alias
+Host satoic-production
+  HostName 100.82.169.113
+  User ubuntu
+```
+
+### Dev stack access (post-Tailscale)
+- Dev n8n UI: `http://100.82.169.113:5679`
+- Full Mac-side backup: `./scripts/backup.sh` (SSH + rsync + manifest)
+
 ## Core Operations
 ### Start or update stack
 ```bash

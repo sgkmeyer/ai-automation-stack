@@ -27,20 +27,22 @@
 
 - [x] Phase 0: Git snapshot + DR backup
 - [x] Phase 1: CLAUDE.md, ops/today.md, verify.sh, backup.sh
-- [ ] Phase 2: Dev/prod lanes (docker-compose.dev.yml, Caddyfile.dev, vm-safe.sh)
-- [ ] Phase 3: Tailscale (interactive — requires terminal on Mac and VM)
-- [ ] Phase 4: GitHub CI/CD (.github/workflows/)
+- [x] Phase 2: Dev/prod lanes (docker-compose.dev.yml, Caddyfile.dev, vm-safe.sh)
+- [x] Phase 3: Tailscale — VM IP: 100.82.169.113, hostname: satoic-production
+- [x] Phase 4: GitHub CI/CD (.github/workflows/) — needs GitHub secrets + branch protection
 
 ---
 
 ## Backup & Recovery Model
 
-### Pre-Tailscale (current state)
+### Current state (Tailscale live)
 
-`scripts/backup.sh` and `vm-safe.sh dr-backup` **must be run from the local Mac**, not on the VM.
-They SSH outward to `satoic-vm` — running them on the VM itself causes SSH/hostname failures.
+`./scripts/backup.sh` from the Mac works end-to-end:
+SSH → VM backup → rsync artifacts to `.dr-backups/` locally → write manifest in `ops/dr-manifests/`.
 
-**VM-local backup** (run directly in an SSH session on the VM when Mac-side scripts aren't available):
+**Always run from local Mac, never from the VM.** Scripts SSH outward to `satoic-vm`.
+
+**VM-local fallback** (if Mac-side scripts unavailable — e.g., SSH session directly on VM):
 ```bash
 cd /home/ubuntu
 sudo tar czf automation-full-$(date +%F-%H%M).tar.gz automation
@@ -51,18 +53,12 @@ docker run --rm \
 ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 4
 ```
 
-This is the correct pre-Tailscale backup path. The output stays on the VM at `/home/ubuntu/`.
-
-### Post-Tailscale (once Phase 3 is complete)
-
-`./scripts/backup.sh` from the Mac will work end-to-end:
-SSH → VM backup → rsync artifacts to `.dr-backups/` locally → write manifest in `ops/dr-manifests/`.
-
 ---
 
 ## Open Items / Known Risks
 
-- **Tailscale not yet installed** — dev stack not publicly accessible until then; use SSH tunnel in interim
+- **GitHub CI/CD needs 3 secrets + branch protection** — see below
+- **Dev stack not yet started on VM** — run `./scripts/vm-safe.sh deploy-dev` to bring it up
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM (see Backup & Recovery Model above)
 - **Gateway token mismatch** — `automation/.env` OPENCLAW_GATEWAY_TOKEN differs from `automation/openclaw/config.json` token; verify which is active and rotate if needed
 - **Placeholder secrets in .env** — `POSTGRES_PASSWORD` and `N8N_ENCRYPTION_KEY` still use example-looking values; rotate before any production use
