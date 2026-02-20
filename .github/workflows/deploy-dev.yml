@@ -1,0 +1,53 @@
+name: Deploy to Dev
+
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  deploy:
+    name: GitOps deploy (dev)
+    runs-on: ubuntu-latest
+    # No approval gate — dev deploys automatically on push
+
+    steps:
+      - name: Connect Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          ephemeral: true
+
+      - name: Load SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.VM_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Deploy dev stack via GitOps
+        run: |
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
+            ubuntu@${{ secrets.VM_TAILSCALE_HOST }} \
+            '/home/ubuntu/ai-automation-stack/scripts/gitops-deploy-dev.sh'
+
+  smoke-test:
+    name: Smoke test (dev)
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Connect Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          ephemeral: true
+
+      - name: Check dev n8n via Tailscale
+        run: |
+          code=$(curl -sf -o /dev/null -w "%{http_code}" \
+            http://${{ secrets.VM_TAILSCALE_HOST }}:5679 || true)
+          if [[ "$code" == "200" ]]; then
+            echo "OK  dev n8n -> $code"
+          else
+            echo "FAIL dev n8n -> $code (expected 200)"
+            exit 1
+          fi
