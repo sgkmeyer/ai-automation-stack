@@ -96,6 +96,8 @@ run_vm_cmd() {
     say "Skipped."
     exit 0
   fi
+  # SC2029: cmd string is intentionally built and expanded client-side
+  # shellcheck disable=SC2029
   ssh "${VM_HOST}" "${cmd}"
 }
 
@@ -143,6 +145,8 @@ case "${action}" in
 
     mkdir -p "${LOCAL_DR_DIR}" "${manifest_dir}"
 
+    # SC2029: remote_cfg/remote_db are intentionally expanded client-side (desired behavior)
+    # shellcheck disable=SC2029
     ssh "${VM_HOST}" "set -euo pipefail; cd /home/ubuntu; sudo tar czf ${remote_cfg} automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf ${remote_db} /data; ls -lh ${remote_cfg} ${remote_db}; sha256sum ${remote_cfg} ${remote_db}"
 
     rsync -avz "${VM_HOST}:${remote_cfg}" "${local_cfg}"
