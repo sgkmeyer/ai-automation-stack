@@ -1,3 +1,4 @@
+---
 # docker-compose.dev.yml — Dev environment overlay
 #
 # Apply with:
@@ -36,7 +37,8 @@ services:
       - DB_POSTGRESDB_DATABASE=${POSTGRES_DB_DEV:-n8n_dev}
 
 volumes:
-  # Only isolate app-stateful components — each gets a dev_ prefixed named volume
+  # Only isolate app-stateful components —
+  # each gets a dev_ prefixed named volume
   db_storage:
     name: dev_db_storage
   n8n_data:
