@@ -8,8 +8,12 @@
 }
 
 n8n.satoic.com {
-        import security_headers
-        reverse_proxy n8n:5678
+	import security_headers
+
+	@webhooks path /webhook/* /webhook-test/*
+	reverse_proxy @webhooks n8n-webhook:5678
+
+	reverse_proxy n8n:5678
 }
 
 openclaw.satoic.com {
