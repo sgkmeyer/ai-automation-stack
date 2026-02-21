@@ -146,11 +146,13 @@ services:
 
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
 
-
       - N8N_RUNNERS_ENABLED=true
       - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
       - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
 
+      # ---- App-level config ----
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - OPENCLAW_HOOK_TOKEN=${OPENCLAW_HOOK_TOKEN}
 
     volumes:
       # Stores workflows + config locally
@@ -195,6 +197,10 @@ services:
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
 
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+
+      # ---- App-level config ----
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - OPENCLAW_HOOK_TOKEN=${OPENCLAW_HOOK_TOKEN}
 
     volumes:
       - n8n_data:/home/node/.n8n
