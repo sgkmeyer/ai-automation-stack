@@ -213,6 +213,54 @@ services:
 
 
   #############################################
+  # N8N WEBHOOK — DEDICATED WEBHOOK LISTENER
+  #############################################
+  # Required in queue mode to register and
+  # serve /webhook/ and /webhook-test/ URLs.
+  # Without this, webhooks silently fail.
+  #############################################
+  n8n-webhook:
+    image: n8nio/n8n:1
+    restart: unless-stopped
+    command: ["webhook"]
+
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=db
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_USER=${POSTGRES_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+
+      - EXECUTIONS_MODE=queue
+      - QUEUE_BULL_REDIS_HOST=redis
+      - QUEUE_BULL_REDIS_PORT=6379
+
+      - N8N_HOST=${N8N_HOST}
+      - N8N_PROTOCOL=https
+      - N8N_PORT=5678
+      - N8N_PROXY_HOPS=1
+      - WEBHOOK_URL=https://${N8N_HOST}/
+      - N8N_EDITOR_BASE_URL=https://${N8N_HOST}/
+
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+
+      # ---- App-level config ----
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - OPENCLAW_HOOK_TOKEN=${OPENCLAW_HOOK_TOKEN}
+
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+
+  #############################################
   # OPENCLAW — AGENT / TOOL RUNTIME
   #############################################
   # Runs autonomous or semi-autonomous
