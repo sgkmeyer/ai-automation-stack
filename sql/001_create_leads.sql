@@ -15,5 +15,5 @@ CREATE TABLE IF NOT EXISTS leads (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS leads_domain_email_idx
-  ON leads (domain, email);
+CREATE UNIQUE INDEX IF NOT EXISTS leads_domain_unique
+  ON leads (domain);

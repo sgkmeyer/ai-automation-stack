@@ -1,7 +1,7 @@
 # Today — Current Build State
 
 > Manually maintained. Update at the end of each session alongside the dated session log.
-> Last updated: 2026-02-20
+> Last updated: 2026-02-21
 
 ---
 
@@ -15,6 +15,9 @@
   - `https://portainer.satoic.com` → 401 pre-auth (expected)
 - GitOps deploy active: push to `main` → SSH → `gitops-deploy.sh`
 - Openclaw paired to Telegram (`@sg_tar_bot`), n8n API wired, Chromium CDP connected
+- Openclaw hooks enabled: `http://openclaw:18789/hooks/` (internal only, dedicated token)
+- n8n credentials configured: Gmail, Google Drive, Postgres, HubSpot
+- `public.leads` table live (unique on `domain`)
 
 **VM layout:**
 - Repo: `/home/ubuntu/ai-automation-stack` (cloned from GitHub)
@@ -23,16 +26,11 @@
 
 ---
 
-## Active Priorities (this session)
+## Active Priorities (next session)
 
-- [x] Phase 0: Git snapshot + DR backup
-- [x] Phase 1: CLAUDE.md, ops/today.md, verify.sh, backup.sh
-- [x] Phase 2: Dev/prod lanes (docker-compose.dev.yml, Caddyfile.dev, vm-safe.sh)
-- [x] Phase 3: Tailscale — VM IP: 100.82.169.113, hostname: satoic-production
-- [x] Phase 4: GitHub CI/CD — CI green, GitOps deploy green, smoke test green
-- [x] Phase 5: Secrets rotation (POSTGRES_PASSWORD, N8N_ENCRYPTION_KEY)
-- [x] Phase 6: Dev GitOps lane (dev branch, deploy-dev.yml, gitops-deploy-dev.sh)
-- [x] Phase 7: Tailscale LaunchDaemon on Mac (auto-start at boot)
+- [ ] JS-01: TAR generates `/lead` workflow JSON for review
+- [ ] JS-01: Review, approve, and activate workflow in n8n
+- [ ] Test end-to-end: `/lead <url>` → Openclaw → n8n → Postgres
 
 ---
 
@@ -82,7 +80,7 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json` (2026-02-20) ✅
 - **Secrets rotated** — `POSTGRES_PASSWORD` and `N8N_ENCRYPTION_KEY` rotated 2026-02-20; n8n MFA cleared and ready to re-enroll ✅
 - **Pre-GitOps VM backup** — `/home/ubuntu/automation.pre-gitops-2026-02-16-2147` still on VM; safe to remove after one more healthy day
-- **Workflow #1 not yet built** — Openclaw → n8n → Postgres leads pipeline (next build priority after env upgrades)
+- **Workflow JS-01 runway ready** — hooks enabled, credentials configured, leads table live; TAR building workflow JSON next session
 
 ---
 
