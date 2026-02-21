@@ -240,6 +240,8 @@ services:
 
     volumes:
       - ./openclaw:/home/node/.openclaw
+      # Read-only repo access for diagnostics (Option B)
+      - /home/ubuntu/ai-automation-stack:/home/node/repo:ro
 
   #############################################
   # TOOLBOX CONTAINER
