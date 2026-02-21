@@ -153,6 +153,7 @@ services:
       # ---- App-level config ----
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - OPENCLAW_HOOK_TOKEN=${OPENCLAW_HOOK_TOKEN}
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
 
     volumes:
       # Stores workflows + config locally
@@ -201,6 +202,7 @@ services:
       # ---- App-level config ----
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - OPENCLAW_HOOK_TOKEN=${OPENCLAW_HOOK_TOKEN}
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
 
     volumes:
       - n8n_data:/home/node/.n8n
@@ -253,6 +255,7 @@ services:
       # ---- App-level config ----
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - OPENCLAW_HOOK_TOKEN=${OPENCLAW_HOOK_TOKEN}
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
 
     volumes:
       - n8n_data:/home/node/.n8n
