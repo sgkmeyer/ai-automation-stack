@@ -333,7 +333,7 @@ services:
   # - Access only via Caddy or SSH tunnel
   #############################################
   portainer:
-    image: portainer/portainer-ce:2.20.3
+    image: portainer/portainer-ce:lts
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
