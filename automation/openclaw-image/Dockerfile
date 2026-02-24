@@ -3,6 +3,11 @@ FROM alpine/openclaw:latest
 USER root
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
+# Pin Openclaw version (base image may lag behind latest release).
+# To upgrade: change this version, rebuild, and redeploy.
+ARG OPENCLAW_VERSION=2026.2.23
+RUN npm i -g "openclaw@${OPENCLAW_VERSION}"
+
 # Install Python tooling in a distro-agnostic way (Debian/Ubuntu or Alpine base images).
 RUN set -eux; \
     if command -v apt-get >/dev/null 2>&1; then \
