@@ -9,7 +9,7 @@
 
 **Production stack** (`automation` project on Oracle Free Tier VM):
 - All 11 services up: caddy, db, redis, n8n, n8n-worker, n8n-webhook, n8n-task-runner, openclaw, chromium, portainer, toolbox
-- **Stack versions (updated 2026-02-24):** n8n 2.9.2, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
+- **Stack versions (updated 2026-02-24):** n8n 2.9.2, Openclaw 2026.2.23, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
 - Public endpoints:
   - `https://n8n.satoic.com` → 200 (app auth)
   - `https://openclaw.satoic.com` → 401 pre-auth (expected)
@@ -39,6 +39,10 @@
 - [ ] Test JS-01 end-to-end: `/lead <url>` → Openclaw → n8n → Postgres → HubSpot → Drive → Gmail
 - [ ] Consider czlonkowski/n8n-mcp for better workflow authoring from Claude Code
 - [x] Full stack upgrade completed (2026-02-24): n8n v1→v2, Portainer lts, all patches pulled
+- [x] Openclaw upgraded v2026.2.14 → v2026.2.23; version pinned in Dockerfile
+- [x] Openclaw post-upgrade recovery: fixed UID ownership, trustedProxies, device pairing, gateway token re-injection
+- [x] Added post-deploy ownership check to `gitops-deploy.sh` (prevents UID drift)
+- [x] Added Openclaw recovery runbook to `ops/runbooks.md`
 - [x] OPENAI_API_KEY wired to Openclaw — TARS memory_search working
 - [x] SSH hostname fix (`satoic-vm` → `satoic-production`) across all scripts
 - [x] JS-01: TAR built and activated workflow (17 nodes, all credentials bound)
@@ -90,6 +94,8 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 - **Dev stack not running** — torn down after n8n v2 upgrade testing (2026-02-24)
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json`; propagated to all n8n services (2026-02-23)
+- **Openclaw `trustedProxies`** — `172.18.0.0/16` added to `config.json` on VM so Caddy-proxied connections are handled correctly
+- **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.2.23`; change this value and rebuild to upgrade
 - **Secrets rotated** — `POSTGRES_PASSWORD` and `N8N_ENCRYPTION_KEY` rotated 2026-02-20; n8n MFA cleared and ready to re-enroll
 - **Pre-GitOps VM backup** — `/home/ubuntu/automation.pre-gitops-2026-02-16-2147` still on VM; safe to remove
 - **MCP bridge planned** — Path A (Python MCP server on Mac) recommended to reduce user relay between Claude Code and TAR
