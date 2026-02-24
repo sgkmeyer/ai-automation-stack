@@ -187,7 +187,73 @@ git commit -m "chore: baseline update"
 ```
 
 ## Incident Quick Actions
-### Openclaw shows token missing in UI
+### Openclaw disconnected after upgrade / container recreation
+This is a known recurring issue. When the Openclaw container is recreated (e.g., during
+`docker compose up -d`), volume file ownership can break if the image's `node` UID changes,
+and browser-side tokens (device + gateway) are invalidated.
+
+**Symptoms (in order of appearance):**
+1. `device_token_mismatch` — browser's cached device token doesn't match container state
+2. `gateway token missing` — clearing browser storage to fix #1 also wipes the gateway token
+3. `pairing required` — new browser origin needs device pairing approval
+
+**Fix procedure:**
+
+1. **Fix file ownership** (root cause — UID mismatch on volume):
+```bash
+ssh satoic-production "docker exec -u root automation-openclaw-1 chown -R node:node /home/node/.openclaw"
+```
+
+2. **Restart Openclaw:**
+```bash
+ssh satoic-production "cd /home/ubuntu/automation && docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml restart openclaw"
+```
+
+3. **Re-inject gateway token into browser** via SSH tunnel:
+```bash
+# From Mac — create tunnel
+ssh -N -L 18789:$(ssh satoic-production "docker inspect automation-openclaw-1 --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' | head -1"):18789 satoic-production &
+
+# Open in browser (token value from VM .env):
+# http://localhost:18789/#token=<OPENCLAW_GATEWAY_TOKEN>
+```
+
+4. **Approve device pairing** (run after "pairing required" appears):
+```bash
+ssh satoic-production 'docker exec automation-openclaw-1 node -e "
+const fs = require(\"fs\");
+const paired = JSON.parse(fs.readFileSync(\"/home/node/.openclaw/devices/paired.json\", \"utf8\"));
+const pending = JSON.parse(fs.readFileSync(\"/home/node/.openclaw/devices/pending.json\", \"utf8\"));
+for (const [id, req] of Object.entries(pending)) {
+  const now = Date.now();
+  paired[req.deviceId] = {
+    deviceId: req.deviceId, publicKey: req.publicKey, platform: req.platform,
+    clientId: req.clientId, clientMode: req.clientMode, role: req.role,
+    roles: req.roles, scopes: req.scopes,
+    tokens: { operator: { token: require(\"crypto\").randomBytes(16).toString(\"hex\"),
+      role: \"operator\", scopes: req.scopes, createdAtMs: now, lastUsedAtMs: now } },
+    createdAtMs: now, approvedAtMs: now, remoteIp: req.remoteIp
+  };
+  delete pending[id];
+  console.log(\"Approved:\", req.deviceId);
+}
+fs.writeFileSync(\"/home/node/.openclaw/devices/paired.json\", JSON.stringify(paired, null, 2));
+fs.writeFileSync(\"/home/node/.openclaw/devices/pending.json\", JSON.stringify(pending, null, 2));
+"'
+```
+
+5. **Reload Openclaw** (hot reload, no full restart):
+```bash
+ssh satoic-production "docker exec automation-openclaw-1 kill -USR1 1"
+```
+
+6. **Verify** by opening `https://openclaw.satoic.com` — should show Health Online.
+
+7. **If accessing via Caddy**, you may need to repeat steps 3–5 for the `openclaw.satoic.com` origin (different browser local storage than `localhost`).
+
+**Prevention:** The `gitops-deploy.sh` script automatically fixes `.openclaw` ownership after every deploy.
+
+### Openclaw shows token missing in UI (legacy — simple case)
 - Confirm gateway token exists in config and env.
 - Recreate `automation-openclaw-1`.
 

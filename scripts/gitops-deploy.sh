@@ -33,4 +33,12 @@ docker compose \
 # Keep ingress config hot without requiring restarts.
 docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile || true
 
+# Fix Openclaw volume ownership (UID can drift across image versions).
+# The container runs as 'node' but volume files may be owned by a stale UID.
+printf "Checking Openclaw volume ownership...\n"
+docker compose exec -u root -T openclaw \
+  chown -R node:node /home/node/.openclaw 2>/dev/null && \
+  printf "Openclaw .openclaw ownership verified/fixed.\n" || \
+  printf "Warning: could not check Openclaw ownership (container may not be ready).\n"
+
 printf "Deployed branch '%s' to %s\n" "${BRANCH}" "${REPO_DIR}"
