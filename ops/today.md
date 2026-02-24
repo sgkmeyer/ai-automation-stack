@@ -31,10 +31,16 @@
 
 ## Active Priorities (next session)
 
+- [ ] Research n8n v2 features — "Personal Agents" and "Workflow Agents" + how TARS could integrate
+- [ ] Fix `vm-safe.sh dr-backup` to use `tar -h` for symlink following
+- [ ] Fix `vm-safe.sh` usage text to include `n8n-task-runner` and `n8n-webhook`
 - [ ] Build MCP bridge (Path A): Python MCP server on Mac → Openclaw API over Tailscale
 - [ ] Set up shared handoff directory for Claude Code ↔ TAR async communication
 - [ ] Test JS-01 end-to-end: `/lead <url>` → Openclaw → n8n → Postgres → HubSpot → Drive → Gmail
 - [ ] Consider czlonkowski/n8n-mcp for better workflow authoring from Claude Code
+- [x] Full stack upgrade completed (2026-02-24): n8n v1→v2, Portainer lts, all patches pulled
+- [x] OPENAI_API_KEY wired to Openclaw — TARS memory_search working
+- [x] SSH hostname fix (`satoic-vm` → `satoic-production`) across all scripts
 - [x] JS-01: TAR built and activated workflow (17 nodes, all credentials bound)
 - [x] OPENCLAW_GATEWAY_TOKEN propagated to all n8n services
 
@@ -88,6 +94,9 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 - **Pre-GitOps VM backup** — `/home/ubuntu/automation.pre-gitops-2026-02-16-2147` still on VM; safe to remove
 - **MCP bridge planned** — Path A (Python MCP server on Mac) recommended to reduce user relay between Claude Code and TAR
 - **Agent roles defined** — TAR owns n8n workflow CRUD; Claude Code owns infra/docker-compose/Caddy/git
+- **`vm-safe.sh dr-backup` tar doesn't follow symlinks** — needs `-h` flag since `automation` is a symlink on VM
+- **`vm-safe.sh` usage text stale** — allowlist display missing `n8n-task-runner` and `n8n-webhook`
+- **Local `.env` missing `N8N_RUNNERS_AUTH_TOKEN`** — only on VM; should sync for parity
 
 ---
 
