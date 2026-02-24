@@ -73,6 +73,7 @@ service_to_container() {
     caddy) printf "automation-caddy-1" ;;
     n8n) printf "automation-n8n-1" ;;
     n8n-worker) printf "automation-n8n-worker-1" ;;
+    n8n-task-runner) printf "automation-n8n-task-runner-1" ;;
     openclaw) printf "automation-openclaw-1" ;;
     chromium) printf "automation-chromium-1" ;;
     portainer) printf "automation-portainer-1" ;;

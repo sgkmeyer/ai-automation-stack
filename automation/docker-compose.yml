@@ -112,7 +112,7 @@ services:
   # those go to the worker container.
   #############################################
   n8n:
-    image: n8nio/n8n:1
+    image: n8nio/n8n:2
     restart: unless-stopped
 
     environment:
@@ -147,8 +147,13 @@ services:
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
 
       - N8N_RUNNERS_ENABLED=true
+      - N8N_RUNNERS_MODE=external
+      - N8N_RUNNERS_AUTH_TOKEN=${N8N_RUNNERS_AUTH_TOKEN}
+      - N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
       - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
       - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
+      - N8N_DEFAULT_BINARY_DATA_MODE=database
+      - CODE_ENABLE_PROCESS_ENV_ACCESS=true
 
       # ---- App-level config ----
       - ADMIN_EMAIL=${ADMIN_EMAIL}
@@ -178,7 +183,7 @@ services:
   # happen here.
   #############################################
   n8n-worker:
-    image: n8nio/n8n:1
+    image: n8nio/n8n:2
     restart: unless-stopped
 
     command: ["worker"]
@@ -198,6 +203,12 @@ services:
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
 
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_RUNNERS_MODE=external
+      - N8N_RUNNERS_AUTH_TOKEN=${N8N_RUNNERS_AUTH_TOKEN}
+      - N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
+      - N8N_DEFAULT_BINARY_DATA_MODE=database
+      - CODE_ENABLE_PROCESS_ENV_ACCESS=true
 
       # ---- App-level config ----
       - ADMIN_EMAIL=${ADMIN_EMAIL}
@@ -222,7 +233,7 @@ services:
   # Without this, webhooks silently fail.
   #############################################
   n8n-webhook:
-    image: n8nio/n8n:1
+    image: n8nio/n8n:2
     restart: unless-stopped
     command: ["webhook"]
 
@@ -249,8 +260,13 @@ services:
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
 
       - N8N_RUNNERS_ENABLED=true
+      - N8N_RUNNERS_MODE=external
+      - N8N_RUNNERS_AUTH_TOKEN=${N8N_RUNNERS_AUTH_TOKEN}
+      - N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
       - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
       - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
+      - N8N_DEFAULT_BINARY_DATA_MODE=database
+      - CODE_ENABLE_PROCESS_ENV_ACCESS=true
 
       # ---- App-level config ----
       - ADMIN_EMAIL=${ADMIN_EMAIL}
@@ -363,6 +379,22 @@ services:
       - TIMEOUT=120000
       - PREBOOT=true
       - ENABLE_DEBUGGER=false
+
+
+  #############################################
+  # N8N TASK RUNNER — CODE NODE EXECUTION
+  #############################################
+  # Required in n8n v2: Code Node execution runs
+  # in an isolated sidecar container.
+  #############################################
+  n8n-task-runner:
+    image: n8nio/runners:latest
+    restart: unless-stopped
+    environment:
+      - N8N_RUNNERS_TASK_BROKER_URI=http://n8n:5679
+      - N8N_RUNNERS_AUTH_TOKEN=${N8N_RUNNERS_AUTH_TOKEN}
+    depends_on:
+      - n8n
 
 
 #############################################

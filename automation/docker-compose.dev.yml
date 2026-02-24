@@ -36,6 +36,14 @@ services:
     environment:
       - DB_POSTGRESDB_DATABASE=${POSTGRES_DB_DEV:-n8n_dev}
 
+  n8n-webhook:
+    environment:
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB_DEV:-n8n_dev}
+
+  n8n-task-runner:
+    environment:
+      - N8N_RUNNERS_TASK_BROKER_URI=http://n8n:5679
+
 volumes:
   # Only isolate app-stateful components —
   # each gets a dev_ prefixed named volume
