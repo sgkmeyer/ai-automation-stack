@@ -48,7 +48,7 @@ Secrets (`automation/.env`, `automation/openclaw/config.json`) are gitignored an
 ## Backup Guardrails
 
 **`scripts/backup.sh` and `vm-safe.sh dr-backup` run from the local Mac only.**
-They SSH outward to `satoic-vm`. Running them on the VM itself will fail.
+They SSH outward to `satoic-production`. Running them on the VM itself will fail.
 
 **Never suggest running these backup commands on the VM.**
 

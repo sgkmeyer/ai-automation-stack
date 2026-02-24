@@ -46,7 +46,7 @@
 `./scripts/backup.sh` from the Mac works end-to-end:
 SSH → VM backup → rsync artifacts to `.dr-backups/` locally → write manifest in `ops/dr-manifests/`.
 
-**Always run from local Mac, never from the VM.** Scripts SSH outward to `satoic-vm`.
+**Always run from local Mac, never from the VM.** Scripts SSH outward to `satoic-production`.
 
 **VM-local fallback** (if Mac-side scripts unavailable — e.g., SSH session directly on VM):
 ```bash

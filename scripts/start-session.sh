@@ -63,14 +63,14 @@ hr
 
 if ${full_mode}; then
   say "Full mode: running VM health checks."
-  if ! ssh satoic-vm 'set -euo pipefail; cd /home/ubuntu/automation; docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml ps'; then
+  if ! ssh satoic-production 'set -euo pipefail; cd /home/ubuntu/automation; docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml ps'; then
     say "WARNING: VM health checks failed."
     mark_warning
   fi
   hr
-elif confirm "Run VM health checks now (ssh satoic-vm)?"; then
+elif confirm "Run VM health checks now (ssh satoic-production)?"; then
   say "Running compose ps on VM..."
-  if ! ssh satoic-vm 'set -euo pipefail; cd /home/ubuntu/automation; docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml ps'; then
+  if ! ssh satoic-production 'set -euo pipefail; cd /home/ubuntu/automation; docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml ps'; then
     say "WARNING: VM health checks failed."
     mark_warning
   fi

@@ -109,12 +109,12 @@ fi
 if [[ "${deploy_mode}" == "gitops" ]]; then
   if confirm "Take backups on VM before applying (recommended for config/db-impacting changes)?" ; then
     say "Running backups on VM..."
-    ssh satoic-vm 'set -euo pipefail; cd /home/ubuntu; sudo tar czf automation-full-$(date +%F-%H%M).tar.gz automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf /backup/automation-db-$(date +%F-%H%M).tar.gz /data; ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 4'
+    ssh satoic-production 'set -euo pipefail; cd /home/ubuntu; sudo tar czf automation-full-$(date +%F-%H%M).tar.gz automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf /backup/automation-db-$(date +%F-%H%M).tar.gz /data; ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 4'
     hr
   fi
 
   say "Running GitOps deploy on VM..."
-  ssh satoic-vm '/home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh'
+  ssh satoic-production '/home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh'
   hr
 
   if confirm "Run external verification from this laptop (curl -I)?" ; then
@@ -126,7 +126,7 @@ if [[ "${deploy_mode}" == "gitops" ]]; then
 elif [[ "${deploy_mode}" == "rsync" ]]; then
   if confirm "Take backups on VM before applying (recommended for config/db-impacting changes)?" ; then
     say "Running backups on VM..."
-    ssh satoic-vm 'set -euo pipefail; cd /home/ubuntu; sudo tar czf automation-full-$(date +%F-%H%M).tar.gz automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf /backup/automation-db-$(date +%F-%H%M).tar.gz /data; ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 4'
+    ssh satoic-production 'set -euo pipefail; cd /home/ubuntu; sudo tar czf automation-full-$(date +%F-%H%M).tar.gz automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf /backup/automation-db-$(date +%F-%H%M).tar.gz /data; ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 4'
     hr
   fi
 
@@ -134,11 +134,11 @@ elif [[ "${deploy_mode}" == "rsync" ]]; then
   hr
 
   if confirm "Apply stack changes on VM now (docker compose up -d + caddy reload)?" ; then
-    ssh satoic-vm 'set -euo pipefail; cd /home/ubuntu/automation; docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml up -d; docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile; docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml ps'
+    ssh satoic-production 'set -euo pipefail; cd /home/ubuntu/automation; docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml up -d; docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile; docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml ps'
     hr
   else
     say "Apply on VM when ready:"
-    say "  ssh satoic-vm"
+    say "  ssh satoic-production"
     say "  cd /home/ubuntu/automation"
     say "  docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml up -d"
     say "  docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile"

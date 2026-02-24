@@ -2,7 +2,7 @@
 set -euo pipefail
 
 VM_USER="ubuntu"
-VM_HOST="satoic-vm"
+VM_HOST="satoic-production"
 VM_PATH="/home/${VM_USER}/automation/"
 LOCAL_PATH="/Users/sgkmeyer/ai-automation-stack/automation/"
 IGNORE_FILE="/Users/sgkmeyer/ai-automation-stack/.syncignore"

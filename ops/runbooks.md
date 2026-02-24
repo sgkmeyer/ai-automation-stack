@@ -7,12 +7,12 @@
 ## Tailscale Network
 - VM Tailscale IP: `100.82.169.113`
 - VM Tailscale hostname: `satoic-production`
-- SSH via Tailscale: `ssh ubuntu@100.82.169.113` or use the `satoic-vm` alias (see below)
+- SSH via Tailscale: `ssh ubuntu@100.82.169.113` or use the `satoic-production` alias (see below)
 
 ### SSH config (`~/.ssh/config`)
 ```
-# Primary: route satoic-vm through Tailscale (works from anywhere on the mesh)
-Host satoic-vm
+# Primary: route satoic-production through Tailscale (works from anywhere on the mesh)
+Host satoic-production
   HostName 100.82.169.113
   User ubuntu
 
@@ -136,7 +136,7 @@ Goal: make the VM pull from GitHub and apply the stack from the repo checkout (s
 ### Deploy
 From laptop:
 ```bash
-ssh satoic-vm /home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh
+ssh satoic-production /home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh
 ```
 
 ### Guarded VM Operations (Recommended)

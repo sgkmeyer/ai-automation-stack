@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VM_HOST="${VM_HOST:-satoic-vm}"
+VM_HOST="${VM_HOST:-satoic-production}"
 VM_DIR="${VM_DIR:-/home/ubuntu/automation}"
 VM_REPO_DIR="${VM_REPO_DIR:-/home/ubuntu/ai-automation-stack}"
 LOCAL_DR_DIR="${LOCAL_DR_DIR:-${repo_root}/.dr-backups}"
