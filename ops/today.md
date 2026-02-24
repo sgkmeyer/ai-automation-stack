@@ -1,14 +1,15 @@
 # Today — Current Build State
 
 > Manually maintained. Update at the end of each session alongside the dated session log.
-> Last updated: 2026-02-23
+> Last updated: 2026-02-24
 
 ---
 
 ## What Is Live and Healthy
 
 **Production stack** (`automation` project on Oracle Free Tier VM):
-- All 10 services up: caddy, db, redis, n8n, n8n-worker, n8n-webhook, openclaw, chromium, portainer, toolbox
+- All 11 services up: caddy, db, redis, n8n, n8n-worker, n8n-webhook, n8n-task-runner, openclaw, chromium, portainer, toolbox
+- **Stack versions (updated 2026-02-24):** n8n 2.9.2, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
 - Public endpoints:
   - `https://n8n.satoic.com` → 200 (app auth)
   - `https://openclaw.satoic.com` → 401 pre-auth (expected)
@@ -80,7 +81,7 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 - **SSH key rotation due ~2026-03-20** — rotate `satoic_operator` and `satoic_ci` (see SSH Key Inventory above)
 - **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
 - **Tailscale authkey** — rotated to new reusable/ephemeral key (expires 2026-05-21); OAuth migration deferred until May
-- **Dev stack running on VM** — port 5679 (Tailscale only), project `automation-dev`
+- **Dev stack not running** — torn down after n8n v2 upgrade testing (2026-02-24)
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json`; propagated to all n8n services (2026-02-23)
 - **Secrets rotated** — `POSTGRES_PASSWORD` and `N8N_ENCRYPTION_KEY` rotated 2026-02-20; n8n MFA cleared and ready to re-enroll
