@@ -1,14 +1,14 @@
 # Today — Current Build State
 
 > Manually maintained. Update at the end of each session alongside the dated session log.
-> Last updated: 2026-02-21
+> Last updated: 2026-02-23
 
 ---
 
 ## What Is Live and Healthy
 
 **Production stack** (`automation` project on Oracle Free Tier VM):
-- All 9 services up: caddy, db, redis, n8n, n8n-worker, openclaw, chromium, portainer, toolbox
+- All 10 services up: caddy, db, redis, n8n, n8n-worker, n8n-webhook, openclaw, chromium, portainer, toolbox
 - Public endpoints:
   - `https://n8n.satoic.com` → 200 (app auth)
   - `https://openclaw.satoic.com` → 401 pre-auth (expected)
@@ -16,8 +16,10 @@
 - GitOps deploy active: push to `main` → SSH → `gitops-deploy.sh`
 - Openclaw paired to Telegram (`@sg_tar_bot`), n8n API wired, Chromium CDP connected
 - Openclaw hooks enabled: `http://openclaw:18789/hooks/` (internal only, dedicated token)
-- n8n credentials configured: Gmail, Google Drive, Postgres, HubSpot
+- n8n credentials configured: Gmail, Google Drive, Postgres, HubSpot, Google OAuth (drive.file)
 - `public.leads` table live (unique on `domain`)
+- JS-01 workflow **active** (id: `chwneHrHVCQON462`) — full pipeline wired by TAR
+- `OPENCLAW_GATEWAY_TOKEN` available in all n8n services (n8n, n8n-worker, n8n-webhook)
 
 **VM layout:**
 - Repo: `/home/ubuntu/ai-automation-stack` (cloned from GitHub)
@@ -28,9 +30,12 @@
 
 ## Active Priorities (next session)
 
-- [ ] JS-01: TAR generates `/lead` workflow JSON for review
-- [ ] JS-01: Review, approve, and activate workflow in n8n
-- [ ] Test end-to-end: `/lead <url>` → Openclaw → n8n → Postgres
+- [ ] Build MCP bridge (Path A): Python MCP server on Mac → Openclaw API over Tailscale
+- [ ] Set up shared handoff directory for Claude Code ↔ TAR async communication
+- [ ] Test JS-01 end-to-end: `/lead <url>` → Openclaw → n8n → Postgres → HubSpot → Drive → Gmail
+- [ ] Consider czlonkowski/n8n-mcp for better workflow authoring from Claude Code
+- [x] JS-01: TAR built and activated workflow (17 nodes, all credentials bound)
+- [x] OPENCLAW_GATEWAY_TOKEN propagated to all n8n services
 
 ---
 
@@ -73,14 +78,15 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 ## Open Items / Known Risks
 
 - **SSH key rotation due ~2026-03-20** — rotate `satoic_operator` and `satoic_ci` (see SSH Key Inventory above)
-- **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green ✅
-- **Tailscale authkey** — rotated to new reusable/ephemeral key (expires 2026-05-21); OAuth migration deferred until May ✅
-- **Dev stack running on VM** — port 5679 (Tailscale only), project `automation-dev` ✅
-- **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM (see Backup & Recovery Model above)
-- **Gateway token** — verified matching between `.env` and `openclaw/config.json` (2026-02-20) ✅
-- **Secrets rotated** — `POSTGRES_PASSWORD` and `N8N_ENCRYPTION_KEY` rotated 2026-02-20; n8n MFA cleared and ready to re-enroll ✅
-- **Pre-GitOps VM backup** — `/home/ubuntu/automation.pre-gitops-2026-02-16-2147` still on VM; safe to remove after one more healthy day
-- **Workflow JS-01 runway ready** — hooks enabled, credentials configured, leads table live; TAR building workflow JSON next session
+- **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
+- **Tailscale authkey** — rotated to new reusable/ephemeral key (expires 2026-05-21); OAuth migration deferred until May
+- **Dev stack running on VM** — port 5679 (Tailscale only), project `automation-dev`
+- **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM
+- **Gateway token** — verified matching between `.env` and `openclaw/config.json`; propagated to all n8n services (2026-02-23)
+- **Secrets rotated** — `POSTGRES_PASSWORD` and `N8N_ENCRYPTION_KEY` rotated 2026-02-20; n8n MFA cleared and ready to re-enroll
+- **Pre-GitOps VM backup** — `/home/ubuntu/automation.pre-gitops-2026-02-16-2147` still on VM; safe to remove
+- **MCP bridge planned** — Path A (Python MCP server on Mac) recommended to reduce user relay between Claude Code and TAR
+- **Agent roles defined** — TAR owns n8n workflow CRUD; Claude Code owns infra/docker-compose/Caddy/git
 
 ---
 
