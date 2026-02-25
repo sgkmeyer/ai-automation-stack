@@ -96,6 +96,7 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json`; propagated to all n8n services (2026-02-23)
 - **Openclaw `trustedProxies`** — `172.18.0.0/16` added to `config.json` on VM so Caddy-proxied connections are handled correctly
 - **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.2.23`; change this value and rebuild to upgrade
+- **Openclaw v2026.2.23 requires `controlUi.allowedOrigins`** — set in `config.json` on VM (`https://openclaw.satoic.com`, `http://localhost:18789`)
 - **Secrets rotated** — `POSTGRES_PASSWORD` and `N8N_ENCRYPTION_KEY` rotated 2026-02-20; n8n MFA cleared and ready to re-enroll
 - **Pre-GitOps VM backup** — `/home/ubuntu/automation.pre-gitops-2026-02-16-2147` still on VM; safe to remove
 - **MCP bridge planned** — Path A (Python MCP server on Mac) recommended to reduce user relay between Claude Code and TAR
