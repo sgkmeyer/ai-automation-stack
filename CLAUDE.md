@@ -27,6 +27,20 @@ Secrets (`automation/.env`, `automation/openclaw/config.json`) are gitignored an
 - **Never edit the VM directly** for routine changes — use `vm-safe.sh`
 - Changes to `automation/` take effect on the VM only after a GitOps deploy
 
+### Dev-First Rule (MANDATORY)
+
+**Any change that rebuilds a container image, upgrades a service version, or modifies
+docker-compose files MUST be tested on the dev lane before deploying to production.**
+
+Process:
+1. Make changes on a branch (or `dev`)
+2. Push to `dev` → auto-deploys via `deploy-dev.yml` → dev stack on port 5679
+3. Verify the service starts cleanly and functions correctly on dev
+4. Only after dev validation: merge to `main` and deploy to production
+
+This applies to: Dockerfile changes, image tag bumps, compose config changes,
+Caddyfile changes, and any new environment variables. No exceptions.
+
 ---
 
 ## What Agents Can Do Freely
