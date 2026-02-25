@@ -19,6 +19,11 @@
 #     set them after Tailscale is live (Phase 3) using the VM's Tailscale IP
 
 services:
+  chromium:
+    networks:
+      cdp_net:
+        ipv4_address: 172.31.0.10
+
   n8n:
     ports:
       - "5679:5678"
@@ -55,3 +60,11 @@ volumes:
     name: dev_redis_data
   # caddy_data, caddy_config, portainer_data intentionally NOT overridden
   # Caddy and Portainer are shared VM-level services — one instance per VM
+
+networks:
+  # Override cdp_net subnet to avoid collision with production stack's 172.30.0.0/24
+  cdp_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/24
