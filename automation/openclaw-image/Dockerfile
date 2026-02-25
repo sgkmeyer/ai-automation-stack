@@ -6,7 +6,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 # Pin Openclaw version (base image may lag behind latest release).
 # To upgrade: change this version, rebuild, and redeploy.
 # The gateway entrypoint runs /app/openclaw.mjs, so we must replace /app contents.
-ARG OPENCLAW_VERSION=2026.2.23
+ARG OPENCLAW_VERSION=2026.2.24
 RUN npm i -g "openclaw@${OPENCLAW_VERSION}" && \
     rm -rf /app/* && \
     cp -a /usr/local/lib/node_modules/openclaw/. /app/
