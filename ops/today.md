@@ -1,7 +1,7 @@
 # Today — Current Build State
 
 > Manually maintained. Update at the end of each session alongside the dated session log.
-> Last updated: 2026-02-24
+> Last updated: 2026-02-26
 
 ---
 
@@ -9,7 +9,7 @@
 
 **Production stack** (`automation` project on Oracle Free Tier VM):
 - All 11 services up: caddy, db, redis, n8n, n8n-worker, n8n-webhook, n8n-task-runner, openclaw, chromium, portainer, toolbox
-- **Stack versions (updated 2026-02-24):** n8n 2.9.2, Openclaw 2026.2.23, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
+- **Stack versions (updated 2026-02-26):** n8n 2.9.2, Openclaw 2026.2.24, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
 - Public endpoints:
   - `https://n8n.satoic.com` → 200 (app auth)
   - `https://openclaw.satoic.com` → 401 pre-auth (expected)
@@ -40,6 +40,8 @@
 - [ ] Consider czlonkowski/n8n-mcp for better workflow authoring from Claude Code
 - [x] Full stack upgrade completed (2026-02-24): n8n v1→v2, Portainer lts, all patches pulled
 - [x] Openclaw upgraded v2026.2.14 → v2026.2.23; version pinned in Dockerfile
+- [x] Openclaw v2026.2.24 upgrade — dev-first validated, merged to main, production deployed
+- [x] Dev lane cdp_net subnet collision fixed (dev: 172.31.0.0/24, prod: 172.30.0.0/24)
 - [x] Openclaw post-upgrade recovery: fixed UID ownership, trustedProxies, device pairing, gateway token re-injection
 - [x] Added post-deploy ownership check to `gitops-deploy.sh` (prevents UID drift)
 - [x] Added Openclaw recovery runbook to `ops/runbooks.md`
@@ -91,11 +93,11 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 - **SSH key rotation due ~2026-03-20** — rotate `satoic_operator` and `satoic_ci` (see SSH Key Inventory above)
 - **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
 - **Tailscale authkey** — rotated to new reusable/ephemeral key (expires 2026-05-21); OAuth migration deferred until May
-- **Dev stack not running** — torn down after n8n v2 upgrade testing (2026-02-24)
+- **Dev stack running** — Openclaw v2026.2.24 validated on dev (2026-02-26); awaiting merge to main for production
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json`; propagated to all n8n services (2026-02-23)
 - **Openclaw `trustedProxies`** — `172.18.0.0/16` added to `config.json` on VM so Caddy-proxied connections are handled correctly
-- **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.2.23`; change this value and rebuild to upgrade
+- **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.2.24`; both dev and production on 2026.2.24
 - **Openclaw v2026.2.23 requires `controlUi.allowedOrigins`** — set in `config.json` on VM (`https://openclaw.satoic.com`, `http://localhost:18789`)
 - **Secrets rotated** — `POSTGRES_PASSWORD` and `N8N_ENCRYPTION_KEY` rotated 2026-02-20; n8n MFA cleared and ready to re-enroll
 - **Pre-GitOps VM backup** — `/home/ubuntu/automation.pre-gitops-2026-02-16-2147` still on VM; safe to remove
