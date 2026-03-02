@@ -28,7 +28,7 @@ docker compose \
   -f docker-compose.yml \
   -f docker-compose.chromium-native.yml \
   -f docker-compose.chromium-ip.yml \
-  up -d
+  up -d --build
 
 # Keep ingress config hot without requiring restarts.
 docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile || true

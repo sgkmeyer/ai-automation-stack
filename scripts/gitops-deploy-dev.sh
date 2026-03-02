@@ -31,7 +31,7 @@ docker compose \
   -f docker-compose.chromium-ip.yml \
   -f docker-compose.dev.yml \
   --project-name automation-dev \
-  up -d
+  up -d --build
 
 printf "Deployed branch '%s' (dev stack) to %s\n" "${BRANCH}" "${REPO_DIR}"
 printf "Dev n8n accessible at http://100.82.169.113:5679 (Tailscale only)\n"
