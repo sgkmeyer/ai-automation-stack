@@ -52,5 +52,5 @@ jobs:
             fi
           }
           check https://n8n.satoic.com 200
-          check https://openclaw.satoic.com 401
+          check https://openclaw.satoic.com 200
           check https://portainer.satoic.com 401
