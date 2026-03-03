@@ -38,18 +38,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Wait for services to stabilize
+        run: sleep 30
+
       - name: External endpoint checks
         run: |
           check() {
-            local url="$1" expected="$2"
-            local code
-            code=$(curl -sf -o /dev/null -w "%{http_code}" "$url" || true)
-            if [[ "$code" == "$expected" ]]; then
-              echo "OK  $url -> $code"
-            else
-              echo "FAIL $url -> $code (expected $expected)"
-              exit 1
-            fi
+            local url="$1" expected="$2" retries=3 delay=10
+            local code attempt
+            for attempt in $(seq 1 "$retries"); do
+              code=$(curl -sf -o /dev/null -w "%{http_code}" "$url" || true)
+              if [[ "$code" == "$expected" ]]; then
+                echo "OK  $url -> $code"
+                return 0
+              fi
+              if [[ "$attempt" -lt "$retries" ]]; then
+                echo "RETRY $url -> $code (expected $expected, attempt $attempt/$retries)"
+                sleep "$delay"
+              fi
+            done
+            echo "FAIL $url -> $code (expected $expected)"
+            exit 1
           }
           check https://n8n.satoic.com 200
           check https://openclaw.satoic.com 200
