@@ -9,7 +9,7 @@
 
 **Production stack** (`automation` project on Oracle Free Tier VM):
 - All 11 services up: caddy, db, redis, n8n, n8n-worker, n8n-webhook, n8n-task-runner, openclaw, chromium, portainer, toolbox
-- **Stack versions (updated 2026-03-03):** n8n 2.9.2, Openclaw 2026.3.1, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
+- **Stack versions (updated 2026-03-05):** n8n 2.9.2, Openclaw 2026.3.2, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
 - Public endpoints:
   - `https://n8n.satoic.com` → 200 (app auth)
   - `https://openclaw.satoic.com` → 200 (gateway token auth only, no Caddy basic_auth)
@@ -64,6 +64,7 @@
 - [x] Dev CI deploy stabilized: sanitized `VM_TAILSCALE_HOST` + default fallback IP + `accept-new` host key policy (2026-03-05)
 - [x] Dev GitOps lane fixed: force `--scale caddy=0` to avoid port 80/443 conflict with production Caddy (2026-03-05)
 - [x] Hardening rollout validated end-to-end: dev deploy+smoke and prod deploy+smoke green (2026-03-05)
+- [x] Openclaw upgraded v2026.3.1 → v2026.3.2; version pin updated in Dockerfile (2026-03-05)
 
 ---
 
@@ -108,12 +109,12 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 - **SSH key rotation due ~2026-03-20** — rotate `satoic_operator` and `satoic_ci` (see SSH Key Inventory above)
 - **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
 - **Tailscale GitHub Action authkey deprecation warning** — migrate to OAuth client (`tailscale/github-action` warning active)
-- **Dev stack running** — Openclaw v2026.3.1 validated on dev (2026-03-03); merged to main and deployed to production
+- **Dev stack running** — Openclaw v2026.3.2 validated on dev (2026-03-05); pending/ready for production merge
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json`; propagated to all n8n services (2026-02-23)
 - **Openclaw config schema (v2026.2.26+)** — `trustedProxies` and `controlUi` inside `gateway` section; `gateway.auth.rateLimit` uses `maxAttempts/windowMs/lockoutMs/exemptLoopback` (not `enabled/window/maxFailures`)
 - **Openclaw security audit baseline** — 0 critical on both dev/prod (2026-03-03); see `ops/security-audit-2026-03-03.md`
-- **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.3.1`; both dev and production on 2026.3.1
+- **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.3.2`
 - **Caddy bind-mount reload** — Caddyfile changes require explicit `docker compose restart caddy`; `docker compose up -d` does not detect bind-mount file changes
 - **Openclaw device pairing** — new browser platforms (e.g., iPhone) require approval from an already-paired session; pending devices visible in `openclaw/devices/pending.json`
 - **Openclaw basic_auth removed** — `openclaw.satoic.com` no longer uses Caddy basic_auth; gateway token (256-bit) is sole auth. Portainer still has basic_auth.
