@@ -47,7 +47,7 @@ Actions:
 
   restart <service>
     Restart one allowed service container.
-    Allowed: caddy n8n n8n-worker openclaw chromium portainer redis db toolbox
+    Allowed: caddy n8n n8n-worker n8n-webhook n8n-task-runner openclaw chromium portainer redis db toolbox
 
   logs <service> [minutes]
     Show recent logs for one allowed service. Default minutes: 30.
@@ -73,6 +73,7 @@ service_to_container() {
     caddy) printf "automation-caddy-1" ;;
     n8n) printf "automation-n8n-1" ;;
     n8n-worker) printf "automation-n8n-worker-1" ;;
+    n8n-webhook) printf "automation-n8n-webhook-1" ;;
     n8n-task-runner) printf "automation-n8n-task-runner-1" ;;
     openclaw) printf "automation-openclaw-1" ;;
     chromium) printf "automation-chromium-1" ;;
@@ -123,7 +124,7 @@ case "${action}" in
   backup)
     run_vm_cmd \
       "Create config + DB backups on VM" \
-      "set -euo pipefail; cd /home/ubuntu; sudo tar czf automation-full-\$(date +%F-%H%M).tar.gz automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf /backup/automation-db-\$(date +%F-%H%M).tar.gz /data; ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 6"
+      "set -euo pipefail; cd /home/ubuntu; sudo tar -h czf automation-full-\$(date +%F-%H%M).tar.gz automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf /backup/automation-db-\$(date +%F-%H%M).tar.gz /data; ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 6"
     ;;
   dr-backup)
     ts="$(date +%F-%H%M%S)"
@@ -148,7 +149,7 @@ case "${action}" in
 
     # SC2029: remote_cfg/remote_db are intentionally expanded client-side (desired behavior)
     # shellcheck disable=SC2029
-    ssh "${VM_HOST}" "set -euo pipefail; cd /home/ubuntu; sudo tar czf ${remote_cfg} automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf ${remote_db} /data; ls -lh ${remote_cfg} ${remote_db}; sha256sum ${remote_cfg} ${remote_db}"
+    ssh "${VM_HOST}" "set -euo pipefail; cd /home/ubuntu; sudo tar -h czf ${remote_cfg} automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf ${remote_db} /data; ls -lh ${remote_cfg} ${remote_db}; sha256sum ${remote_cfg} ${remote_db}"
 
     rsync -avz "${VM_HOST}:${remote_cfg}" "${local_cfg}"
     rsync -avz "${VM_HOST}:${remote_db}" "${local_db}"

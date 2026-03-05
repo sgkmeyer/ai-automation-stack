@@ -82,7 +82,7 @@ curl -I https://portainer.satoic.com
 ```
 Expected:
 - `n8n.satoic.com`: app-native auth flow
-- `openclaw.satoic.com`: `401` before basic auth
+- `openclaw.satoic.com`: `200` (gateway token auth flow)
 - `portainer.satoic.com`: `401` before basic auth
 
 ## Backup
@@ -90,6 +90,11 @@ Expected:
 ```bash
 cd /home/ubuntu
 sudo tar czf automation-full-$(date +%F-%H%M).tar.gz automation
+```
+Note:
+- If `/home/ubuntu/automation` is a symlink (current setup), use `tar -h`:
+```bash
+sudo tar -h czf automation-full-$(date +%F-%H%M).tar.gz automation
 ```
 
 ### Postgres volume backup
@@ -120,6 +125,9 @@ cd /Users/sgkmeyer/ai-automation-stack
 ./scripts/sync-from-vm.sh
 ./scripts/sync-to-vm.sh
 ```
+Notes:
+- `sync-to-vm.sh` now runs a `--dry-run` preview and asks for confirmation before applying `--delete`.
+- Use `./scripts/sync-to-vm.sh --yes` only in trusted automation contexts.
 
 ## GitOps Deployment (Preferred)
 Goal: make the VM pull from GitHub and apply the stack from the repo checkout (single source of truth).
@@ -132,6 +140,7 @@ Goal: make the VM pull from GitHub and apply the stack from the repo checkout (s
    - `/home/ubuntu/automation/.env`
    - `/home/ubuntu/automation/openclaw/config.json`
    - other Openclaw runtime folders (`credentials/`, `telegram/`, etc.)
+4. Ensure GitHub Actions secret `VM_SSH_KNOWN_HOSTS` is set with the VM host key line(s).
 
 ### Deploy
 From laptop:

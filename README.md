@@ -19,7 +19,7 @@ This repository is the operational source of truth for the Satoic automation sta
 ## Repository Layout
 - `/Users/sgkmeyer/ai-automation-stack/automation` runtime stack files mirrored from VM
 - `/Users/sgkmeyer/ai-automation-stack/ops/runbooks.md` operational procedures
-- `/Users/sgkmeyer/ai-automation-stack/ops/SESSION-2026-02-19.md` latest session handoff summary
+- `/Users/sgkmeyer/ai-automation-stack/ops/SESSION-2026-03-05.md` latest session handoff summary
 - `/Users/sgkmeyer/ai-automation-stack/ops/SESSION-TEMPLATE.md` handoff template for new sessions
 - `/Users/sgkmeyer/ai-automation-stack/scripts` sync/deploy utility scripts
 - `/Users/sgkmeyer/ai-automation-stack/sql` schema scripts
@@ -52,7 +52,7 @@ docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
 
 ## Current Auth Model
 - `n8n.satoic.com`: n8n native app authentication
-- `openclaw.satoic.com`: Caddy basic auth + Openclaw gateway token
+- `openclaw.satoic.com`: Openclaw gateway token auth (no Caddy basic auth)
 - `portainer.satoic.com`: Caddy basic auth + Portainer native admin auth
 
 ## Notes

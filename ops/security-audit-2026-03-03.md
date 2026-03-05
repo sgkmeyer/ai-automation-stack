@@ -13,16 +13,19 @@
 **Doctor warning:** Telegram groupPolicy=allowlist but groupAllowFrom empty — all group messages dropped. Intentional (TAR manages Telegram config).
 
 ## Dev (v2026.3.1)
-**Summary: 2 critical · 1 warn · 3 info**
+**Initial summary: 2 critical · 1 warn · 3 info**
 
 | Severity | Finding | Status |
 |----------|---------|--------|
-| CRITICAL | `gateway.control_ui.allowed_origins_required` — controlUi.allowedOrigins empty | **Fix needed** |
-| CRITICAL | `fs.config.perms_world_readable` — config.json mode=644 | **Fix needed** (read-only mount) |
+| CRITICAL | `gateway.control_ui.allowed_origins_required` — controlUi.allowedOrigins empty | **Fixed 2026-03-03** |
+| CRITICAL | `fs.config.perms_world_readable` — config.json mode=644 | **Fixed 2026-03-03** (read-only mount) |
 | WARN | `browser.remote_cdp_http` — CDP uses HTTP (172.31.0.10:9222) | Acceptable: internal Docker network only |
 | INFO | (same 3 as production) | Expected |
 
 ## Actions Taken
-- [ ] Fix dev controlUi.allowedOrigins
-- [ ] Fix dev config.json permissions
-- [ ] CDP HTTP warning accepted (internal network, no fix needed)
+- [x] Fix dev controlUi.allowedOrigins
+- [x] Fix dev config.json permissions
+- [x] CDP HTTP warning accepted (internal network, no fix needed)
+
+## Post-Fix Dev Summary (2026-03-03)
+**0 critical · 1 warn · 3 info**

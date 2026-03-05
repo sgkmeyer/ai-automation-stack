@@ -26,9 +26,20 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keygen -l -f ~/.ssh/id_rsa
 
+      - name: Configure SSH known_hosts
+        env:
+          VM_SSH_KNOWN_HOSTS: ${{ secrets.VM_SSH_KNOWN_HOSTS }}
+        run: |
+          if [[ -z "${VM_SSH_KNOWN_HOSTS}" ]]; then
+            echo "ERROR: Missing VM_SSH_KNOWN_HOSTS secret." >&2
+            exit 1
+          fi
+          printf '%s\n' "${VM_SSH_KNOWN_HOSTS}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
       - name: Deploy via GitOps
         run: |
-          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=15 \
+          ssh -o StrictHostKeyChecking=yes -o UserKnownHostsFile=~/.ssh/known_hosts -o ConnectTimeout=15 \
             ubuntu@${{ secrets.VM_TAILSCALE_HOST }} \
             '/home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh'
 
