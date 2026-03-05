@@ -24,13 +24,25 @@ jobs:
 
       - name: Configure SSH known_hosts
         env:
+          VM_TAILSCALE_HOST: ${{ secrets.VM_TAILSCALE_HOST }}
           VM_SSH_KNOWN_HOSTS: ${{ secrets.VM_SSH_KNOWN_HOSTS }}
         run: |
-          if [[ -z "${VM_SSH_KNOWN_HOSTS}" ]]; then
-            echo "ERROR: Missing VM_SSH_KNOWN_HOSTS secret." >&2
+          if [[ -z "${VM_TAILSCALE_HOST}" ]]; then
+            echo "ERROR: Missing VM_TAILSCALE_HOST secret." >&2
             exit 1
           fi
-          printf '%s\n' "${VM_SSH_KNOWN_HOSTS}" > ~/.ssh/known_hosts
+          : > ~/.ssh/known_hosts
+          # Prefer pinned host keys from secret when available.
+          if [[ -n "${VM_SSH_KNOWN_HOSTS}" ]]; then
+            printf '%s\n' "${VM_SSH_KNOWN_HOSTS}" >> ~/.ssh/known_hosts
+          fi
+          # Always add live host keys for the current VM endpoint after Tailscale is connected.
+          ssh-keyscan -H "${VM_TAILSCALE_HOST}" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan "${VM_TAILSCALE_HOST}" >> ~/.ssh/known_hosts 2>/dev/null
+          if [[ ! -s ~/.ssh/known_hosts ]]; then
+            echo "ERROR: Unable to populate ~/.ssh/known_hosts for ${VM_TAILSCALE_HOST}." >&2
+            exit 1
+          fi
           chmod 600 ~/.ssh/known_hosts
 
       - name: Deploy dev stack via GitOps
