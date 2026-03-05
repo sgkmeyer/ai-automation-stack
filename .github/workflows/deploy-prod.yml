@@ -39,8 +39,11 @@ jobs:
 
       - name: Deploy via GitOps
         run: |
-          VM_HOST="${{ secrets.VM_TAILSCALE_HOST }}"
-          VM_HOST="${VM_HOST:-100.82.169.113}"
+          VM_HOST_RAW="${{ secrets.VM_TAILSCALE_HOST }}"
+          VM_HOST="$(printf '%s' "${VM_HOST_RAW}" | tr -d '[:space:]')"
+          if [[ -z "${VM_HOST}" || ! "${VM_HOST}" =~ ^[A-Za-z0-9.-]+$ ]]; then
+            VM_HOST="100.82.169.113"
+          fi
           echo "Deploy target: ${VM_HOST}"
           ssh -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=~/.ssh/known_hosts -o ConnectTimeout=15 \
             ubuntu@"${VM_HOST}" \
