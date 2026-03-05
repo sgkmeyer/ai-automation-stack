@@ -35,8 +35,11 @@ jobs:
 
       - name: Deploy dev stack via GitOps
         run: |
+          VM_HOST="${{ secrets.VM_TAILSCALE_HOST }}"
+          VM_HOST="${VM_HOST:-100.82.169.113}"
+          echo "Deploy target: ${VM_HOST}"
           ssh -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=~/.ssh/known_hosts -o ConnectTimeout=15 \
-            ubuntu@${{ secrets.VM_TAILSCALE_HOST }} \
+            ubuntu@"${VM_HOST}" \
             '/home/ubuntu/ai-automation-stack/scripts/gitops-deploy-dev.sh'
 
   smoke-test:
@@ -52,8 +55,10 @@ jobs:
 
       - name: Check dev n8n via Tailscale
         run: |
+          VM_HOST="${{ secrets.VM_TAILSCALE_HOST }}"
+          VM_HOST="${VM_HOST:-100.82.169.113}"
           code=$(curl -sf -o /dev/null -w "%{http_code}" \
-            http://${{ secrets.VM_TAILSCALE_HOST }}:5679 || true)
+            "http://${VM_HOST}:5679" || true)
           if [[ "$code" == "200" ]]; then
             echo "OK  dev n8n -> $code"
           else

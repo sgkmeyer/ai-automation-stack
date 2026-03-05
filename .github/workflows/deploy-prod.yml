@@ -39,8 +39,11 @@ jobs:
 
       - name: Deploy via GitOps
         run: |
+          VM_HOST="${{ secrets.VM_TAILSCALE_HOST }}"
+          VM_HOST="${VM_HOST:-100.82.169.113}"
+          echo "Deploy target: ${VM_HOST}"
           ssh -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=~/.ssh/known_hosts -o ConnectTimeout=15 \
-            ubuntu@${{ secrets.VM_TAILSCALE_HOST }} \
+            ubuntu@"${VM_HOST}" \
             '/home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh'
 
   smoke-test:
