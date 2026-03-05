@@ -109,7 +109,7 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 - **SSH key rotation due ~2026-03-20** — rotate `satoic_operator` and `satoic_ci` (see SSH Key Inventory above)
 - **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
 - **Tailscale GitHub Action authkey deprecation warning** — migrate to OAuth client (`tailscale/github-action` warning active)
-- **Dev stack running** — Openclaw v2026.3.2 validated on dev (2026-03-05); pending/ready for production merge
+- **Dev stack running** — Openclaw v2026.3.2 validated on dev (2026-03-05)
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json`; propagated to all n8n services (2026-02-23)
 - **Openclaw config schema (v2026.2.26+)** — `trustedProxies` and `controlUi` inside `gateway` section; `gateway.auth.rateLimit` uses `maxAttempts/windowMs/lockoutMs/exemptLoopback` (not `enabled/window/maxFailures`)
