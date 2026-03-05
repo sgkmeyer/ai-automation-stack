@@ -25,6 +25,7 @@ Host satoic-production
 ### Dev stack access (post-Tailscale)
 - Dev n8n UI: `http://100.82.169.113:5679`
 - Full Mac-side backup: `./scripts/backup.sh` (SSH + rsync + manifest)
+- Dev lane runs with Caddy scaled to `0` to avoid host port conflicts (`80/443`) with production Caddy.
 
 ## Core Operations
 ### Start or update stack
@@ -166,6 +167,11 @@ Notes:
 - Actions are restricted to an allowlist to reduce accidental destructive changes.
 - For non-interactive runs, pass `--yes` (only for trusted contexts).
 - `dr-backup` creates VM archives, copies them to local `.dr-backups/`, and writes `ops/dr-manifests/dr-backup-*.md`.
+- `deploy-dev` is safe against Caddy port collisions (runs dev compose with `--scale caddy=0`).
+
+### GitHub Actions Notes
+- `Deploy to Dev` / `Deploy to Production` currently use Tailscale authkey mode and may show a deprecation warning.
+- Planned cleanup: migrate `tailscale/github-action` to OAuth client credentials.
 
 ## Session Handoff Workflow
 At end of each work session:

@@ -61,6 +61,9 @@
 - [x] n8n hardening: disabled `CODE_ENABLE_PROCESS_ENV_ACCESS` on n8n, worker, webhook (2026-03-05)
 - [x] n8n image pinning: `n8nio/n8n:2.9.2` (2026-03-05)
 - [x] Emergency rsync hardening: `sync-to-vm.sh` now does dry-run + confirmation before `--delete` (2026-03-05)
+- [x] Dev CI deploy stabilized: sanitized `VM_TAILSCALE_HOST` + default fallback IP + `accept-new` host key policy (2026-03-05)
+- [x] Dev GitOps lane fixed: force `--scale caddy=0` to avoid port 80/443 conflict with production Caddy (2026-03-05)
+- [x] Hardening rollout validated end-to-end: dev deploy+smoke and prod deploy+smoke green (2026-03-05)
 
 ---
 
@@ -104,7 +107,7 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 
 - **SSH key rotation due ~2026-03-20** — rotate `satoic_operator` and `satoic_ci` (see SSH Key Inventory above)
 - **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
-- **Tailscale authkey** — rotated to new reusable/ephemeral key (expires 2026-05-21); OAuth migration deferred until May
+- **Tailscale GitHub Action authkey deprecation warning** — migrate to OAuth client (`tailscale/github-action` warning active)
 - **Dev stack running** — Openclaw v2026.3.1 validated on dev (2026-03-03); merged to main and deployed to production
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json`; propagated to all n8n services (2026-02-23)
