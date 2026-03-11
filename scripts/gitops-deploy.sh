@@ -12,6 +12,14 @@ if ! git remote get-url origin >/dev/null 2>&1; then
 fi
 
 git fetch origin
+
+# Stash any runtime changes (e.g., Openclaw workspace files modified by TAR)
+# so git pull doesn't fail on conflicts.
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  printf "Stashing local runtime changes...\n"
+  git stash push -m "gitops-deploy auto-stash $(date +%F-%H%M%S)"
+fi
+
 # Switch to desired branch and pull latest
 if git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
   git checkout "${BRANCH}"
@@ -20,6 +28,16 @@ else
 fi
 
 git pull origin "${BRANCH}"
+
+# Re-apply stashed runtime changes (if any), preferring incoming git changes on conflict
+if git stash list | head -1 | grep -q "gitops-deploy auto-stash"; then
+  printf "Re-applying stashed runtime changes...\n"
+  git stash pop || {
+    printf "Warning: stash pop had conflicts, dropping stash (git changes take precedence).\n"
+    git checkout -- .
+    git stash drop || true
+  }
+fi
 
 # Deploy the automation stack
 cd automation
