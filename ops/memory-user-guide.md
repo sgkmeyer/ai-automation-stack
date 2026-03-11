@@ -53,6 +53,83 @@ So the user experience is:
 - Obsidian: note-first, then ingest
 - Krisp: transcript-first, then ingest
 
+## Executive Coaching Pattern
+
+If your goal is a true second-brain or executive-coaching system, use all three
+memory shapes together:
+
+- **Journal history** in Obsidian
+- **Current truth** in the context register
+- **Important transitions** as durable memory events
+
+This matters because each answers a different question:
+
+- journal: "what was happening over time?"
+- context: "what is true right now?"
+- durable event memory: "what important thing changed?"
+
+### Recommended Structure
+
+Use **Obsidian journal notes** for:
+
+- daily or near-daily reflection
+- work context
+- energy and motivation patterns
+- goals, blockers, and decisions
+- relationship and life events
+
+Use **context** for:
+
+- current role
+- current priorities
+- current job search state
+- temporary operating assumptions
+- "for now" preferences
+
+Use **durable memory writes** for:
+
+- job changes
+- major decisions
+- commitments
+- meaningful relationship updates
+- important discoveries you want to recall later
+
+### Example: Job Change
+
+If your role changes, the best pattern is:
+
+1. Update context with the new current truth.
+2. Log a durable memory entry that the transition happened.
+3. Capture the broader narrative in your journal.
+
+That gives future LLM partners:
+
+- the current state
+- the historical event
+- the surrounding narrative and reasoning
+
+### Why This Is Better Than One Store
+
+If you only keep the latest state:
+
+- you lose the story of how things changed
+
+If you only keep append-only history:
+
+- recall may surface stale facts without a clear "current truth"
+
+If you use all three together:
+
+- you get chronology
+- you get current accuracy
+- you get better coaching and synthesis over time
+
+### Recommended Cadence
+
+- **During the day:** use OpenClaw for quick memory capture and recall
+- **Daily or several times per week:** maintain an ongoing Obsidian journal
+- **When something materially changes:** update context and log the transition
+
 ## OpenClaw Daily Use
 
 OpenClaw is the main daily interface.
