@@ -42,3 +42,13 @@ MEMORY_WEBHOOK_BASE_URL=http://100.82.169.113:5679/webhook/memory \
 OpenClaw should treat workspace files as local working memory, not the canonical
 long-term database. Durable writes and recalls should route through the shared
 memory webhooks so other front ends can use the same memory layer.
+
+The OpenClaw workspace wrapper is:
+
+```bash
+./bin/memory
+```
+
+That wrapper delegates to the repo-managed CLI at
+`/home/node/repo/scripts/memory-webhook.sh` and defaults to the production
+memory webhook base URL.

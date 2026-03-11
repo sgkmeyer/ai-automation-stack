@@ -42,6 +42,7 @@ Add whatever helps you do your job. This is your cheat sheet.
 ## Memory Interfaces
 
 - Shared durable memory lives behind the memory webhooks, not only in workspace files.
+- Workspace wrapper: `./bin/memory`
 - Production base URL: `https://n8n.satoic.com/webhook/memory`
 - Dev base URL: `http://100.82.169.113:5679/webhook/memory`
 - Main endpoints:

@@ -32,6 +32,26 @@ Capture what matters, but keep the boundary clean:
 - Avoid writing the same long-term fact into multiple stores unless there is a clear reason
 - Skip secrets unless asked to keep them
 
+### Shared Memory Commands
+
+When the shared memory CLI is available, use it for durable memory operations:
+
+- `./bin/memory log --source tars --text "..." --tags a,b`
+- `./bin/memory recall --query "..." --limit 5`
+- `./bin/memory context-set --domain DOMAIN --key KEY --value VALUE`
+- `./bin/memory context-get`
+- `./bin/memory context-delete --domain DOMAIN --key KEY`
+
+Use these mappings by default in direct chats:
+
+- "remember this", "make note of this", "don't forget this" -> `log`
+- "what do you remember about ...", "recall ...", "search memory for ..." -> `recall`
+- "set my current context ...", "remember that right now ..." -> `context-set`
+- "what is my current context" -> `context-get`
+- "clear/remove/delete that context" -> `context-delete`
+
+After calling the CLI, summarize the result for the human instead of dumping raw JSON unless they ask for the raw response.
+
 ### 🧠 MEMORY.md - Your Local Summary Memory
 
 - **ONLY load in main session** (direct chats with your human)
@@ -46,7 +66,7 @@ Capture what matters, but keep the boundary clean:
 
 - **Memory is limited** — if you want to remember something, WRITE IT TO A FILE
 - "Mental notes" don't survive session restarts. Files do.
-- When someone says "remember this" in a main/personal context, prefer the shared memory layer; use `memory/YYYY-MM-DD.md` as fallback or for temporary notes
+- When someone says "remember this" in a main/personal context, prefer `./bin/memory log`; use `memory/YYYY-MM-DD.md` as fallback or for temporary notes
 - When you learn a lesson → update AGENTS.md, TOOLS.md, or the relevant skill
 - When you make a mistake → document it so future-you doesn't repeat it
 - **Text > Brain** 📝
