@@ -66,10 +66,12 @@ docker compose --env-file automation/.env \
   python -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8100/health').read().decode())"
 ```
 
-7. Run the smoke test against dev:
+7. Run the smoke test against the VM-backed dev lane:
 
 ```bash
-MEMORY_STACK=dev ./scripts/test-memory-api.sh "$MEMORY_API_TOKEN"
+MEMORY_STACK=dev \
+MEMORY_REMOTE_HOST=satoic-production \
+./scripts/test-memory-api.sh "$MEMORY_API_TOKEN"
 ```
 
 ## Acceptance Criteria

@@ -1,4 +1,5 @@
 {
+  "id": "mem01logcmd",
   "name": "MEM-01 - Memory Log Command",
   "active": false,
   "meta": {
@@ -6,6 +7,10 @@
     "owner": "TAR",
     "status": "draft"
   },
+  "versionId": "eaf2d4ea-373a-418f-96ac-88aa6a7cb8b3",
+  "pinData": {},
+  "tags": [],
+  "triggerCount": 0,
   "settings": {
     "executionOrder": "v1"
   },

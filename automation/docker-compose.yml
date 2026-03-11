@@ -160,6 +160,7 @@ services:
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - OPENCLAW_HOOK_TOKEN=${OPENCLAW_HOOK_TOKEN}
       - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - MEMORY_API_TOKEN=${MEMORY_API_TOKEN}
 
     volumes:
       # Stores workflows + config locally
@@ -214,6 +215,7 @@ services:
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - OPENCLAW_HOOK_TOKEN=${OPENCLAW_HOOK_TOKEN}
       - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - MEMORY_API_TOKEN=${MEMORY_API_TOKEN}
 
     volumes:
       - n8n_data:/home/node/.n8n
@@ -271,6 +273,7 @@ services:
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - OPENCLAW_HOOK_TOKEN=${OPENCLAW_HOOK_TOKEN}
       - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - MEMORY_API_TOKEN=${MEMORY_API_TOKEN}
 
     volumes:
       - n8n_data:/home/node/.n8n
