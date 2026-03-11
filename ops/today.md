@@ -31,7 +31,7 @@
 
 ## Active Priorities (next session)
 
-- [ ] Update `gitops-deploy.sh` to restart Caddy when Caddyfile changes (bind-mount not auto-detected)
+- [x] Update `gitops-deploy.sh` to restart Caddy when Caddyfile changes — already implemented via `caddy reload` (line 34)
 - [ ] Research n8n v2 features — "Personal Agents" and "Workflow Agents" + how TARS could integrate
 - [x] Fix `vm-safe.sh dr-backup` to use `tar -h` for symlink following (2026-03-05)
 - [x] Fix `vm-safe.sh` usage text to include `n8n-task-runner` and `n8n-webhook` (2026-03-05)
@@ -80,7 +80,7 @@ SSH → VM backup → rsync artifacts to `.dr-backups/` locally → write manife
 **VM-local fallback** (if Mac-side scripts unavailable — e.g., SSH session directly on VM):
 ```bash
 cd /home/ubuntu
-sudo tar -h czf automation-full-$(date +%F-%H%M).tar.gz automation
+sudo tar -hczf automation-full-$(date +%F-%H%M).tar.gz automation
 docker run --rm \
   -v automation_db_storage:/data \
   -v /home/ubuntu:/backup \
@@ -108,7 +108,7 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 
 - **SSH key rotation due ~2026-03-20** — rotate `satoic_operator` and `satoic_ci` (see SSH Key Inventory above)
 - **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
-- **Tailscale GitHub Action authkey deprecation warning** — migrate to OAuth client (`tailscale/github-action` warning active)
+- **Tailscale GitHub Action authkey deprecation warning** — OAuth clients require a paid plan (not available on Free); authkey still works, revisit if plan upgraded or Tailscale forces migration
 - **Dev stack running** — Openclaw v2026.3.2 validated on dev (2026-03-05)
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json`; propagated to all n8n services (2026-02-23)

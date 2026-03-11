@@ -124,7 +124,7 @@ case "${action}" in
   backup)
     run_vm_cmd \
       "Create config + DB backups on VM" \
-      "set -euo pipefail; cd /home/ubuntu; sudo tar -h czf automation-full-\$(date +%F-%H%M).tar.gz automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf /backup/automation-db-\$(date +%F-%H%M).tar.gz /data; ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 6"
+      "set -euo pipefail; cd /home/ubuntu; sudo tar -hczf automation-full-\$(date +%F-%H%M).tar.gz automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf /backup/automation-db-\$(date +%F-%H%M).tar.gz /data; ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 6"
     ;;
   dr-backup)
     ts="$(date +%F-%H%M%S)"
@@ -149,7 +149,7 @@ case "${action}" in
 
     # SC2029: remote_cfg/remote_db are intentionally expanded client-side (desired behavior)
     # shellcheck disable=SC2029
-    ssh "${VM_HOST}" "set -euo pipefail; cd /home/ubuntu; sudo tar -h czf ${remote_cfg} automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf ${remote_db} /data; ls -lh ${remote_cfg} ${remote_db}; sha256sum ${remote_cfg} ${remote_db}"
+    ssh "${VM_HOST}" "set -euo pipefail; cd /home/ubuntu; sudo tar -hczf ${remote_cfg} automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf /backup/$(basename "${remote_db}") /data; ls -lh ${remote_cfg} ${remote_db}; sha256sum ${remote_cfg} ${remote_db}"
 
     rsync -avz "${VM_HOST}:${remote_cfg}" "${local_cfg}"
     rsync -avz "${VM_HOST}:${remote_db}" "${local_db}"

@@ -109,7 +109,7 @@ fi
 if [[ "${deploy_mode}" == "gitops" ]]; then
   if confirm "Take backups on VM before applying (recommended for config/db-impacting changes)?" ; then
     say "Running backups on VM..."
-    ssh satoic-production 'set -euo pipefail; cd /home/ubuntu; sudo tar -h czf automation-full-$(date +%F-%H%M).tar.gz automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf /backup/automation-db-$(date +%F-%H%M).tar.gz /data; ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 4'
+    ssh satoic-production 'set -euo pipefail; cd /home/ubuntu; sudo tar -hczf automation-full-$(date +%F-%H%M).tar.gz automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf /backup/automation-db-$(date +%F-%H%M).tar.gz /data; ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 4'
     hr
   fi
 
@@ -126,7 +126,7 @@ if [[ "${deploy_mode}" == "gitops" ]]; then
 elif [[ "${deploy_mode}" == "rsync" ]]; then
   if confirm "Take backups on VM before applying (recommended for config/db-impacting changes)?" ; then
     say "Running backups on VM..."
-    ssh satoic-production 'set -euo pipefail; cd /home/ubuntu; sudo tar -h czf automation-full-$(date +%F-%H%M).tar.gz automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf /backup/automation-db-$(date +%F-%H%M).tar.gz /data; ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 4'
+    ssh satoic-production 'set -euo pipefail; cd /home/ubuntu; sudo tar -hczf automation-full-$(date +%F-%H%M).tar.gz automation; docker run --rm -v automation_db_storage:/data -v /home/ubuntu:/backup busybox tar czf /backup/automation-db-$(date +%F-%H%M).tar.gz /data; ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 4'
     hr
   fi
 
