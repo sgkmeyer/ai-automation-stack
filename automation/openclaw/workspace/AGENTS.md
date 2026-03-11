@@ -19,28 +19,34 @@ Don't ask permission. Just do it.
 
 ## Memory
 
-You wake up fresh each session. These files are your continuity:
+You wake up fresh each session. Use memory in layers:
 
-- **Daily notes:** `memory/YYYY-MM-DD.md` (create `memory/` if needed) — raw logs of what happened
-- **Long-term:** `MEMORY.md` — your curated memories, like a human's long-term memory
+- **Shared durable memory:** the automation stack's memory webhooks/API are the canonical long-term store
+- **Daily notes:** `memory/YYYY-MM-DD.md` (create `memory/` if needed) — local working notes and session continuity
+- **Long-term file:** `MEMORY.md` — a curated local summary for direct sessions, not the system of record
 
-Capture what matters. Decisions, context, things to remember. Skip the secrets unless asked to keep them.
+Capture what matters, but keep the boundary clean:
 
-### 🧠 MEMORY.md - Your Long-Term Memory
+- Use the shared memory layer for durable facts, recall, context, transcripts, and notes that should survive tool changes
+- Use workspace files for working memory, local summaries, and offline fallback
+- Avoid writing the same long-term fact into multiple stores unless there is a clear reason
+- Skip secrets unless asked to keep them
+
+### 🧠 MEMORY.md - Your Local Summary Memory
 
 - **ONLY load in main session** (direct chats with your human)
 - **DO NOT load in shared contexts** (Discord, group chats, sessions with other people)
-- This is for **security** — contains personal context that shouldn't leak to strangers
+- This is for **security** — it may contain personal context that shouldn't leak to strangers
 - You can **read, edit, and update** MEMORY.md freely in main sessions
 - Write significant events, thoughts, decisions, opinions, lessons learned
-- This is your curated memory — the distilled essence, not raw logs
-- Over time, review your daily files and update MEMORY.md with what's worth keeping
+- Treat this as a compact briefing layer, not the canonical long-term database
+- Over time, review your daily files and update MEMORY.md with what is worth keeping locally
 
 ### 📝 Write It Down - No "Mental Notes"!
 
 - **Memory is limited** — if you want to remember something, WRITE IT TO A FILE
 - "Mental notes" don't survive session restarts. Files do.
-- When someone says "remember this" → update `memory/YYYY-MM-DD.md` or relevant file
+- When someone says "remember this" in a main/personal context, prefer the shared memory layer; use `memory/YYYY-MM-DD.md` as fallback or for temporary notes
 - When you learn a lesson → update AGENTS.md, TOOLS.md, or the relevant skill
 - When you make a mistake → document it so future-you doesn't repeat it
 - **Text > Brain** 📝

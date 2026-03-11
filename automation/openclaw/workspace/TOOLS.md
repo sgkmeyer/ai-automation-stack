@@ -38,3 +38,16 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 ---
 
 Add whatever helps you do your job. This is your cheat sheet.
+
+## Memory Interfaces
+
+- Shared durable memory lives behind the memory webhooks, not only in workspace files.
+- Production base URL: `https://n8n.satoic.com/webhook/memory`
+- Dev base URL: `http://100.82.169.113:5679/webhook/memory`
+- Main endpoints:
+  - `POST /log`
+  - `POST /recall`
+  - `POST /context`
+  - `POST /ingest/document`
+  - `POST /ingest/transcript`
+- Use shared memory for durable facts, recall, and context. Use workspace files for working notes and local summaries.
