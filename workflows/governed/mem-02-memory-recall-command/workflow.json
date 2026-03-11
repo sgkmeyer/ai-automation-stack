@@ -20,6 +20,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
+      "webhookId": "0ea9e8f0-e5bf-4c70-86ec-90db28cbebf0",
       "position": [260, 300],
       "parameters": {
         "httpMethod": "POST",
@@ -28,27 +29,17 @@
       }
     },
     {
-      "id": "Normalize Request",
-      "name": "Normalize Request",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [520, 300],
-      "parameters": {
-        "jsCode": "const body = $json.body ?? $json;\nif (!body.query || !String(body.query).trim()) {\n  throw new Error('query is required');\n}\nreturn [{ json: {\n  query: String(body.query).trim(),\n  entity_name: body.entity_name ?? null,\n  entry_type: body.entry_type ?? null,\n  after: body.after ?? null,\n  before: body.before ?? null,\n  limit: body.limit ?? 5,\n  synthesize: body.synthesize ?? true\n}}];"
-      }
-    },
-    {
       "id": "Call memory-api",
       "name": "Call memory-api",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [800, 300],
+      "position": [680, 300],
       "parameters": {
         "method": "POST",
         "url": "http://memory-api:8100/recall",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ $json }}",
+        "jsonBody": "={{ { query: $json.body?.query ?? $json.query, entity_name: $json.body?.entity_name ?? $json.entity_name ?? null, entry_type: $json.body?.entry_type ?? $json.entry_type ?? null, after: $json.body?.after ?? $json.after ?? null, before: $json.body?.before ?? $json.before ?? null, limit: $json.body?.limit ?? $json.limit ?? 5, synthesize: $json.body?.synthesize ?? $json.synthesize ?? true } }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -57,25 +48,7 @@
               "value": "=Bearer {{$env.MEMORY_API_TOKEN}}"
             }
           ]
-        },
-        "options": {
-          "response": {
-            "response": {
-              "fullResponse": true
-            }
-          },
-          "neverError": true
         }
-      }
-    },
-    {
-      "id": "Format Response",
-      "name": "Format Response",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [1080, 300],
-      "parameters": {
-        "jsCode": "const statusCode = $json.statusCode ?? 500;\nconst payload = $json.body ?? {};\nif (statusCode >= 400) {\n  return [{ json: {\n    status: 'error',\n    reply_text: `Memory recall failed (${statusCode}): ${payload.detail ?? 'unknown error'}`,\n    error: payload\n  }}];\n}\nconst answer = payload.answer ?? 'No synthesized answer available.';\nconst reply = `${answer}\\n\\nResults: ${payload.total_found}`;\nreturn [{ json: {\n  status: 'ok',\n  ...payload,\n  reply_text: reply\n}}];"
       }
     },
     {
@@ -83,7 +56,7 @@
       "name": "Respond",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [1340, 300],
+      "position": [980, 300],
       "parameters": {
         "respondWith": "json",
         "responseBody": "={{ $json }}"
@@ -92,15 +65,9 @@
   ],
   "connections": {
     "Webhook": {
-      "main": [[{ "node": "Normalize Request", "type": "main", "index": 0 }]]
-    },
-    "Normalize Request": {
       "main": [[{ "node": "Call memory-api", "type": "main", "index": 0 }]]
     },
     "Call memory-api": {
-      "main": [[{ "node": "Format Response", "type": "main", "index": 0 }]]
-    },
-    "Format Response": {
       "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
     }
   }
