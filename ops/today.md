@@ -1,7 +1,7 @@
 # Today — Current Build State
 
 > Manually maintained. Update at the end of each session alongside the dated session log.
-> Last updated: 2026-03-10
+> Last updated: 2026-03-11
 
 ---
 
@@ -9,7 +9,7 @@
 
 **Production stack** (`automation` project on Oracle Free Tier VM):
 - All 11 services up: caddy, db, redis, n8n, n8n-worker, n8n-webhook, n8n-task-runner, openclaw, chromium, portainer, toolbox
-- **Stack versions (updated 2026-03-05):** n8n 2.9.2, Openclaw 2026.3.2, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
+- **Stack versions (updated 2026-03-11):** n8n 2.11.2, Openclaw 2026.3.8, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
 - Public endpoints:
   - `https://n8n.satoic.com` → 200 (app auth)
   - `https://openclaw.satoic.com` → 200 (gateway token auth only, no Caddy basic_auth)
@@ -31,6 +31,9 @@
 
 ## Active Priorities (next session)
 
+- [ ] Complete repo contract hardening for "Personal OS + Second Brain + Labs" and align docs to that model
+- [ ] Define the first narrow second-brain slice before implementing pgvector or ingestion workflows
+- [ ] Decide which current workflows are core personal OS capabilities vs labs
 - [x] Update `gitops-deploy.sh` to restart Caddy when Caddyfile changes — already implemented via `caddy reload` (line 34)
 - [ ] Research n8n v2 features — "Personal Agents" and "Workflow Agents" + how TARS could integrate
 - [x] Fix `vm-safe.sh dr-backup` to use `tar -h` for symlink following (2026-03-05)
@@ -65,6 +68,10 @@
 - [x] Dev GitOps lane fixed: force `--scale caddy=0` to avoid port 80/443 conflict with production Caddy (2026-03-05)
 - [x] Hardening rollout validated end-to-end: dev deploy+smoke and prod deploy+smoke green (2026-03-05)
 - [x] Openclaw upgraded v2026.3.1 → v2026.3.2; version pin updated in Dockerfile (2026-03-05)
+- [x] Openclaw upgraded v2026.3.2 → v2026.3.8; dev-validated, production deployed (2026-03-11)
+- [x] n8n upgraded 2.9.2 → 2.11.2; dev-validated, production deployed (2026-03-11)
+- [x] Openclaw UID ownership fix: explicit UID 1000 chown in gitops-deploy, vm-cron-backup, restore (2026-03-11)
+- [x] gitops-deploy-dev.sh: added stash/ownership handling parity with production deploy script (2026-03-11)
 - [x] First DR backup taken and verified (config 7MB + DB 14MB) (2026-03-10)
 - [x] `.env.example` created documenting all 13 required env vars (2026-03-10)
 - [x] Production Openclaw config synced to local (was 3 keys, now 51) (2026-03-10)
@@ -119,12 +126,12 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 - **SSH key rotation due ~2026-03-20** — rotate `satoic_operator` and `satoic_ci` (see SSH Key Inventory above)
 - **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
 - **Tailscale GitHub Action authkey deprecation warning** — OAuth clients require a paid plan (not available on Free); authkey still works, revisit if plan upgraded or Tailscale forces migration
-- **Dev stack running** — Openclaw v2026.3.2 validated on dev (2026-03-05)
+- **Dev stack running** — n8n 2.11.2 + Openclaw v2026.3.8 validated on dev (2026-03-11)
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json`; propagated to all n8n services (2026-02-23)
 - **Openclaw config schema (v2026.2.26+)** — `trustedProxies` and `controlUi` inside `gateway` section; `gateway.auth.rateLimit` uses `maxAttempts/windowMs/lockoutMs/exemptLoopback` (not `enabled/window/maxFailures`)
 - **Openclaw security audit baseline** — 0 critical on both dev/prod (2026-03-03); see `ops/security-audit-2026-03-03.md`
-- **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.3.2`
+- **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.3.8`
 - **Caddy bind-mount reload** — Caddyfile changes require explicit `docker compose restart caddy`; `docker compose up -d` does not detect bind-mount file changes
 - **Openclaw device pairing** — new browser platforms (e.g., iPhone) require approval from an already-paired session; pending devices visible in `openclaw/devices/pending.json`
 - **Openclaw basic_auth removed** — `openclaw.satoic.com` no longer uses Caddy basic_auth; gateway token (256-bit) is sole auth. Portainer still has basic_auth.
