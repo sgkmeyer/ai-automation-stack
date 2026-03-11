@@ -112,7 +112,7 @@ services:
   # those go to the worker container.
   #############################################
   n8n:
-    image: n8nio/n8n:2.9.2
+    image: n8nio/n8n:2.11.2
     restart: unless-stopped
 
     environment:
@@ -182,7 +182,7 @@ services:
   # happen here.
   #############################################
   n8n-worker:
-    image: n8nio/n8n:2.9.2
+    image: n8nio/n8n:2.11.2
     restart: unless-stopped
 
     command: ["worker"]
@@ -231,7 +231,7 @@ services:
   # Without this, webhooks silently fail.
   #############################################
   n8n-webhook:
-    image: n8nio/n8n:2.9.2
+    image: n8nio/n8n:2.11.2
     restart: unless-stopped
     command: ["webhook"]
 
