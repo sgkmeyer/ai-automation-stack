@@ -20,6 +20,7 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
+      "webhookId": "6f9867a0-e4ea-4b08-8c48-6a1506f07a4d",
       "position": [260, 300],
       "parameters": {
         "httpMethod": "POST",
