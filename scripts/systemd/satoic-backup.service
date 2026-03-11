@@ -1,0 +1,10 @@
+[Unit]
+Description=Satoic daily backup (config + DB)
+After=docker.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/home/ubuntu/ai-automation-stack/scripts/vm-cron-backup.sh
+StandardOutput=append:/home/ubuntu/backups/cron-backup.log
+StandardError=append:/home/ubuntu/backups/cron-backup.log

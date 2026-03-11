@@ -13,6 +13,12 @@ fi
 
 git fetch origin
 
+# Openclaw runtime files may be owned by the container's 'node' user,
+# which prevents git operations by 'ubuntu'. Fix ownership before pull.
+if [ -d automation/openclaw ]; then
+  sudo chown -R "$(id -u):$(id -g)" automation/openclaw 2>/dev/null || true
+fi
+
 # Stash any runtime changes (e.g., Openclaw workspace files modified by TAR)
 # so git pull doesn't fail on conflicts.
 if ! git diff --quiet || ! git diff --cached --quiet; then
