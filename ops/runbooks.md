@@ -86,30 +86,113 @@ Expected:
 - `openclaw.satoic.com`: `200` (gateway token auth flow)
 - `portainer.satoic.com`: `401` before basic auth
 
-## Backup
-### Config backup (full, includes protected files)
+## Backup & Recovery
+
+### What gets backed up
+
+| Archive | Contents | Why it matters |
+|---------|----------|----------------|
+| `automation-full-*.tar.gz` | `.env`, Caddyfile, compose files, Dockerfile, Openclaw config/credentials/telegram/devices | Secrets + app config (can't be recovered from git) |
+| `automation-db-*.tar.gz` | Postgres data volume (n8n workflows, encrypted credentials, leads table, execution history) | All application state |
+
+**Critical dependency:** n8n credentials (Gmail, Google Drive, HubSpot OAuth tokens) are encrypted
+in Postgres using `N8N_ENCRYPTION_KEY`. The DB backup is only useful if you also have the matching
+encryption key from `.env`. Both archives are needed for a full restore.
+
+### Automated backups (VM systemd timer)
+
+Runs daily at **03:00 UTC** via `satoic-backup.timer`.
+- Archives saved to `/home/ubuntu/backups/` on VM
+- Retention: 7 days (auto-pruned)
+- Log: `/home/ubuntu/backups/cron-backup.log`
+- Script: `scripts/vm-cron-backup.sh`
+
 ```bash
-cd /home/ubuntu
-sudo tar czf automation-full-$(date +%F-%H%M).tar.gz automation
-```
-Note:
-- If `/home/ubuntu/automation` is a symlink (current setup), use `tar -h`:
-```bash
-sudo tar -h czf automation-full-$(date +%F-%H%M).tar.gz automation
+# Check timer status
+sudo systemctl status satoic-backup.timer
+
+# View last run
+sudo systemctl status satoic-backup.service
+
+# View backup log
+cat /home/ubuntu/backups/cron-backup.log
+
+# Manual trigger
+sudo systemctl start satoic-backup.service
+
+# List backups
+ls -lh /home/ubuntu/backups/
 ```
 
-### Postgres volume backup
+### On-demand backup (from Mac)
+
+Full DR backup with local copy + manifest:
 ```bash
+./scripts/backup.sh
+# — or —
+./scripts/vm-safe.sh dr-backup
+```
+
+This SSHs to the VM, creates both archives, rsyncs them to `.dr-backups/` on your Mac,
+and writes a manifest to `ops/dr-manifests/`. **Always run from your Mac, never from the VM.**
+
+### Manual backup (on VM directly)
+
+If Mac is unavailable (e.g., SSH session directly on VM):
+```bash
+cd /home/ubuntu
+sudo tar -hczf automation-full-$(date +%F-%H%M).tar.gz automation
 docker run --rm \
   -v automation_db_storage:/data \
   -v /home/ubuntu:/backup \
   busybox tar czf /backup/automation-db-$(date +%F-%H%M).tar.gz /data
+ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 4
 ```
 
-### Verify backup artifacts
+### Restore to existing VM
+
 ```bash
-ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz
+sudo /home/ubuntu/ai-automation-stack/scripts/restore.sh \
+  /home/ubuntu/backups/automation-full-YYYY-MM-DD.tar.gz \
+  /home/ubuntu/backups/automation-db-YYYY-MM-DD.tar.gz
 ```
+
+This stops the stack, restores secrets/config + Postgres volume, then gives next steps.
+
+### Full disaster recovery (new VPS from scratch)
+
+If the VM is gone and you need to stand up a replacement:
+
+1. **Provision a new VM** (Ubuntu 22.04+, arm64 or amd64)
+2. **Copy bootstrap script** to the new VM and run it:
+   ```bash
+   scp scripts/bootstrap-vm.sh ubuntu@<new-vm-ip>:/tmp/
+   ssh ubuntu@<new-vm-ip> 'sudo bash /tmp/bootstrap-vm.sh'
+   ```
+3. **Copy DR backup archives** to the new VM:
+   ```bash
+   scp .dr-backups/automation-full-*.tar.gz .dr-backups/automation-db-*.tar.gz ubuntu@<new-vm-ip>:/home/ubuntu/backups/
+   ```
+4. **Run restore**:
+   ```bash
+   ssh ubuntu@<new-vm-ip>
+   sudo /home/ubuntu/ai-automation-stack/scripts/restore.sh \
+     /home/ubuntu/backups/automation-full-YYYY-MM-DD.tar.gz \
+     /home/ubuntu/backups/automation-db-YYYY-MM-DD.tar.gz
+   ```
+5. **Authenticate Tailscale**: `sudo tailscale up`
+6. **Deploy the stack**: `sudo -u ubuntu /home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh`
+7. **Update DNS** if the VM's public IP changed (point `*.satoic.com` to new IP)
+8. **Update GitHub secrets** if the VM's Tailscale IP or host keys changed:
+   - `VM_TAILSCALE_HOST`
+   - `VM_SSH_KNOWN_HOSTS`
+   - `VM_SSH_PRIVATE_KEY` (if new CI key generated)
+9. **Verify endpoints**:
+   ```bash
+   curl -I https://n8n.satoic.com
+   curl -I https://openclaw.satoic.com
+   curl -I https://portainer.satoic.com
+   ```
 
 ### Runtime log snapshots
 ```bash
