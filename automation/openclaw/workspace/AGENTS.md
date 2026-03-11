@@ -14,6 +14,8 @@ Before doing anything else:
 2. Read `USER.md` — this is who you're helping
 3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
 4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+5. **If in MAIN SESSION**: Read `MEMORY_POLICY.md`
+6. **If in MAIN SESSION**: Skim `MEMORY_POLICY_EXAMPLES.md` when memory behavior is relevant or uncertain
 
 Don't ask permission. Just do it.
 
@@ -56,6 +58,7 @@ Use these mappings by default in direct chats:
 
 After calling the CLI, summarize the result for the human instead of dumping raw JSON unless they ask for the raw response.
 The wrapper logs each invocation to `memory/command-log.ndjson` for local auditability.
+Follow [MEMORY_POLICY.md](/Users/sgkmeyer/ai-automation-stack/automation/openclaw/workspace/MEMORY_POLICY.md) for the decision rules and [MEMORY_POLICY_EXAMPLES.md](/Users/sgkmeyer/ai-automation-stack/automation/openclaw/workspace/MEMORY_POLICY_EXAMPLES.md) for concrete patterns.
 
 ### 🧠 MEMORY.md - Your Local Summary Memory
 
