@@ -249,15 +249,29 @@ That means the same note can be re-ingested safely:
 
 ### Current End-User Workflow
 
-If automatic Obsidian sync is not wired yet, use manual ingest.
+Current recommended path:
+
+1. mirror the Mac vault to the VM
+2. ingest selected notes from the VM mirror
+
+Example sync:
+
+```bash
+scripts/sync-obsidian-vault.sh
+```
+
+Then ingest the note from the mirrored path:
 
 Example:
 
 ```bash
-scripts/memory-webhook.sh document \
-  --source-ref Daily/2026-03-11.md \
-  --file ~/vault/Daily/2026-03-11.md \
-  --tags daily-note,networking
+ssh satoic-production '
+  cd /home/ubuntu/ai-automation-stack &&
+  scripts/memory-webhook.sh document \
+    --source-ref Daily/2026-03-11.md \
+    --file /home/ubuntu/obsidian-vault/Daily/2026-03-11.md \
+    --tags daily-note,networking
+'
 ```
 
 Expected result:

@@ -21,6 +21,11 @@
 - `public.leads` table live (unique on `domain`)
 - JS-01 workflow **active** (id: `chwneHrHVCQON462`) — full pipeline wired by TAR
 - `OPENCLAW_GATEWAY_TOKEN` available in all n8n services (n8n, n8n-worker, n8n-webhook)
+- Shared durable memory live in production:
+  - `memory-api` healthy
+  - public memory webhooks live at `https://n8n.satoic.com/webhook/memory`
+  - Openclaw memory wrappers/policy deployed
+  - document + transcript ingest routes live
 
 **VM layout:**
 - Repo: `/home/ubuntu/ai-automation-stack` (cloned from GitHub)
@@ -31,9 +36,10 @@
 
 ## Active Priorities (next session)
 
-- [ ] Complete repo contract hardening for "Personal OS + Second Brain + Labs" and align docs to that model
-- [ ] Define the first narrow second-brain slice before implementing pgvector or ingestion workflows
-- [ ] Decide which current workflows are core personal OS capabilities vs labs
+- [ ] Wire Krisp transcript output into `/webhook/memory/ingest/transcript`
+- [ ] Generate end-user UAT scripts for memory through Openclaw, Obsidian, and Krisp
+- [ ] Create first real Obsidian seed notes and ingest them into memory
+- [ ] Decide on the long-term “second brain” pattern for current truth vs journal history vs durable events
 - [x] Update `gitops-deploy.sh` to restart Caddy when Caddyfile changes — already implemented via `caddy reload` (line 34)
 - [ ] Research n8n v2 features — "Personal Agents" and "Workflow Agents" + how TARS could integrate
 - [x] Fix `vm-safe.sh dr-backup` to use `tar -h` for symlink following (2026-03-05)
@@ -82,6 +88,9 @@
 - [x] `bootstrap-vm.sh` created: automates fresh VPS setup from zero (2026-03-10)
 - [x] `restore.sh` created: restores config + Postgres from DR backup archives (2026-03-10)
 - [x] Backup & recovery fully documented in `ops/runbooks.md` (2026-03-10)
+- [x] Week 1 memory layer complete: schema, API, workflows, Openclaw integration, prod/dev validation (2026-03-11)
+- [x] Week 2 ingest layer complete: document + transcript ingest routes and workflows, prod/dev validation (2026-03-11)
+- [x] Obsidian first-pass ingress path working via Mac → VM `rsync` mirror (2026-03-11)
 
 ---
 
@@ -125,6 +134,8 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 
 - **SSH key rotation due ~2026-03-20** — rotate `satoic_operator` and `satoic_ci` (see SSH Key Inventory above)
 - **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
+- **Obsidian ingress path** — currently manual `./scripts/sync-obsidian-vault.sh` from Mac to VM; no schedule yet
+- **Krisp upstream wiring** — transcript ingest endpoint is live, but the Krisp webhook/pass-through path is not yet wired
 - **Tailscale GitHub Action authkey deprecation warning** — OAuth clients require a paid plan (not available on Free); authkey still works, revisit if plan upgraded or Tailscale forces migration
 - **Dev stack running** — n8n 2.11.2 + Openclaw v2026.3.8 validated on dev (2026-03-11)
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM

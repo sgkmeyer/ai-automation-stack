@@ -1,38 +1,34 @@
 # Obsidian Vault Setup For Memory Ingest
 
-This is the recommended setup for your environment:
+This is the current recommended setup for your environment:
 
 - **MacBook** = primary working vault
-- **iPhone** = synced editing/reading via Obsidian Sync
-- **VM** = local synced mirror for ingest and future watcher automation
+- **iPhone** = optional reading/editing device however you prefer to manage it
+- **VM** = `rsync` mirror used only for memory ingest
 
 ## Best Current Approach
 
 Use:
 
-1. **Obsidian Sync** between laptop and phone
-2. **Obsidian Headless** on the VM to maintain a local synced copy
-3. the VM-local copy as the source path for the ingest workflow
+1. your Mac vault as the source of truth
+2. `rsync` over Tailscale/SSH to mirror that vault onto the VM
+3. the VM-local mirror as the source path for memory ingest
 
-This is better than manually exporting the vault to the VM because:
+This is the right first step because:
 
-- it uses the official Obsidian sync stack end to end
-- the VM gets a normal local folder
-- it avoids layering a second sync tool directly onto the live laptop vault
-- it future-proofs the n8n ingest path
+- it proves the ingest architecture without adding another subscription
+- the VM still gets a normal local folder to ingest from
+- it keeps the memory path independent from your day-to-day authoring setup
+- it can later be replaced by a more automatic sync path if needed
 
-## Important Rule
+## Future Upgrade Path
 
-Do **not** use both Obsidian desktop sync and Obsidian Headless on the **same
-device**.
+If you later buy Obsidian Sync, you can replace the `rsync` mirror with:
 
-In this setup:
+- Obsidian Sync on Mac/iPhone
+- Obsidian Headless on the VM
 
-- MacBook uses normal Obsidian desktop/mobile sync
-- iPhone uses normal Obsidian mobile sync
-- VM uses only Obsidian Headless
-
-That is the safe split.
+That is a later improvement, not a requirement for proving the system now.
 
 ## Target Paths
 
@@ -45,7 +41,7 @@ Use these paths unless you have a strong reason not to.
 
 ### On The VM
 
-- synced ingest mirror:
+- ingest mirror:
   - `/home/ubuntu/obsidian-vault`
 
 ## Step 1: Create The Primary Vault On Your Mac
@@ -69,32 +65,17 @@ Do **not** put the live primary vault inside:
 - OneDrive
 - another third-party sync folder
 
-## Step 2: Connect Your Phone To The Same Vault
+## Step 2: Decide What The Phone Does
 
-Recommended approach: use **Obsidian Sync** for your Mac and phone.
+For proving the memory system, the phone does not need to be part of the ingest
+path yet.
 
-On the Mac:
+The only hard requirement is:
 
-1. Open **Settings**.
-2. Log in to your Obsidian account.
-3. Enable the **Sync** core plugin.
-4. Create a remote vault.
-5. Connect your local vault to that remote vault.
-6. Wait until the Mac shows fully synced.
+- the Mac vault is the source of truth for the notes you want to ingest
 
-On the iPhone:
-
-1. Open Obsidian.
-2. Choose **Setup Obsidian Sync**.
-3. Log in to the same account.
-4. Connect to the same remote vault.
-5. Create the local mobile copy.
-6. Wait until sync completes.
-
-At this point:
-
-- Mac and phone are your authoring devices
-- the VM is still not involved yet
+If you also edit on the phone, make sure whatever process you use eventually
+lands those edits back into the Mac vault before the next VM sync.
 
 ## Step 3: Create A Clean Vault Structure
 
@@ -140,63 +121,50 @@ Create the local mirror folder:
 mkdir -p /home/ubuntu/obsidian-vault
 ```
 
-## Step 5: Install Obsidian Headless On The VM
+## Step 5: Run The First Mirror Sync
 
-On the VM:
+From your Mac, in this repo:
 
 ```bash
-npm install -g obsidian-headless
+scripts/sync-obsidian-vault.sh --dry-run
 ```
 
-If `npm` is not available on the VM, install Node.js first.
-
-## Step 6: Log In On The VM
-
-On the VM:
+If the preview looks sane, run the real sync:
 
 ```bash
-ob login
+scripts/sync-obsidian-vault.sh
 ```
 
-Follow the login flow.
+Defaults:
 
-Then list available remote vaults:
+- local vault: `/Users/sgkmeyer/vaults/second-brain`
+- remote host: `satoic-production`
+- remote path: `/home/ubuntu/obsidian-vault`
+
+What the script does:
+
+- mirrors the vault over SSH using `rsync`
+- excludes `.obsidian/`, `.git/`, `.DS_Store`, and trash folders
+- deletes removed files on the VM so the mirror stays accurate
+
+Optional examples:
 
 ```bash
-ob sync-list-remote
+scripts/sync-obsidian-vault.sh --exclude Attachments/ --exclude Templates/
+scripts/sync-obsidian-vault.sh --no-delete
 ```
 
-You should see the same remote vault you created from the Mac.
+## Step 6: Verify The Mirror On The VM
 
-## Step 7: Connect The VM Mirror To The Remote Vault
-
-On the VM:
+After the sync:
 
 ```bash
-cd /home/ubuntu/obsidian-vault
-ob sync-setup --vault "second-brain" --device-name vm-ingest
-```
-
-Replace `"second-brain"` with the actual remote vault name if it differs.
-
-## Step 8: Pull The First Full Sync
-
-On the VM:
-
-```bash
-cd /home/ubuntu/obsidian-vault
-ob sync
-```
-
-After the first sync, verify files exist:
-
-```bash
-find /home/ubuntu/obsidian-vault -maxdepth 2 -type f | sort | sed -n '1,50p'
+ssh satoic-production 'find /home/ubuntu/obsidian-vault -maxdepth 2 -type f | sort | sed -n "1,50p"'
 ```
 
 You should see your `.md` files locally on the VM.
 
-## Step 9: Use The VM Path As The Ingest Source
+## Step 7: Use The VM Path As The Ingest Source
 
 This is the important handoff:
 
@@ -209,7 +177,7 @@ This is the important handoff:
 
 Future watcher automation should watch this VM path, not your laptop path.
 
-## Step 10: Test A Single Note Ingest
+## Step 8: Test A Single Note Ingest
 
 Once the note exists on the VM mirror, test one file manually.
 
@@ -231,7 +199,7 @@ Expected result:
 - second run without edits -> `unchanged`
 - after editing the note and syncing again -> `updated`
 
-## Step 11: Decide How Fresh The VM Mirror Needs To Be
+## Step 9: Decide How Fresh The VM Mirror Needs To Be
 
 You have two good operating modes.
 
@@ -240,28 +208,23 @@ You have two good operating modes.
 Before ingest work, run:
 
 ```bash
-ssh satoic-production 'cd /home/ubuntu/obsidian-vault && ob sync'
+scripts/sync-obsidian-vault.sh
 ```
 
-This is the easiest starting point.
+This is the right starting point.
 
-### Mode B: Always Fresh
+### Mode B: Scheduled
 
-Run continuous sync on the VM:
+Later, add a scheduled `rsync` job from the Mac to the VM.
 
-```bash
-cd /home/ubuntu/obsidian-vault
-ob sync --continuous
-```
-
-Later, this can be wrapped in a service if you want it always running.
+That gives you regular freshness without changing the architecture.
 
 My recommendation:
 
 - start with **Mode A**
-- move to **Mode B** only when you want near-real-time ingest
+- move to a scheduled sync only after manual ingest feels stable
 
-## Step 12: Stable Identity Rule
+## Step 10: Stable Identity Rule
 
 For memory ingest, note identity should be:
 
@@ -287,46 +250,36 @@ instead of duplicate note memories.
 Use this pattern:
 
 1. Write notes on Mac or phone.
-2. Obsidian Sync keeps those authoring devices aligned.
-3. Run `ob sync` on the VM when you want the latest notes available for ingest.
+2. Make sure the Mac vault contains the latest version you care about.
+3. Run `scripts/sync-obsidian-vault.sh` when you want the latest notes on the VM.
 4. Ingest manually now, automate later.
-
-## Fallback Option If You Do Not Want Obsidian Sync
-
-If you do not want an Obsidian Sync subscription, the fallback is:
-
-- keep the live vault on the Mac
-- keep phone access however you prefer
-- maintain a separate export mirror
-- push that export mirror to the VM over Tailscale/SSH
-
-That fallback is workable, but it is no longer my first recommendation.
 
 ## Why Tailscale Still Matters
 
-With this setup, Tailscale is still useful for:
+With this setup, Tailscale is useful for:
 
 - SSH access to the VM
+- carrying the `rsync` mirror traffic safely
 - triggering manual sync or ingest commands remotely
 - future internal tooling between your devices and the VM
-
-You do **not** need Tailscale as the primary file-sync layer if you use
-Obsidian Sync + Obsidian Headless.
 
 ## Related Docs
 
 - user guide: [memory-user-guide.md](/Users/sgkmeyer/ai-automation-stack/ops/memory-user-guide.md#L1)
 - memory interfaces: [memory-external-interfaces.md](/Users/sgkmeyer/ai-automation-stack/ops/memory-external-interfaces.md#L1)
 
-## Official References
+## Later Upgrade Option
 
-- Obsidian Sync setup:
-  https://help.obsidian.md/sync/setup
-- Obsidian Sync settings / selective sync:
-  https://help.obsidian.md/sync/settings
-- Obsidian Headless:
-  https://help.obsidian.md/sync/headless
-- Avoid mixing Obsidian Sync with other sync solutions on the same vault:
-  https://help.obsidian.md/sync/switch
+If you later buy Obsidian Sync, the VM mirror can be reworked to use:
+
+- Obsidian Sync on the Mac and phone
+- Obsidian Headless on the VM
+
+For now, `rsync` is the simpler and cheaper proof path.
+
+## References
+
 - Tailscale SSH:
   https://tailscale.com/docs/features/tailscale-ssh
+- `rsync` manual:
+  https://download.samba.org/pub/rsync/rsync.1

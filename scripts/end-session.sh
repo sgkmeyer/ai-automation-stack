@@ -22,17 +22,33 @@ say "Session end: $(date)"
 say "Repo: ${repo_root}"
 hr
 
-say "1) Git fetch + status (ahead/behind)"
+say "1) Git fetch + branch parity"
 git fetch --prune || true
 git status -sb
+current_branch="$(git branch --show-current 2>/dev/null || true)"
+current_sha="$(git rev-parse --short HEAD 2>/dev/null || true)"
+say "Local branch: ${current_branch:-unknown}"
+say "Local HEAD:   ${current_sha:-unknown}"
+if [[ -n "${current_branch}" ]] && git rev-parse --verify "origin/${current_branch}" >/dev/null 2>&1; then
+  say "Origin ${current_branch}: $(git rev-parse --short "origin/${current_branch}")"
+fi
 hr
 
-if confirm "Pull latest VM runtime state (legacy rsync sync-from-vm)?" ; then
-  ./scripts/sync-from-vm.sh
+say "2) VM repo/runtime parity check"
+if confirm "Check VM repo branch/commit and running service state?" ; then
+  ssh satoic-production 'set -euo pipefail
+    cd /home/ubuntu/ai-automation-stack
+    printf "repo_branch=%s\n" "$(git branch --show-current)"
+    printf "repo_head=%s\n" "$(git rev-parse --short HEAD)"
+    printf "origin_main=%s\n" "$(git rev-parse --short origin/main)"
+    printf "origin_dev=%s\n" "$(git rev-parse --short origin/dev)"
+    printf "\nprod_memory_api=%s\n" "$(cd /home/ubuntu/automation && docker compose ps memory-api --format json | sed -n "s/.*\"Status\":\"\\([^\"]*\\)\".*/\\1/p")"
+    printf "dev_memory_api=%s\n" "$(cd /home/ubuntu/automation && docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml -f docker-compose.dev.yml --project-name automation-dev ps memory-api --format json | sed -n "s/.*\"Status\":\"\\([^\"]*\\)\".*/\\1/p")"
+  ' || true
   hr
 fi
 
-say "2) Create/update session handoff"
+say "3) Create/update session handoff"
 if [[ ! -f "${session_template}" ]]; then
   say "ERROR: Missing template: ${session_template}"
   say "Create it first (see ops/) and re-run."
@@ -53,24 +69,24 @@ say "  ${session_file}"
 read -r -p "Press Enter when ready to continue... " _ || true
 hr
 
-say "3) Update README 'latest session' pointer"
-if [[ -f "${repo_root}/README.md" ]]; then
+say "4) Update README 'latest session' pointer"
+if [[ -f "${repo_root}/README.md" ]] && grep -qE '^- `/Users/sgkmeyer/ai-automation-stack/ops/SESSION-[0-9]{4}-[0-9]{2}-[0-9]{2}\.md` latest session handoff summary$' "${repo_root}/README.md"; then
   sed -i.bak -E "s|^- \`/Users/sgkmeyer/ai-automation-stack/ops/SESSION-[0-9]{4}-[0-9]{2}-[0-9]{2}\\.md\` latest session handoff summary$|- \`/Users/sgkmeyer/ai-automation-stack/ops/SESSION-${today}.md\` latest session handoff summary|" "${repo_root}/README.md" || true
   rm -f "${repo_root}/README.md.bak"
   say "Updated README pointer to SESSION-${today}.md (if present)."
 else
-  say "WARN: README.md not found; skipping."
+  say "No README latest-session pointer found; skipping."
 fi
 hr
 
-say "4) Quick secret scan (optional but recommended)"
+say "5) Quick secret scan (optional but recommended)"
 if confirm "Scan tracked files for common secret patterns?" ; then
   # Keep this lightweight and conservative. This is not a full secret scanner.
   git grep -nE '(OPENCLAW_GATEWAY_TOKEN|N8N_API_KEY|BROWSERLESS_TOKEN|BRAVE_API_KEY|-----BEGIN( RSA| OPENSSH)? PRIVATE KEY|sk-[A-Za-z0-9]{20,})' || true
   hr
 fi
 
-say "5) Review git status"
+say "6) Review git status"
 git status -sb
 hr
 
@@ -94,7 +110,7 @@ if confirm "Commit and push all current changes?" ; then
   hr
 fi
 
-say "6) Deploy"
+say "7) Deploy"
 say "   Default: GitOps (VM pulls from GitHub and applies)"
 say "   Emergency: rsync (direct copy from laptop)"
 hr
