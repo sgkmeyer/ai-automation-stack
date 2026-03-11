@@ -1,7 +1,7 @@
 # Today — Current Build State
 
 > Manually maintained. Update at the end of each session alongside the dated session log.
-> Last updated: 2026-03-05
+> Last updated: 2026-03-10
 
 ---
 
@@ -65,28 +65,38 @@
 - [x] Dev GitOps lane fixed: force `--scale caddy=0` to avoid port 80/443 conflict with production Caddy (2026-03-05)
 - [x] Hardening rollout validated end-to-end: dev deploy+smoke and prod deploy+smoke green (2026-03-05)
 - [x] Openclaw upgraded v2026.3.1 → v2026.3.2; version pin updated in Dockerfile (2026-03-05)
+- [x] First DR backup taken and verified (config 7MB + DB 14MB) (2026-03-10)
+- [x] `.env.example` created documenting all 13 required env vars (2026-03-10)
+- [x] Production Openclaw config synced to local (was 3 keys, now 51) (2026-03-10)
+- [x] Automated daily backups: systemd timer at 03:00 UTC, 7-day retention on VM (2026-03-10)
+- [x] `gitops-deploy.sh` fixed: handles Openclaw file ownership + stashes runtime changes before pull (2026-03-10)
+- [x] `tar -h czf` → `tar -hczf` bug fixed across vm-safe.sh, end-session.sh (2026-03-10)
+- [x] `vm-safe.sh dr-backup` docker path fix: busybox container now writes to /backup/ mount (2026-03-10)
+- [x] `bootstrap-vm.sh` created: automates fresh VPS setup from zero (2026-03-10)
+- [x] `restore.sh` created: restores config + Postgres from DR backup archives (2026-03-10)
+- [x] Backup & recovery fully documented in `ops/runbooks.md` (2026-03-10)
 
 ---
 
 ## Backup & Recovery Model
 
-### Current state (Tailscale live)
+Full documentation in `ops/runbooks.md` (Backup & Recovery section).
 
-`./scripts/backup.sh` from the Mac works end-to-end:
-SSH → VM backup → rsync artifacts to `.dr-backups/` locally → write manifest in `ops/dr-manifests/`.
+### Summary
 
-**Always run from local Mac, never from the VM.** Scripts SSH outward to `satoic-production`.
+| Method | Schedule | Location | Trigger |
+|--------|----------|----------|---------|
+| Automated (systemd) | Daily 03:00 UTC | VM `/home/ubuntu/backups/` (7-day retention) | `satoic-backup.timer` |
+| On-demand (Mac) | Manual | Mac `.dr-backups/` + manifest | `./scripts/backup.sh` |
+| Manual (VM) | Manual | VM `/home/ubuntu/` | tar commands |
 
-**VM-local fallback** (if Mac-side scripts unavailable — e.g., SSH session directly on VM):
-```bash
-cd /home/ubuntu
-sudo tar -hczf automation-full-$(date +%F-%H%M).tar.gz automation
-docker run --rm \
-  -v automation_db_storage:/data \
-  -v /home/ubuntu:/backup \
-  busybox tar czf /backup/automation-db-$(date +%F-%H%M).tar.gz /data
-ls -lh /home/ubuntu/automation-full-*.tar.gz /home/ubuntu/automation-db-*.tar.gz | tail -n 4
-```
+### Disaster recovery
+
+1. `bootstrap-vm.sh` — sets up a fresh VPS (Docker, Tailscale, repo, symlink, secrets, backup timer)
+2. `restore.sh` — restores secrets + Postgres from DR backup archives
+3. `gitops-deploy.sh` — deploys the stack
+
+See `ops/runbooks.md` for step-by-step procedure.
 
 ---
 
