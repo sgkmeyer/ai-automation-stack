@@ -1,5 +1,8 @@
 # Memory External Interfaces
 
+For end-user usage guidance, see
+[memory-user-guide.md](/Users/sgkmeyer/ai-automation-stack/ops/memory-user-guide.md#L1).
+
 This stack exposes memory to end users through n8n webhooks. `memory-api` stays
 internal-only on the Docker network.
 
