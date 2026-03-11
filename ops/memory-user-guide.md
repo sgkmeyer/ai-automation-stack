@@ -405,5 +405,6 @@ The memory system is working well if:
 
 ## Related Docs
 
+- Obsidian setup guide: [obsidian-vault-setup.md](/Users/sgkmeyer/ai-automation-stack/ops/obsidian-vault-setup.md#L1)
 - engineering interface doc: [memory-external-interfaces.md](/Users/sgkmeyer/ai-automation-stack/ops/memory-external-interfaces.md#L1)
 - engineering runbook: [runbooks-memory.md](/Users/sgkmeyer/ai-automation-stack/ops/runbooks-memory.md#L1)
