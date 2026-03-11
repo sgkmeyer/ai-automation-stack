@@ -1,0 +1,35 @@
+{
+  "workflowName": "MEM-04 - Obsidian Document Sync",
+  "workflowVersion": "2026.03.11",
+  "status": "draft",
+  "trigger": {
+    "type": "webhook",
+    "path": "memory/ingest/document",
+    "method": "POST"
+  },
+  "purpose": "Accept a normalized Obsidian note payload from a watcher or manual trigger, call memory-api /ingest/document, and return a concise ingest result.",
+  "inputs": {
+    "required": ["source_ref", "content"],
+    "optional": ["source", "source_type", "title", "occurred_at", "entry_type", "tags", "metadata"]
+  },
+  "outputs": {
+    "success": ["ingestion_job_id", "entry_id", "operation", "entry_type", "checksum"],
+    "error": ["status", "error"]
+  },
+  "dependencies": [
+    "memory-api service on Docker network",
+    "Memory API Header Auth credential in n8n",
+    "Obsidian watcher or manual webhook caller"
+  ],
+  "failureModes": [
+    "missing source_ref",
+    "missing content",
+    "invalid source or entry_type",
+    "memory-api unavailable",
+    "non-2xx response from memory-api"
+  ],
+  "notes": [
+    "Default source should be obsidian when omitted by the caller.",
+    "This workflow is intentionally thin; file discovery and scheduling stay outside n8n node logic."
+  ]
+}

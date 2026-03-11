@@ -1,0 +1,34 @@
+{
+  "workflowName": "MEM-05 - Transcript Ingest",
+  "workflowVersion": "2026.03.11",
+  "status": "draft",
+  "trigger": {
+    "type": "webhook",
+    "path": "memory/ingest/transcript",
+    "method": "POST"
+  },
+  "purpose": "Accept a normalized transcript payload, call memory-api /ingest/transcript, and return the summary-entry plus action-item ingest result.",
+  "inputs": {
+    "required": ["source_ref", "transcript_text"],
+    "optional": ["title", "summary", "occurred_at", "participants", "action_items", "tags", "metadata"]
+  },
+  "outputs": {
+    "success": ["ingestion_job_id", "summary_entry_id", "summary_operation", "summary_checksum", "action_item_entry_ids"],
+    "error": ["status", "error"]
+  },
+  "dependencies": [
+    "memory-api service on Docker network",
+    "Memory API Header Auth credential in n8n",
+    "Transcript drop or workflow caller"
+  ],
+  "failureModes": [
+    "missing source_ref",
+    "missing transcript_text",
+    "memory-api unavailable",
+    "non-2xx response from memory-api"
+  ],
+  "notes": [
+    "Action items are optional but should be passed through when upstream parsing already extracted them.",
+    "Summary generation stays outside the workflow for now; this contract only forwards normalized payloads."
+  ]
+}

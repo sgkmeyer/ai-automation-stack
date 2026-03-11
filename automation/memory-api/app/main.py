@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from .db import close_pool, get_pool
-from .routes import context, entities, health, log, recall
+from .routes import context, entities, health, ingest, log, recall
 
 
 @asynccontextmanager
@@ -27,3 +27,4 @@ app.include_router(log.router)
 app.include_router(recall.router)
 app.include_router(context.router)
 app.include_router(entities.router)
+app.include_router(ingest.router)

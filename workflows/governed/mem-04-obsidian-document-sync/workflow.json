@@ -1,0 +1,69 @@
+{
+  "id": "mem04obsidiansync",
+  "name": "MEM-04 - Obsidian Document Sync",
+  "active": false,
+  "meta": {
+    "workflowVersion": "2026.03.11",
+    "owner": "TAR",
+    "status": "draft"
+  },
+  "versionId": "54f23792-c839-4da4-b543-7d2bc3f92ed6",
+  "pinData": {},
+  "tags": [],
+  "triggerCount": 0,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "memory/ingest/document",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "Call memory-api",
+      "name": "Call memory-api",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300],
+      "credentials": {
+        "httpHeaderAuth": "Memory API Header Auth"
+      },
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-api:8100/ingest/document",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { source: $json.body?.source ?? $json.source ?? 'obsidian', source_ref: $json.body?.source_ref ?? $json.source_ref, source_type: $json.body?.source_type ?? $json.source_type ?? 'md', title: $json.body?.title ?? $json.title ?? null, content: $json.body?.content ?? $json.content, occurred_at: $json.body?.occurred_at ?? $json.occurred_at ?? null, entry_type: $json.body?.entry_type ?? $json.entry_type ?? null, tags: $json.body?.tags ?? $json.tags ?? [], metadata: $json.body?.metadata ?? $json.metadata ?? {} } }}"
+      }
+    },
+    {
+      "id": "Respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [980, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Call memory-api", "type": "main", "index": 0 }]]
+    },
+    "Call memory-api": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  }
+}

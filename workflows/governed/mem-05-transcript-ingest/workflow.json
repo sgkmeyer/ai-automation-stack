@@ -1,0 +1,69 @@
+{
+  "id": "mem05transcriptingest",
+  "name": "MEM-05 - Transcript Ingest",
+  "active": false,
+  "meta": {
+    "workflowVersion": "2026.03.11",
+    "owner": "TAR",
+    "status": "draft"
+  },
+  "versionId": "f2d30a18-507a-469b-ae5d-a49a2662acbb",
+  "pinData": {},
+  "tags": [],
+  "triggerCount": 0,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "memory/ingest/transcript",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "Call memory-api",
+      "name": "Call memory-api",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300],
+      "credentials": {
+        "httpHeaderAuth": "Memory API Header Auth"
+      },
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-api:8100/ingest/transcript",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { source_ref: $json.body?.source_ref ?? $json.source_ref, title: $json.body?.title ?? $json.title ?? null, transcript_text: $json.body?.transcript_text ?? $json.transcript_text, summary: $json.body?.summary ?? $json.summary ?? null, occurred_at: $json.body?.occurred_at ?? $json.occurred_at ?? null, participants: $json.body?.participants ?? $json.participants ?? [], action_items: $json.body?.action_items ?? $json.action_items ?? [], tags: $json.body?.tags ?? $json.tags ?? [], metadata: $json.body?.metadata ?? $json.metadata ?? {} } }}"
+      }
+    },
+    {
+      "id": "Respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [980, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Call memory-api", "type": "main", "index": 0 }]]
+    },
+    "Call memory-api": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  }
+}

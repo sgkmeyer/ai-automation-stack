@@ -51,6 +51,26 @@ updated in place instead of appended.
 
 Tracks every ingestion attempt with status, counts, and error messages.
 
+## Week 2 Extensions
+
+### File-Backed Ingestion
+
+Week 2 adds dedicated ingestion endpoints for file-backed sources:
+
+- `POST /ingest/document` for Obsidian-style note sync
+- `POST /ingest/transcript` for Krisp-style transcript drops
+
+These flows are idempotent on `source + source_ref` and carry a content
+checksum in `structured` metadata so n8n can safely re-run sync jobs.
+
+### Why dedicated ingest routes?
+
+`/log` remains the lowest-friction conversational capture endpoint. File sync is
+different: it needs stable source identities, checksum-based re-ingest, and
+more predictable defaults for entry type classification. Splitting those
+concerns keeps the Week 1 Telegram path simple while making Week 2 sync jobs
+operationally clean.
+
 ## Security
 
 - `memory-api` is internal-only with no public port mapping.

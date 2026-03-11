@@ -1,0 +1,27 @@
+{
+  "happyPath": {
+    "request": {
+      "source_ref": "Daily/2026-03-11.md",
+      "source_type": "md",
+      "title": "2026-03-11",
+      "content": "Met Sam for coffee and captured next steps.",
+      "tags": ["daily-note"]
+    },
+    "expected": {
+      "status": "ok",
+      "contains": ["ingestion_job_id", "entry_id", "operation", "checksum"]
+    }
+  },
+  "idempotentPath": {
+    "request": {
+      "source_ref": "Daily/2026-03-11.md",
+      "source_type": "md",
+      "title": "2026-03-11",
+      "content": "Met Sam for coffee and captured next steps."
+    },
+    "expected": {
+      "contains": ["operation"],
+      "allowedValues": ["created", "updated", "unchanged"]
+    }
+  }
+}

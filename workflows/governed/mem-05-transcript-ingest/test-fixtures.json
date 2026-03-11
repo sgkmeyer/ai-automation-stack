@@ -1,0 +1,26 @@
+{
+  "happyPath": {
+    "request": {
+      "source_ref": "krisp:demo-meeting",
+      "title": "Demo Meeting",
+      "transcript_text": "We agreed to send the proposal tomorrow.",
+      "action_items": ["Send the proposal tomorrow"]
+    },
+    "expected": {
+      "status": "ok",
+      "contains": ["ingestion_job_id", "summary_entry_id", "summary_checksum", "action_item_entry_ids"]
+    }
+  },
+  "summaryOnlyPath": {
+    "request": {
+      "source_ref": "krisp:demo-summary",
+      "title": "Short Call",
+      "summary": "Aligned on next steps.",
+      "transcript_text": "Aligned on next steps."
+    },
+    "expected": {
+      "status": "ok",
+      "contains": ["summary_operation", "action_items_processed"]
+    }
+  }
+}
