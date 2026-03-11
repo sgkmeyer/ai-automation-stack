@@ -111,8 +111,10 @@ done
 
 echo "Restored ${restored} items from config archive."
 
-# Fix ownership
+# Fix ownership — general files owned by deploy user, but Openclaw dir
+# must be owned by UID 1000 (container's 'node' user).
 chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${AUTOMATION_DIR}"
+chown -R 1000:1000 "${AUTOMATION_DIR}/openclaw" 2>/dev/null || true
 chmod 600 "${AUTOMATION_DIR}/.env" 2>/dev/null || true
 
 rm -rf "${RESTORE_TMP}"
@@ -159,8 +161,7 @@ echo "Next steps:"
 echo "  1. Review .env:            cat ${AUTOMATION_DIR}/.env"
 echo "  2. Review Openclaw config: cat ${AUTOMATION_DIR}/openclaw/config.json"
 echo "  3. Deploy the stack:       sudo -u ${DEPLOY_USER} ${REPO_DIR}/scripts/gitops-deploy.sh"
-echo "  4. Fix Openclaw ownership: docker exec -u root automation-openclaw-1 chown -R node:node /home/node/.openclaw"
-echo "  5. Verify endpoints:"
+echo "  4. Verify endpoints:"
 echo "       curl -I https://n8n.satoic.com"
 echo "       curl -I https://openclaw.satoic.com"
 echo "       curl -I https://portainer.satoic.com"

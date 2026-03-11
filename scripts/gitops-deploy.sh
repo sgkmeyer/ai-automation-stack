@@ -13,8 +13,8 @@ fi
 
 git fetch origin
 
-# Openclaw runtime files may be owned by the container's 'node' user,
-# which prevents git operations by 'ubuntu'. Fix ownership before pull.
+# Openclaw runtime files are owned by the container's 'node' user (UID 1000),
+# which prevents git operations by 'ubuntu' (UID 1001). Fix ownership before pull.
 if [ -d automation/openclaw ]; then
   sudo chown -R "$(id -u):$(id -g)" automation/openclaw 2>/dev/null || true
 fi
@@ -57,12 +57,11 @@ docker compose \
 # Keep ingress config hot without requiring restarts.
 docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile || true
 
-# Fix Openclaw volume ownership (UID can drift across image versions).
-# The container runs as 'node' but volume files may be owned by a stale UID.
-printf "Checking Openclaw volume ownership...\n"
-docker compose exec -u root -T openclaw \
-  chown -R node:node /home/node/.openclaw 2>/dev/null && \
-  printf "Openclaw .openclaw ownership verified/fixed.\n" || \
-  printf "Warning: could not check Openclaw ownership (container may not be ready).\n"
+# Fix Openclaw volume ownership (container runs as 'node' = UID 1000).
+# Use host-level chown so this works even if the container isn't ready yet.
+printf "Fixing Openclaw directory ownership (UID 1000:1000)...\n"
+sudo chown -R 1000:1000 "${REPO_DIR}/automation/openclaw" 2>/dev/null && \
+  printf "Openclaw .openclaw ownership fixed.\n" || \
+  printf "Warning: could not fix Openclaw ownership.\n"
 
 printf "Deployed branch '%s' to %s\n" "${BRANCH}" "${REPO_DIR}"

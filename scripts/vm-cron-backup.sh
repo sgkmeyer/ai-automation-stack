@@ -42,7 +42,12 @@ else
   exit 1
 fi
 
-# 3. Prune old backups
+# 3. Ensure Openclaw directory ownership is correct for container (node = UID 1000).
+# The tar command runs as root and can cause access-time changes that trigger
+# Openclaw's config reload; ensure ownership stays at 1000:1000.
+sudo chown -R 1000:1000 /home/ubuntu/ai-automation-stack/automation/openclaw 2>/dev/null || true
+
+# 4. Prune old backups
 find "${BACKUP_DIR}" -name "automation-full-*.tar.gz" -mtime +${KEEP_DAYS} -delete -print | while read -r f; do
   echo "PRUNED ${f}"
 done
