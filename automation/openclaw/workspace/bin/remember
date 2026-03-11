@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+  printf 'usage: ./bin/remember TEXT [--tags a,b]\n' >&2
+  exit 1
+fi
+
+text=""
+tags=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --tags)
+      tags="${2-}"
+      shift 2
+      ;;
+    *)
+      if [[ -n "${text}" ]]; then
+        text="${text} $1"
+      else
+        text="$1"
+      fi
+      shift
+      ;;
+  esac
+done
+
+exec ./bin/memory log --source tars --text "${text}" ${tags:+--tags "${tags}"}

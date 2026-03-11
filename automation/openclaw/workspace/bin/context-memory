@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+action="${1-}"
+shift || true
+
+case "${action}" in
+  get)
+    exec ./bin/memory context-get
+    ;;
+  set)
+    exec ./bin/memory context-set "$@"
+    ;;
+  delete)
+    exec ./bin/memory context-delete "$@"
+    ;;
+  *)
+    printf 'usage: ./bin/context-memory {get|set|delete} ...\n' >&2
+    exit 1
+    ;;
+esac

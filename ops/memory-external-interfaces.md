@@ -52,3 +52,17 @@ The OpenClaw workspace wrapper is:
 That wrapper delegates to the repo-managed CLI at
 `/home/node/repo/scripts/memory-webhook.sh` and defaults to the production
 memory webhook base URL.
+
+Additional OpenClaw-friendly wrappers:
+
+```bash
+./bin/remember "Met Sam for coffee" --tags relationship
+./bin/recall-memory "coffee with Sam"
+./bin/context-memory set --domain prefs --key coffee --value "flat white"
+```
+
+Each wrapper invocation is logged locally to:
+
+```text
+memory/command-log.ndjson
+```

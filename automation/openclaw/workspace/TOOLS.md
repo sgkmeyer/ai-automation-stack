@@ -43,6 +43,10 @@ Add whatever helps you do your job. This is your cheat sheet.
 
 - Shared durable memory lives behind the memory webhooks, not only in workspace files.
 - Workspace wrapper: `./bin/memory`
+- Friendly wrappers:
+  - `./bin/remember`
+  - `./bin/recall-memory`
+  - `./bin/context-memory`
 - Production base URL: `https://n8n.satoic.com/webhook/memory`
 - Dev base URL: `http://100.82.169.113:5679/webhook/memory`
 - Main endpoints:
@@ -52,3 +56,4 @@ Add whatever helps you do your job. This is your cheat sheet.
   - `POST /ingest/document`
   - `POST /ingest/transcript`
 - Use shared memory for durable facts, recall, and context. Use workspace files for working notes and local summaries.
+- Local audit log: `memory/command-log.ndjson`

@@ -41,6 +41,10 @@ When the shared memory CLI is available, use it for durable memory operations:
 - `./bin/memory context-set --domain DOMAIN --key KEY --value VALUE`
 - `./bin/memory context-get`
 - `./bin/memory context-delete --domain DOMAIN --key KEY`
+- Friendly wrappers:
+  - `./bin/remember "..." --tags a,b`
+  - `./bin/recall-memory "..."`
+  - `./bin/context-memory get|set|delete ...`
 
 Use these mappings by default in direct chats:
 
@@ -51,6 +55,7 @@ Use these mappings by default in direct chats:
 - "clear/remove/delete that context" -> `context-delete`
 
 After calling the CLI, summarize the result for the human instead of dumping raw JSON unless they ask for the raw response.
+The wrapper logs each invocation to `memory/command-log.ndjson` for local auditability.
 
 ### 🧠 MEMORY.md - Your Local Summary Memory
 
