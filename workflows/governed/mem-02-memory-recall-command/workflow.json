@@ -34,21 +34,17 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [680, 300],
+      "credentials": {
+        "httpHeaderAuth": "Memory API Header Auth"
+      },
       "parameters": {
         "method": "POST",
         "url": "http://memory-api:8100/recall",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { query: $json.body?.query ?? $json.query, entity_name: $json.body?.entity_name ?? $json.entity_name ?? null, entry_type: $json.body?.entry_type ?? $json.entry_type ?? null, after: $json.body?.after ?? $json.after ?? null, before: $json.body?.before ?? $json.before ?? null, limit: $json.body?.limit ?? $json.limit ?? 5, synthesize: $json.body?.synthesize ?? $json.synthesize ?? true } }}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{$env.MEMORY_API_TOKEN}}"
-            }
-          ]
-        }
+        "jsonBody": "={{ { query: $json.body?.query ?? $json.query, entity_name: $json.body?.entity_name ?? $json.entity_name ?? null, entry_type: $json.body?.entry_type ?? $json.entry_type ?? null, after: $json.body?.after ?? $json.after ?? null, before: $json.body?.before ?? $json.before ?? null, limit: $json.body?.limit ?? $json.limit ?? 5, synthesize: $json.body?.synthesize ?? $json.synthesize ?? true } }}"
       }
     },
     {

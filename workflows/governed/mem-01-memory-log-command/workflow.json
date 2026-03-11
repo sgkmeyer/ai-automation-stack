@@ -34,21 +34,17 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [680, 300],
+      "credentials": {
+        "httpHeaderAuth": "Memory API Header Auth"
+      },
       "parameters": {
         "method": "POST",
         "url": "http://memory-api:8100/log",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { text: $json.body?.text ?? $json.text, source: $json.body?.source ?? $json.source ?? 'tars', occurred_at: $json.body?.occurred_at ?? $json.occurred_at ?? null, source_ref: $json.body?.source_ref ?? $json.source_ref ?? null, tags: $json.body?.tags ?? $json.tags ?? [], structured: $json.body?.structured ?? $json.structured ?? {} } }}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{$env.MEMORY_API_TOKEN}}"
-            }
-          ]
-        }
+        "jsonBody": "={{ { text: $json.body?.text ?? $json.text, source: $json.body?.source ?? $json.source ?? 'tars', occurred_at: $json.body?.occurred_at ?? $json.occurred_at ?? null, source_ref: $json.body?.source_ref ?? $json.source_ref ?? null, tags: $json.body?.tags ?? $json.tags ?? [], structured: $json.body?.structured ?? $json.structured ?? {} } }}"
       }
     },
     {

@@ -35,12 +35,9 @@
       "typeVersion": 3,
       "position": [520, 300],
       "parameters": {
-        "value1": "={{ ($json.body?.action ?? $json.action ?? '').toLowerCase() }}",
-        "rules": [
-          { "operation": "equal", "value2": "get" },
-          { "operation": "equal", "value2": "set" },
-          { "operation": "equal", "value2": "delete" }
-        ]
+        "mode": "expression",
+        "numberOutputs": 3,
+        "output": "={{ ({ get: 0, set: 1, delete: 2 })[($json.body?.action ?? $json.action ?? '').toLowerCase()] ?? 0 }}"
       }
     },
     {
@@ -49,18 +46,14 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [820, 160],
+      "credentials": {
+        "httpHeaderAuth": "Memory API Header Auth"
+      },
       "parameters": {
         "method": "GET",
         "url": "http://memory-api:8100/context",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{$env.MEMORY_API_TOKEN}}"
-            }
-          ]
-        }
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       }
     },
     {
@@ -69,21 +62,17 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [820, 300],
+      "credentials": {
+        "httpHeaderAuth": "Memory API Header Auth"
+      },
       "parameters": {
         "method": "PUT",
         "url": "=http://memory-api:8100/context/{{$json.body?.domain ?? $json.domain}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { key: $json.body?.key ?? $json.key, value: $json.body?.value ?? $json.value } }}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{$env.MEMORY_API_TOKEN}}"
-            }
-          ]
-        }
+        "jsonBody": "={{ { key: $json.body?.key ?? $json.key, value: $json.body?.value ?? $json.value } }}"
       }
     },
     {
@@ -92,18 +81,14 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [820, 440],
+      "credentials": {
+        "httpHeaderAuth": "Memory API Header Auth"
+      },
       "parameters": {
         "method": "DELETE",
         "url": "=http://memory-api:8100/context/{{$json.body?.domain ?? $json.domain}}/{{$json.body?.key ?? $json.key}}",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{$env.MEMORY_API_TOKEN}}"
-            }
-          ]
-        }
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       }
     },
     {
