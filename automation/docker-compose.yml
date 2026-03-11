@@ -60,6 +60,8 @@ services:
     volumes:
       # Persistent DB files
       - db_storage:/var/lib/postgresql/data
+      # Auto-run schema scripts on first boot
+      - ../sql:/docker-entrypoint-initdb.d:ro
 
     # Healthcheck allows n8n to wait until DB is ready
     healthcheck:
@@ -334,6 +336,35 @@ services:
     volumes:
       - ./scripts:/app
     command: sleep infinity
+
+
+  #############################################
+  # MEMORY-API — PERSONAL MEMORY SERVICE
+  #############################################
+  # Internal-only FastAPI service.
+  # Provides structured memory storage, entity
+  # linking, retrieval, and LLM-powered extraction.
+  #############################################
+  memory-api:
+    build:
+      context: ./memory-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - MEMORY_DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - MEMORY_MEMORY_API_TOKEN=${MEMORY_API_TOKEN}
+      - MEMORY_LLM_PROVIDER=${MEMORY_LLM_PROVIDER:-anthropic}
+      - MEMORY_LLM_API_KEY=${MEMORY_LLM_API_KEY}
+      - MEMORY_LLM_MODEL=${MEMORY_LLM_MODEL:-claude-sonnet-4-20250514}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8100/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
 
   #############################################

@@ -23,3 +23,5 @@ automation/openclaw-dev/
 ops/start-session-*.log
 .dr-backups/
 .claude/
+__pycache__/
+*.py[cod]

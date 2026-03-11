@@ -1,0 +1,34 @@
+{
+  "workflowName": "MEM-01 - Memory Log Command",
+  "workflowVersion": "2026.03.11",
+  "status": "draft",
+  "trigger": {
+    "type": "webhook",
+    "path": "memory/log",
+    "method": "POST"
+  },
+  "purpose": "Accept a normalized log command from TARS/OpenClaw, validate it, call memory-api /log, and return a compact Telegram-safe response.",
+  "inputs": {
+    "required": ["text"],
+    "optional": ["source", "occurred_at", "source_ref", "tags", "structured", "user_id", "chat_id"]
+  },
+  "outputs": {
+    "success": ["entry_id", "entry_type", "entities_linked", "ingestion_job_id", "reply_text"],
+    "error": ["status", "error", "reply_text"]
+  },
+  "dependencies": [
+    "memory-api service on Docker network",
+    "MEMORY_API_TOKEN available to n8n via environment or credential",
+    "OpenClaw/TARS webhook caller"
+  ],
+  "failureModes": [
+    "missing text input",
+    "invalid bearer token to memory-api",
+    "memory-api unavailable",
+    "non-2xx response from memory-api"
+  ],
+  "notes": [
+    "This workflow delegates DB writes to memory-api instead of issuing direct Postgres writes in n8n.",
+    "Error responses should be condensed to a single reply string for Telegram delivery."
+  ]
+}

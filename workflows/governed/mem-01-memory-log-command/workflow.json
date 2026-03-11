@@ -1,0 +1,102 @@
+{
+  "name": "MEM-01 - Memory Log Command",
+  "active": false,
+  "meta": {
+    "workflowVersion": "2026.03.11",
+    "owner": "TAR",
+    "status": "draft"
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "memory/log",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "Normalize Request",
+      "name": "Normalize Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 300],
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nif (!body.text || !String(body.text).trim()) {\n  throw new Error('text is required');\n}\nreturn [{ json: {\n  text: String(body.text).trim(),\n  source: body.source ?? 'tars',\n  occurred_at: body.occurred_at ?? null,\n  source_ref: body.source_ref ?? `telegram:${body.chat_id ?? 'unknown'}:${body.message_id ?? 'manual'}`,\n  tags: Array.isArray(body.tags) ? body.tags : [],\n  structured: body.structured ?? {},\n  chat_id: body.chat_id ?? null,\n  user_id: body.user_id ?? null\n}}];"
+      }
+    },
+    {
+      "id": "Call memory-api",
+      "name": "Call memory-api",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [800, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-api:8100/log",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.MEMORY_API_TOKEN}}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
+          "neverError": true
+        }
+      }
+    },
+    {
+      "id": "Format Response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1080, 300],
+      "parameters": {
+        "jsCode": "const statusCode = $json.statusCode ?? 500;\nconst payload = $json.body ?? {};\nif (statusCode >= 400) {\n  return [{ json: {\n    status: 'error',\n    reply_text: `Memory log failed (${statusCode}): ${payload.detail ?? 'unknown error'}`,\n    error: payload\n  }}];\n}\nreturn [{ json: {\n  status: 'ok',\n  ...payload,\n  reply_text: `Logged as ${payload.entry_type} (${payload.entry_id}).`\n}}];"
+      }
+    },
+    {
+      "id": "Respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1340, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Normalize Request", "type": "main", "index": 0 }]]
+    },
+    "Normalize Request": {
+      "main": [[{ "node": "Call memory-api", "type": "main", "index": 0 }]]
+    },
+    "Call memory-api": {
+      "main": [[{ "node": "Format Response", "type": "main", "index": 0 }]]
+    },
+    "Format Response": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  }
+}

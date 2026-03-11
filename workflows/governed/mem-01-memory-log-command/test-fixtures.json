@@ -1,0 +1,23 @@
+{
+  "happyPath": {
+    "request": {
+      "text": "Met Sarah at Databricks. She will send the JD tomorrow.",
+      "source": "tars",
+      "source_ref": "telegram:123:456",
+      "tags": ["job-search", "followup"]
+    },
+    "expected": {
+      "status": "ok",
+      "contains": ["entry_id", "entry_type", "ingestion_job_id", "reply_text"]
+    }
+  },
+  "failurePath": {
+    "request": {
+      "source": "tars"
+    },
+    "expected": {
+      "statusCode": 500,
+      "contains": ["text is required"]
+    }
+  }
+}

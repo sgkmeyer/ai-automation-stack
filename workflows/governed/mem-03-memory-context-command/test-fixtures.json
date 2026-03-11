@@ -1,0 +1,34 @@
+{
+  "getPath": {
+    "request": {
+      "action": "get"
+    },
+    "expected": {
+      "status": "ok",
+      "contains": ["context", "reply_text"]
+    }
+  },
+  "setPath": {
+    "request": {
+      "action": "set",
+      "domain": "job_search",
+      "key": "status",
+      "value": "Actively interviewing"
+    },
+    "expected": {
+      "status": "ok",
+      "contains": ["domain", "key", "reply_text"]
+    }
+  },
+  "deleteMissingPath": {
+    "request": {
+      "action": "delete",
+      "domain": "job_search",
+      "key": "status"
+    },
+    "expected": {
+      "statusCode": 404,
+      "contains": ["No context entry found"]
+    }
+  }
+}

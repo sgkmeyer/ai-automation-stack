@@ -45,6 +45,10 @@ services:
     environment:
       - DB_POSTGRESDB_DATABASE=${POSTGRES_DB_DEV:-n8n_dev}
 
+  memory-api:
+    environment:
+      - MEMORY_DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB_DEV:-n8n_dev}
+
   openclaw:
     volumes:
       - ./openclaw-dev/config.json:/home/node/.openclaw/config.json:ro

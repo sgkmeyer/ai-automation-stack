@@ -1,0 +1,29 @@
+{
+  "workflowName": "MEM-03 - Memory Context Command",
+  "workflowVersion": "2026.03.11",
+  "status": "draft",
+  "trigger": {
+    "type": "webhook",
+    "path": "memory/context",
+    "method": "POST"
+  },
+  "purpose": "Handle get/set/delete actions for the context register through one webhook-facing workflow for TARS/OpenClaw.",
+  "inputs": {
+    "required": ["action"],
+    "optional": ["domain", "key", "value"]
+  },
+  "outputs": {
+    "success": ["status", "context", "domain", "key", "reply_text"],
+    "error": ["status", "error", "reply_text"]
+  },
+  "dependencies": [
+    "memory-api service on Docker network",
+    "MEMORY_API_TOKEN available to n8n via environment or credential"
+  ],
+  "failureModes": [
+    "unsupported action",
+    "missing domain/key/value for mutating actions",
+    "memory-api unavailable",
+    "non-2xx response from memory-api"
+  ]
+}

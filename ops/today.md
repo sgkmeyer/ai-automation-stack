@@ -142,6 +142,7 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 - **Agent roles defined** — TAR owns n8n workflow CRUD; Claude Code owns infra/docker-compose/Caddy/git
 - **GitHub Actions SSH trust** — `VM_SSH_KNOWN_HOSTS` secret must stay current when VM host keys rotate
 - **Local `.env` missing `N8N_RUNNERS_AUTH_TOKEN`** — only on VM; should sync for parity
+- **Rotate local `POSTGRES_PASSWORD`** — current value was exposed during local memory-api validation on 2026-03-11; rotate and re-sync dependent services
 
 ---
 

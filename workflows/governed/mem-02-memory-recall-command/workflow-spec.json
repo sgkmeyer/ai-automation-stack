@@ -1,0 +1,29 @@
+{
+  "workflowName": "MEM-02 - Memory Recall Command",
+  "workflowVersion": "2026.03.11",
+  "status": "draft",
+  "trigger": {
+    "type": "webhook",
+    "path": "memory/recall",
+    "method": "POST"
+  },
+  "purpose": "Accept a recall query from TARS/OpenClaw, validate filters, call memory-api /recall, and return a readable answer plus citations.",
+  "inputs": {
+    "required": ["query"],
+    "optional": ["entity_name", "entry_type", "after", "before", "limit", "synthesize"]
+  },
+  "outputs": {
+    "success": ["answer", "entries", "citations", "total_found", "reply_text"],
+    "error": ["status", "error", "reply_text"]
+  },
+  "dependencies": [
+    "memory-api service on Docker network",
+    "MEMORY_API_TOKEN available to n8n via environment or credential"
+  ],
+  "failureModes": [
+    "empty query",
+    "invalid entry_type",
+    "memory-api unavailable",
+    "non-2xx response from memory-api"
+  ]
+}

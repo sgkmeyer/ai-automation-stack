@@ -1,0 +1,186 @@
+{
+  "name": "MEM-03 - Memory Context Command",
+  "active": false,
+  "meta": {
+    "workflowVersion": "2026.03.11",
+    "owner": "TAR",
+    "status": "draft"
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "memory/context",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "Normalize Request",
+      "name": "Normalize Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst action = String(body.action ?? '').toLowerCase();\nif (!['get', 'set', 'delete'].includes(action)) {\n  throw new Error('action must be one of get, set, delete');\n}\nif (action !== 'get' && (!body.domain || !body.key)) {\n  throw new Error('domain and key are required for set/delete');\n}\nif (action === 'set' && (body.value === undefined || body.value === null || body.value === '')) {\n  throw new Error('value is required for set');\n}\nreturn [{ json: {\n  action,\n  domain: body.domain ?? null,\n  key: body.key ?? null,\n  value: body.value ?? null\n}}];"
+      }
+    },
+    {
+      "id": "Route Action",
+      "name": "Route Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [700, 300],
+      "parameters": {
+        "value1": "={{ $json.action }}",
+        "rules": [
+          { "operation": "equal", "value2": "get" },
+          { "operation": "equal", "value2": "set" },
+          { "operation": "equal", "value2": "delete" }
+        ]
+      }
+    },
+    {
+      "id": "Get Context",
+      "name": "Get Context",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [980, 160],
+      "parameters": {
+        "method": "GET",
+        "url": "http://memory-api:8100/context",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.MEMORY_API_TOKEN}}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
+          "neverError": true
+        }
+      }
+    },
+    {
+      "id": "Set Context",
+      "name": "Set Context",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [980, 300],
+      "parameters": {
+        "method": "PUT",
+        "url": "=http://memory-api:8100/context/{{$json.domain}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { key: $json.key, value: $json.value } }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.MEMORY_API_TOKEN}}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
+          "neverError": true
+        }
+      }
+    },
+    {
+      "id": "Delete Context",
+      "name": "Delete Context",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [980, 440],
+      "parameters": {
+        "method": "DELETE",
+        "url": "=http://memory-api:8100/context/{{$json.domain}}/{{$json.key}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.MEMORY_API_TOKEN}}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
+          "neverError": true
+        }
+      }
+    },
+    {
+      "id": "Format Response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1260, 300],
+      "parameters": {
+        "jsCode": "const statusCode = $json.statusCode ?? 500;\nconst payload = $json.body ?? {};\nif (statusCode >= 400) {\n  return [{ json: {\n    status: 'error',\n    reply_text: `Memory context failed (${statusCode}): ${payload.detail ?? 'unknown error'}`,\n    error: payload\n  }}];\n}\nlet reply = 'Context updated.';\nif (payload.context) {\n  reply = 'Current context retrieved.';\n} else if (payload.status === 'deleted') {\n  reply = `Deleted ${payload.domain}/${payload.key}.`;\n}\nreturn [{ json: {\n  status: 'ok',\n  ...payload,\n  reply_text: reply\n}}];"
+      }
+    },
+    {
+      "id": "Respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1520, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Normalize Request", "type": "main", "index": 0 }]]
+    },
+    "Normalize Request": {
+      "main": [[{ "node": "Route Action", "type": "main", "index": 0 }]]
+    },
+    "Route Action": {
+      "main": [
+        [{ "node": "Get Context", "type": "main", "index": 0 }],
+        [{ "node": "Set Context", "type": "main", "index": 0 }],
+        [{ "node": "Delete Context", "type": "main", "index": 0 }]
+      ]
+    },
+    "Get Context": {
+      "main": [[{ "node": "Format Response", "type": "main", "index": 0 }]]
+    },
+    "Set Context": {
+      "main": [[{ "node": "Format Response", "type": "main", "index": 0 }]]
+    },
+    "Delete Context": {
+      "main": [[{ "node": "Format Response", "type": "main", "index": 0 }]]
+    },
+    "Format Response": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  }
+}
