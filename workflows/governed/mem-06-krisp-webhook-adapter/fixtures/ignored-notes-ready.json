@@ -1,0 +1,10 @@
+{
+  "event_type": "notes.ready",
+  "meeting": {
+    "id": "krisp-meeting-003",
+    "title": "Notes Without Transcript"
+  },
+  "notes": {
+    "text": "This event should be ignored in v1 because no transcript text is present."
+  }
+}

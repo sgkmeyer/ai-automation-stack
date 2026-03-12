@@ -18,6 +18,8 @@ workflows/      Workflow design docs
 
 Secrets (`automation/.env`, `automation/openclaw/config.json`) are gitignored and never committed.
 
+Live environment state belongs in `ops/today.md`, not here. Keep this file focused on agent rules and repo guardrails.
+
 ---
 
 ## Deployment Rules
@@ -122,7 +124,7 @@ Output stays on the VM at `/home/ubuntu/`. No local copy in this path.
 | Service | URL | Auth |
 |---------|-----|------|
 | n8n | https://n8n.satoic.com | n8n native |
-| Openclaw | https://openclaw.satoic.com | Caddy basic auth + gateway token |
+| Openclaw | https://openclaw.satoic.com | Openclaw gateway token |
 | Portainer | https://portainer.satoic.com | Caddy basic auth + Portainer native |
 
 Dev stack (when running): `http://100.82.169.113:5679` (Tailscale direct access — no tunnel needed).
@@ -132,5 +134,6 @@ Dev stack (when running): `http://100.82.169.113:5679` (Tailscale direct access 
 ## Current State Reference
 
 See `ops/today.md` for current build state and active priorities.
+See `ops/OPERATING-CONTRACT.md` for the repo-side operating model.
 See `ops/sessions/` (or `ops/`) for dated session logs.
 See `ops/runbooks.md` for full operational procedures.

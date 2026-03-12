@@ -1,0 +1,57 @@
+{
+  "transcriptReady": {
+    "request": {
+      "event_type": "transcript.ready",
+      "meeting": {
+        "id": "krisp-meeting-001",
+        "title": "Dana Stripe Advisor Call",
+        "started_at": "2026-03-12T18:00:00Z",
+        "participants": [
+          { "name": "Stephan Meyer" },
+          { "name": "Dana" }
+        ]
+      },
+      "transcript": {
+        "text": "We aligned on next steps. Dana will review the deck and Stephan will send follow-up materials tomorrow."
+      },
+      "summary": "Aligned on next steps and agreed to send follow-up materials tomorrow.",
+      "action_items": [
+        "Send follow-up materials tomorrow"
+      ],
+      "workspace_id": "workspace-sales"
+    },
+    "expected": {
+      "status": "ok",
+      "contains": ["ingestion_job_id", "summary_entry_id", "summary_checksum", "action_item_entry_ids"]
+    }
+  },
+  "transcriptOnly": {
+    "request": {
+      "event_type": "transcript.ready",
+      "meeting_id": "krisp-meeting-002",
+      "title": "Short Prospect Check-in",
+      "occurred_at": "2026-03-12T19:15:00Z",
+      "transcript_text": "We agreed to revisit pricing next month after budget review."
+    },
+    "expected": {
+      "status": "ok",
+      "contains": ["ingestion_job_id", "summary_entry_id", "summary_operation"]
+    }
+  },
+  "ignoredNonTranscriptEvent": {
+    "request": {
+      "event_type": "notes.ready",
+      "meeting": {
+        "id": "krisp-meeting-003",
+        "title": "Notes Without Transcript"
+      },
+      "notes": {
+        "text": "This event should be ignored in v1 because no transcript text is present."
+      }
+    },
+    "expected": {
+      "status": "ignored",
+      "contains": ["ignored_reason", "event_type", "source_ref"]
+    }
+  }
+}

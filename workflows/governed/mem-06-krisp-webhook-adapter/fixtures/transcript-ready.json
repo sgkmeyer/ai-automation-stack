@@ -1,0 +1,20 @@
+{
+  "event_type": "transcript.ready",
+  "meeting": {
+    "id": "krisp-meeting-001",
+    "title": "Dana Stripe Advisor Call",
+    "started_at": "2026-03-12T18:00:00Z",
+    "participants": [
+      { "name": "Stephan Meyer" },
+      { "name": "Dana" }
+    ]
+  },
+  "transcript": {
+    "text": "We aligned on next steps. Dana will review the deck and Stephan will send follow-up materials tomorrow."
+  },
+  "summary": "Aligned on next steps and agreed to send follow-up materials tomorrow.",
+  "action_items": [
+    "Send follow-up materials tomorrow"
+  ],
+  "workspace_id": "workspace-sales"
+}

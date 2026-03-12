@@ -19,6 +19,26 @@ Routes:
 - `POST /ingest/document`
 - `POST /ingest/transcript`
 
+## Source Adapters
+
+The normalized transcript ingest route is not the same thing as a vendor-facing
+source adapter.
+
+Krisp should target a dedicated adapter endpoint:
+
+- Production: `https://n8n.satoic.com/webhook/memory/ingest/krisp`
+- Dev validation: VM-local replay into `n8n-webhook` (see `ops/runbooks-memory.md`)
+
+That adapter is responsible for:
+
+- validating the Krisp shared-secret header
+- normalizing Krisp webhook payloads
+- forwarding transcript-bearing events to `POST /ingest/transcript`
+- appending an operator-visible ingest audit record
+
+Manual callers should continue using the normalized transcript route through
+`scripts/memory-webhook.sh transcript ...`.
+
 ## End-User CLI
 
 Use [memory-webhook.sh](/Users/sgkmeyer/ai-automation-stack/scripts/memory-webhook.sh) for manual use instead of hand-writing curl payloads.

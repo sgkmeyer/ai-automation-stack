@@ -155,6 +155,7 @@ services:
       - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
       - N8N_DEFAULT_BINARY_DATA_MODE=database
       - CODE_ENABLE_PROCESS_ENV_ACCESS=false
+      - NODES_EXCLUDE=${NODES_EXCLUDE:-[]}
 
       # ---- App-level config ----
       - ADMIN_EMAIL=${ADMIN_EMAIL}
@@ -210,6 +211,7 @@ services:
       - N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
       - N8N_DEFAULT_BINARY_DATA_MODE=database
       - CODE_ENABLE_PROCESS_ENV_ACCESS=false
+      - NODES_EXCLUDE=${NODES_EXCLUDE:-[]}
 
       # ---- App-level config ----
       - ADMIN_EMAIL=${ADMIN_EMAIL}
@@ -268,6 +270,7 @@ services:
       - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
       - N8N_DEFAULT_BINARY_DATA_MODE=database
       - CODE_ENABLE_PROCESS_ENV_ACCESS=false
+      - NODES_EXCLUDE=${NODES_EXCLUDE:-[]}
 
       # ---- App-level config ----
       - ADMIN_EMAIL=${ADMIN_EMAIL}

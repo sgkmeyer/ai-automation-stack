@@ -244,11 +244,15 @@ cd /Users/sgkmeyer/ai-automation-stack
 ./scripts/vm-safe.sh logs openclaw 30
 ./scripts/vm-safe.sh ps
 ./scripts/vm-safe.sh check-external
+./scripts/verify.sh
+./scripts/verify-memory-webhook.sh
 ```
 Notes:
 - Every action prints the exact command and requires explicit approval.
 - Actions are restricted to an allowlist to reduce accidental destructive changes.
 - For non-interactive runs, pass `--yes` (only for trusted contexts).
+- `check-external` and `verify.sh` enforce the public smoke contract: `n8n=200`, `openclaw=200`, `portainer=401`, with retries.
+- `verify-memory-webhook.sh` exercises the live `memory/context` webhook using a dedicated smoke-only key and cleans it up afterward.
 - `dr-backup` creates VM archives, copies them to local `.dr-backups/`, and writes `ops/dr-manifests/dr-backup-*.md`.
 - `deploy-dev` is safe against Caddy port collisions (runs dev compose with `--scale caddy=0`).
 

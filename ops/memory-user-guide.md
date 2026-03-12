@@ -315,7 +315,15 @@ That means later recall can find:
 
 ### Current End-User Workflow
 
-If Krisp is not yet automatically wired, ingest transcripts manually.
+Preferred path once Krisp webhook wiring is enabled:
+
+- Krisp sends transcript-bearing webhook events directly to the memory stack
+- the adapter normalizes them and ingests them automatically
+- later recall should surface the conversation without extra user steps
+
+Fallback path:
+
+- if Krisp webhook wiring is not yet live or a delivery fails, ingest the transcript manually
 
 Example:
 
@@ -332,6 +340,27 @@ Expected result:
 - the transcript summary is stored
 - action items are stored as separate memory entries
 - later OpenClaw recall can surface that conversation
+
+### Krisp Webhook Validation
+
+For replay-based validation from your laptop, use:
+
+```bash
+KRISP_WEBHOOK_SECRET=REPLACE_ME \
+scripts/replay-krisp-webhook.sh \
+  --payload workflows/governed/mem-06-krisp-webhook-adapter/fixtures/transcript-ready.json
+```
+
+Current note for dev validation:
+
+- in the current queue-mode dev overlay, `http://100.82.169.113:5679` is the editor/UI service, not the production webhook listener
+- dev Krisp replay currently needs to run VM-local against the `n8n-webhook` service, as documented in [ops/runbooks-memory.md](/Users/sgkmeyer/ai-automation-stack/ops/runbooks-memory.md)
+
+For production Krisp configuration:
+
+- URL: `https://n8n.satoic.com/webhook/memory/ingest/krisp`
+- Header: `x-krisp-webhook-secret`
+- Value: the secret stored in the `Krisp Webhook Header Auth` credential
 
 ### What Krisp Is Good For
 

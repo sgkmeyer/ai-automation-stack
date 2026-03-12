@@ -99,6 +99,40 @@ print(urllib.request.urlopen(req).read().decode())
 PY
 ```
 
+## Krisp Adapter Replay Check
+
+Prerequisites:
+
+- `Krisp Webhook Header Auth` exists in the target n8n environment with the correct shared secret
+- `NODES_EXCLUDE=[]` is set so the Krisp adapter can use `Execute Command` for the audit trail
+- `MEM-06 - Krisp Webhook Adapter` is imported into the target n8n environment
+
+Note:
+
+- In the current queue-mode dev overlay, host port `5679` is the editor/UI on `n8n`, not the production webhook listener on `n8n-webhook`
+- Dev replay currently needs to run inside the VM against `n8n-webhook` itself unless the dev webhook listener is exposed separately
+
+Replay a sample or captured Krisp webhook body into the dev adapter from the VM side:
+
+```bash
+ssh satoic-production "cd /home/ubuntu/automation && \
+  docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml -f docker-compose.dev.yml \
+  --project-name automation-dev exec -T n8n-webhook sh -lc \
+  'cat >/tmp/krisp-transcript.json && \
+   wget -S -O - \
+     --header=Content-Type:application/json \
+     --header=x-krisp-webhook-secret:REPLACE_WITH_KRISP_WEBHOOK_SECRET \
+     --post-file=/tmp/krisp-transcript.json \
+     http://127.0.0.1:5678/webhook/memory/ingest/krisp'" \
+  < workflows/governed/mem-06-krisp-webhook-adapter/fixtures/transcript-ready.json
+```
+
+Expected result:
+
+- transcript-bearing payloads return a successful ingest response
+- non-transcript payloads return an ignored response
+- the Krisp adapter appends an audit line to `/home/node/.n8n/krisp-ingest.ndjson`
+
 ## Reset Memory
 
 ```bash

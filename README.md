@@ -59,6 +59,18 @@ See [ops/architecture.md](/Users/sgkmeyer/ai-automation-stack/ops/architecture.m
 - [sql](/Users/sgkmeyer/ai-automation-stack/sql): schema scripts for durable system data
 - [workflows](/Users/sgkmeyer/ai-automation-stack/workflows): workflow-specific design notes
 
+## Operational Reference
+
+Use the docs in this order:
+
+1. [ops/today.md](/Users/sgkmeyer/ai-automation-stack/ops/today.md) for live environment state, active priorities, and known risks
+2. [ops/runbooks.md](/Users/sgkmeyer/ai-automation-stack/ops/runbooks.md) for operating procedures, recovery, and credential rotation
+3. [ops/OPERATING-CONTRACT.md](/Users/sgkmeyer/ai-automation-stack/ops/OPERATING-CONTRACT.md) for the repo-side operating model and cleanup priorities
+4. [ops/SESSION-YYYY-MM-DD.md](/Users/sgkmeyer/ai-automation-stack/ops/SESSION-TEMPLATE.md) for dated execution history and handoff details
+5. [CLAUDE.md](/Users/sgkmeyer/ai-automation-stack/CLAUDE.md) for agent behavior and repo guardrails
+
+`README.md` is the stable architecture and repository-contract document. It should not become the live status dashboard.
+
 ## Current Direction
 
 The current cleanup focus is to harden the repo contract before broadening the second-brain layer. That means:
@@ -70,30 +82,33 @@ The current cleanup focus is to harden the repo contract before broadening the s
 
 ## Operations
 
-Pull current VM state:
+Start a session:
 
 ```bash
 cd /Users/sgkmeyer/ai-automation-stack
+./scripts/start-session.sh
+```
+
+Pull current VM state when local drift needs to be reconciled:
+
+```bash
 ./scripts/sync-from-vm.sh
 ```
 
-Deploy changes to the VM:
+Normal deploy path:
+
+```bash
+git push origin main
+./scripts/vm-safe.sh deploy
+```
+
+Emergency-only direct sync path:
 
 ```bash
 ./scripts/sync-to-vm.sh
 ```
 
-Apply the stack on the VM:
-
-```bash
-cd /home/ubuntu/automation
-docker compose \
-  -f docker-compose.yml \
-  -f docker-compose.chromium-native.yml \
-  -f docker-compose.chromium-ip.yml \
-  up -d
-docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
-```
+Routine changes should not be applied by hand on the VM. Use the GitOps path and dev-first validation for runtime-affecting changes.
 
 ## Current Auth Model
 

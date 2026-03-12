@@ -1,0 +1,135 @@
+{
+  "id": "mem06krispwebhookadapter",
+  "name": "MEM-06 - Krisp Webhook Adapter",
+  "active": false,
+  "meta": {
+    "workflowVersion": "2026.03.12",
+    "owner": "TAR",
+    "status": "draft"
+  },
+  "versionId": "7478f8f2-0b7e-40a6-a667-5ec72fd76f1c",
+  "pinData": {},
+  "tags": [],
+  "triggerCount": 0,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "a4a9be4f-94f8-4f7d-9d9d-5f8e12c63a1b",
+      "position": [220, 320],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "krisp-webhook-header-auth",
+          "name": "Krisp Webhook Header Auth"
+        }
+      },
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "memory/ingest/krisp",
+        "responseMode": "responseNode",
+        "authentication": "headerAuth"
+      }
+    },
+    {
+      "id": "Route Decision",
+      "name": "Route Decision",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [520, 320],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ (() => { const body = $json.body ?? $json; const pick = (...values) => values.find((value) => typeof value === 'string' && value.trim()); const transcriptText = pick(body.transcript_text, body.transcript?.text, body.transcript?.content, typeof body.transcript === 'string' ? body.transcript : null, body.meeting?.transcript_text, body.data?.transcript_text, body.data?.transcript?.text, body.content?.transcript_text); return transcriptText ? 1 : 0; })() }}"
+      }
+    },
+    {
+      "id": "Log Ignored",
+      "name": "Log Ignored",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [860, 220],
+      "parameters": {
+        "command": "={{ (() => { const body = $node[\"Webhook\"].json.body ?? $node[\"Webhook\"].json; const pick = (...values) => values.find((value) => typeof value === 'string' && value.trim()); const eventType = pick(body.event_type, body.eventType, body.type, body.trigger?.type) || 'unknown'; const title = pick(body.title, body.meeting?.title, body.meeting_name, body.meeting?.name); const occurredAt = pick(body.occurred_at, body.occurredAt, body.started_at, body.meeting?.started_at, body.meeting?.start_time, body.timestamp); const stableId = pick(body.source_ref, body.meeting_id, body.meeting?.id, body.transcript_id, body.transcript?.id, body.conversation_id, body.conversation?.id, body.data?.meeting_id, body.data?.conversation_id); const slug = (title || 'call').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'call'; const stamp = new Date(occurredAt || Date.now()); const iso = Number.isNaN(stamp.getTime()) ? new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-') : stamp.toISOString().slice(0, 16).replace(/[:T]/g, '-'); const sourceRef = stableId ? `krisp:${stableId}` : `krisp:${iso}-${slug}`; const titleStamp = new Date(occurredAt || Date.now()); const normalizedTitle = title || `Call - ${(Number.isNaN(titleStamp.getTime()) ? new Date() : titleStamp).toISOString()}`; const audit = { received_at: new Date().toISOString(), source: 'krisp', event_type: eventType, source_ref: sourceRef, title: normalizedTitle, decision: 'ignored', ignored_reason: 'missing_transcript_text', failure_reason: null }; const path = '/home/node/.n8n/krisp-ingest.ndjson'; const line = JSON.stringify(audit).replace(/'/g, `'\"'\"'`); return `mkdir -p \"$(dirname \\\"${path}\\\")\" && printf '%s\\\\n' '${line}' >> \"${path}\"`; })() }}"
+      }
+    },
+    {
+      "id": "Respond Ignored",
+      "name": "Respond Ignored",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1160, 220],
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 202,
+        "responseBody": "={{ (() => { const body = $node[\"Webhook\"].json.body ?? $node[\"Webhook\"].json; const pick = (...values) => values.find((value) => typeof value === 'string' && value.trim()); const eventType = pick(body.event_type, body.eventType, body.type, body.trigger?.type) || 'unknown'; const title = pick(body.title, body.meeting?.title, body.meeting_name, body.meeting?.name); const occurredAt = pick(body.occurred_at, body.occurredAt, body.started_at, body.meeting?.started_at, body.meeting?.start_time, body.timestamp); const stableId = pick(body.source_ref, body.meeting_id, body.meeting?.id, body.transcript_id, body.transcript?.id, body.conversation_id, body.conversation?.id, body.data?.meeting_id, body.data?.conversation_id); const slug = (title || 'call').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'call'; const stamp = new Date(occurredAt || Date.now()); const iso = Number.isNaN(stamp.getTime()) ? new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-') : stamp.toISOString().slice(0, 16).replace(/[:T]/g, '-'); const sourceRef = stableId ? `krisp:${stableId}` : `krisp:${iso}-${slug}`; const titleStamp = new Date(occurredAt || Date.now()); return { status: 'ignored', ignored_reason: 'missing_transcript_text', event_type: eventType, source_ref: sourceRef, title: title || `Call - ${(Number.isNaN(titleStamp.getTime()) ? new Date() : titleStamp).toISOString()}` }; })() }}"
+      }
+    },
+    {
+      "id": "Call memory-api",
+      "name": "Call memory-api",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [860, 520],
+      "credentials": {
+        "httpHeaderAuth": "Memory API Header Auth"
+      },
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-api:8100/ingest/transcript",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const body = $node[\"Webhook\"].json.body ?? $node[\"Webhook\"].json; const pick = (...values) => values.find((value) => typeof value === 'string' && value.trim()); const toArray = (value) => Array.isArray(value) ? value : (value == null ? [] : [value]); const normalizeName = (value) => { if (typeof value === 'string') return value.trim(); if (value && typeof value === 'object') return pick(value.name, value.full_name, value.display_name) || ''; return ''; }; const participants = toArray(body.participants ?? body.meeting?.participants ?? body.attendees ?? body.meeting_attendees).map(normalizeName).filter(Boolean); const actionItems = toArray(body.action_items ?? body.actionItems ?? body.summary?.action_items ?? body.notes?.action_items).map((item) => typeof item === 'string' ? item.trim() : pick(item?.text, item?.title, item?.value)).filter(Boolean); const transcriptText = pick(body.transcript_text, body.transcript?.text, body.transcript?.content, typeof body.transcript === 'string' ? body.transcript : null, body.meeting?.transcript_text, body.data?.transcript_text, body.data?.transcript?.text, body.content?.transcript_text); const eventType = pick(body.event_type, body.eventType, body.type, body.trigger?.type) || 'unknown'; const title = pick(body.title, body.meeting?.title, body.meeting_name, body.meeting?.name); const occurredAt = pick(body.occurred_at, body.occurredAt, body.started_at, body.meeting?.started_at, body.meeting?.start_time, body.timestamp); const stableId = pick(body.source_ref, body.meeting_id, body.meeting?.id, body.transcript_id, body.transcript?.id, body.conversation_id, body.conversation?.id, body.data?.meeting_id, body.data?.conversation_id); const slug = (title || 'call').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'call'; const stamp = new Date(occurredAt || Date.now()); const iso = Number.isNaN(stamp.getTime()) ? new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-') : stamp.toISOString().slice(0, 16).replace(/[:T]/g, '-'); const normalizedTitleStamp = new Date(occurredAt || Date.now()); return { source_ref: stableId ? `krisp:${stableId}` : `krisp:${iso}-${slug}`, title: title || `Call - ${(Number.isNaN(normalizedTitleStamp.getTime()) ? new Date() : normalizedTitleStamp).toISOString()}`, transcript_text: transcriptText, summary: pick(body.summary, body.summary_text, body.notes?.summary, body.meeting_summary) || null, occurred_at: occurredAt || null, participants, action_items: actionItems, tags: ['krisp', 'transcript', 'call'], metadata: { source: 'krisp', source_event_type: eventType, meeting_id: pick(body.meeting_id, body.meeting?.id, body.data?.meeting_id) || null, transcript_id: pick(body.transcript_id, body.transcript?.id, body.data?.transcript_id) || null, conversation_id: pick(body.conversation_id, body.conversation?.id, body.data?.conversation_id) || null, workspace_id: pick(body.workspace_id, body.workspace?.id, body.account_id) || null, raw_timestamp: pick(body.timestamp, body.created_at, body.updated_at) || null, raw_title: title || null } }; })() }}"
+      }
+    },
+    {
+      "id": "Log Ingest Outcome",
+      "name": "Log Ingest Outcome",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1160, 520],
+      "parameters": {
+        "command": "={{ (() => { const body = $node[\"Webhook\"].json.body ?? $node[\"Webhook\"].json; const pick = (...values) => values.find((value) => typeof value === 'string' && value.trim()); const eventType = pick(body.event_type, body.eventType, body.type, body.trigger?.type) || 'unknown'; const title = pick(body.title, body.meeting?.title, body.meeting_name, body.meeting?.name); const occurredAt = pick(body.occurred_at, body.occurredAt, body.started_at, body.meeting?.started_at, body.meeting?.start_time, body.timestamp); const stableId = pick(body.source_ref, body.meeting_id, body.meeting?.id, body.transcript_id, body.transcript?.id, body.conversation_id, body.conversation?.id, body.data?.meeting_id, body.data?.conversation_id); const slug = (title || 'call').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'call'; const stamp = new Date(occurredAt || Date.now()); const iso = Number.isNaN(stamp.getTime()) ? new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-') : stamp.toISOString().slice(0, 16).replace(/[:T]/g, '-'); const sourceRef = stableId ? `krisp:${stableId}` : `krisp:${iso}-${slug}`; const titleStamp = new Date(occurredAt || Date.now()); const normalizedTitle = title || `Call - ${(Number.isNaN(titleStamp.getTime()) ? new Date() : titleStamp).toISOString()}`; const failureReason = $json.error?.message || $json.error?.description || null; const audit = { received_at: new Date().toISOString(), source: 'krisp', event_type: eventType, source_ref: sourceRef, title: normalizedTitle, decision: failureReason ? 'failed' : 'ingested', ignored_reason: null, failure_reason: failureReason }; const path = '/home/node/.n8n/krisp-ingest.ndjson'; const line = JSON.stringify(audit).replace(/'/g, `'\"'\"'`); return `mkdir -p \"$(dirname \\\"${path}\\\")\" && printf '%s\\\\n' '${line}' >> \"${path}\"`; })() }}"
+      }
+    },
+    {
+      "id": "Respond Ingest",
+      "name": "Respond Ingest",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1460, 520],
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": "={{ $node[\"Call memory-api\"].json.error ? 502 : 200 }}",
+        "responseBody": "={{ (() => { if (!$node[\"Call memory-api\"].json.error) return $node[\"Call memory-api\"].json; const body = $node[\"Webhook\"].json.body ?? $node[\"Webhook\"].json; const pick = (...values) => values.find((value) => typeof value === 'string' && value.trim()); const eventType = pick(body.event_type, body.eventType, body.type, body.trigger?.type) || 'unknown'; const title = pick(body.title, body.meeting?.title, body.meeting_name, body.meeting?.name); const occurredAt = pick(body.occurred_at, body.occurredAt, body.started_at, body.meeting?.started_at, body.meeting?.start_time, body.timestamp); const stableId = pick(body.source_ref, body.meeting_id, body.meeting?.id, body.transcript_id, body.transcript?.id, body.conversation_id, body.conversation?.id, body.data?.meeting_id, body.data?.conversation_id); const slug = (title || 'call').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'call'; const stamp = new Date(occurredAt || Date.now()); const iso = Number.isNaN(stamp.getTime()) ? new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-') : stamp.toISOString().slice(0, 16).replace(/[:T]/g, '-'); const sourceRef = stableId ? `krisp:${stableId}` : `krisp:${iso}-${slug}`; return { status: 'error', error: $node[\"Call memory-api\"].json.error?.message || $node[\"Call memory-api\"].json.error?.description || 'memory_api_error', source_ref: sourceRef, event_type: eventType }; })() }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Route Decision", "type": "main", "index": 0 }]]
+    },
+    "Route Decision": {
+      "main": [
+        [{ "node": "Log Ignored", "type": "main", "index": 0 }],
+        [{ "node": "Call memory-api", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log Ignored": {
+      "main": [[{ "node": "Respond Ignored", "type": "main", "index": 0 }]]
+    },
+    "Call memory-api": {
+      "main": [[{ "node": "Log Ingest Outcome", "type": "main", "index": 0 }]]
+    },
+    "Log Ingest Outcome": {
+      "main": [[{ "node": "Respond Ingest", "type": "main", "index": 0 }]]
+    }
+  }
+}

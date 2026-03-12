@@ -15,6 +15,30 @@ fi
 
 say() { printf "%s\n" "$*"; }
 
+check_url() {
+  local url="${1:?}"
+  local expected="${2:?}"
+  local retries="${3:-3}"
+  local delay="${4:-10}"
+  local code=""
+  local attempt=""
+
+  for attempt in $(seq 1 "${retries}"); do
+    code="$(curl -fsS -o /dev/null -w "%{http_code}" "${url}" || true)"
+    if [[ "${code}" == "${expected}" ]]; then
+      say "OK   ${url} -> ${code}"
+      return 0
+    fi
+    if [[ "${attempt}" -lt "${retries}" ]]; then
+      say "RETRY ${url} -> ${code} (expected ${expected}, attempt ${attempt}/${retries})"
+      sleep "${delay}"
+    fi
+  done
+
+  say "FAIL ${url} -> ${code} (expected ${expected})"
+  return 1
+}
+
 confirm() {
   local prompt="${1:?}"
   local reply=""
@@ -32,7 +56,7 @@ Usage:
 
 Actions:
   health
-    VM docker compose ps + recent logs (last 30m) for core services.
+    VM docker compose ps + memory-api health + recent logs (last 30m) for core services.
 
   deploy
     Run GitOps deploy script on VM:
@@ -62,7 +86,8 @@ Actions:
     Show docker compose ps for the dev stack.
 
   check-external
-    Run endpoint checks from local machine (n8n/openclaw/portainer).
+    Run external smoke checks from local machine.
+    Expected: n8n=200, openclaw=200, portainer=401.
 EOF
 }
 
@@ -113,8 +138,8 @@ shift || true
 case "${action}" in
   health)
     run_vm_cmd \
-      "VM health (compose ps + recent logs)" \
-      "set -euo pipefail; ${compose_ps_cmd}; echo; docker logs --since 30m --tail 80 automation-caddy-1 || true; docker logs --since 30m --tail 80 automation-n8n-1 || true; docker logs --since 30m --tail 80 automation-openclaw-1 || true; docker logs --since 30m --tail 80 automation-chromium-1 || true; docker logs --since 30m --tail 80 automation-portainer-1 || true"
+      "VM health (compose ps + memory-api health + recent logs)" \
+      "set -euo pipefail; ${compose_ps_cmd}; echo; cd ${VM_REPO_DIR}; docker compose --env-file automation/.env -f automation/docker-compose.yml exec -T memory-api python -c 'import urllib.request; print(urllib.request.urlopen(\"http://localhost:8100/health\").read().decode())'; echo; docker logs --since 30m --tail 80 automation-caddy-1 || true; docker logs --since 30m --tail 80 automation-n8n-1 || true; docker logs --since 30m --tail 80 automation-openclaw-1 || true; docker logs --since 30m --tail 80 automation-memory-api-1 || true; docker logs --since 30m --tail 80 automation-chromium-1 || true; docker logs --since 30m --tail 80 automation-portainer-1 || true"
     ;;
   deploy)
     run_vm_cmd \
@@ -216,14 +241,14 @@ EOF
       "set -euo pipefail; ${compose_ps_cmd}"
     ;;
   check-external)
-    say "Action: external endpoint checks from local machine"
+    say "Action: external smoke checks from local machine"
     if ! confirm "Approve this local action?"; then
       say "Skipped."
       exit 0
     fi
-    curl -I https://n8n.satoic.com
-    curl -I https://openclaw.satoic.com
-    curl -I https://portainer.satoic.com
+    check_url https://n8n.satoic.com 200
+    check_url https://openclaw.satoic.com 200
+    check_url https://portainer.satoic.com 401
     ;;
   deploy-dev)
     run_vm_cmd \

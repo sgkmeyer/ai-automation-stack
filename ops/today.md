@@ -1,7 +1,7 @@
 # Today — Current Build State
 
 > Manually maintained. Update at the end of each session alongside the dated session log.
-> Last updated: 2026-03-11
+> Last updated: 2026-03-12
 
 ---
 
@@ -36,7 +36,7 @@
 
 ## Active Priorities (next session)
 
-- [ ] Wire Krisp transcript output into `/webhook/memory/ingest/transcript`
+- [ ] Wire Krisp transcript output into `/webhook/memory/ingest/krisp`
 - [ ] Generate end-user UAT scripts for memory through Openclaw, Obsidian, and Krisp
 - [ ] Create first real Obsidian seed notes and ingest them into memory
 - [ ] Decide on the long-term “second brain” pattern for current truth vs journal history vs durable events
@@ -48,6 +48,9 @@
 - [ ] Set up shared handoff directory for Claude Code ↔ TAR async communication
 - [ ] Test JS-01 end-to-end: `/lead <url>` → Openclaw → n8n → Postgres → HubSpot → Drive → Gmail
 - [ ] Consider czlonkowski/n8n-mcp for better workflow authoring from Claude Code
+- [x] Rotate `POSTGRES_PASSWORD` to a new URL-safe value and re-sync prod/dev DB-dependent services (2026-03-12)
+- [x] Rotate `satoic_operator` SSH key on the Mac and VM (2026-03-12)
+- [x] Rotate `satoic_ci` SSH key and GitHub secret `VM_SSH_PRIVATE_KEY` (2026-03-12)
 - [x] Openclaw security hardening: gateway.auth.rateLimit + hooks.defaultSessionKey applied (2026-03-03)
 - [x] Security audit baseline: 0 critical on both dev and prod (2026-03-03)
 - [x] Dev Openclaw: added controlUi.allowedOrigins + fixed config perms (2026-03-03)
@@ -124,22 +127,20 @@ See `ops/runbooks.md` for step-by-step procedure.
 | `satoic_ci` | GitHub Actions CI/CD only | `~/.ssh/satoic_ci` + GitHub secret `VM_SSH_PRIVATE_KEY` |
 | `id_ed25519_github` | GitHub git operations | `~/.ssh/id_ed25519_github` |
 
-**Next key rotation due: ~2026-03-20**
-To rotate `satoic_operator`: generate new key → add to VM `authorized_keys` → remove old entry → update `~/.ssh/config`.
-To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `authorized_keys` → remove old entry.
+**Last SSH key rotation:** `satoic_operator` and `satoic_ci` rotated successfully on 2026-03-12.
 
 ---
 
 ## Open Items / Known Risks
 
-- **SSH key rotation due ~2026-03-20** — rotate `satoic_operator` and `satoic_ci` (see SSH Key Inventory above)
 - **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
 - **Obsidian ingress path** — currently manual `./scripts/sync-obsidian-vault.sh` from Mac to VM; no schedule yet
-- **Krisp upstream wiring** — transcript ingest endpoint is live, but the Krisp webhook/pass-through path is not yet wired
+- **Krisp upstream wiring** — dedicated adapter path is `POST /webhook/memory/ingest/krisp`; repo artifacts are in place and dev replay is validated VM-local against `n8n-webhook`, but production Krisp configuration is still pending
 - **Tailscale GitHub Action authkey deprecation warning** — OAuth clients require a paid plan (not available on Free); authkey still works, revisit if plan upgraded or Tailscale forces migration
 - **Dev stack running** — n8n 2.11.2 + Openclaw v2026.3.8 validated on dev (2026-03-11)
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json`; propagated to all n8n services (2026-02-23)
+- **`POSTGRES_PASSWORD` format** — keep it URL-safe (`A-Za-z0-9._~-`) unless the compose-built DSNs are updated to URL-encode credentials; `memory-api` consumes a full DB URL assembled from env vars
 - **Openclaw config schema (v2026.2.26+)** — `trustedProxies` and `controlUi` inside `gateway` section; `gateway.auth.rateLimit` uses `maxAttempts/windowMs/lockoutMs/exemptLoopback` (not `enabled/window/maxFailures`)
 - **Openclaw security audit baseline** — 0 critical on both dev/prod (2026-03-03); see `ops/security-audit-2026-03-03.md`
 - **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.3.8`
@@ -153,7 +154,6 @@ To rotate `satoic_ci`: generate new key → update GitHub secret → add to VM `
 - **Agent roles defined** — TAR owns n8n workflow CRUD; Claude Code owns infra/docker-compose/Caddy/git
 - **GitHub Actions SSH trust** — `VM_SSH_KNOWN_HOSTS` secret must stay current when VM host keys rotate
 - **Local `.env` missing `N8N_RUNNERS_AUTH_TOKEN`** — only on VM; should sync for parity
-- **Rotate local `POSTGRES_PASSWORD`** — current value was exposed during local memory-api validation on 2026-03-11; rotate and re-sync dependent services
 
 ---
 

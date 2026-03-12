@@ -5,6 +5,7 @@ automation_redacted/
 automation/openclaw/workspace/.git/
 automation/openclaw/config.json
 automation/openclaw/config.json.bak*
+automation/openclaw/config.json.local-backup-*
 automation/openclaw/credentials/
 automation/openclaw/devices/
 automation/openclaw/identity/
@@ -23,5 +24,7 @@ automation/openclaw-dev/
 ops/start-session-*.log
 .dr-backups/
 .claude/
+.DS_Store
+automation/.env.save
 __pycache__/
 *.py[cod]

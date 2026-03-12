@@ -1,0 +1,41 @@
+{
+  "workflowName": "MEM-06 - Krisp Webhook Adapter",
+  "workflowVersion": "2026.03.12",
+  "status": "draft",
+  "trigger": {
+    "type": "webhook",
+    "path": "memory/ingest/krisp",
+    "method": "POST"
+  },
+  "purpose": "Accept Krisp Webhook API payloads, authenticate them with a shared secret header, normalize transcript-bearing events into the internal transcript-ingest contract, and call memory-api /ingest/transcript.",
+  "inputs": {
+    "required": ["krisp webhook payload", "x-krisp-webhook-secret header"],
+    "optional": ["summary", "action items", "participants", "meeting metadata", "workspace metadata"]
+  },
+  "outputs": {
+    "success": ["ingestion_job_id", "summary_entry_id", "summary_operation", "summary_checksum", "action_item_entry_ids"],
+    "ignored": ["status", "ignored_reason", "source_ref", "event_type"],
+    "error": ["status", "error", "source_ref", "event_type"]
+  },
+  "dependencies": [
+    "memory-api service on Docker network",
+    "Memory API Header Auth credential in n8n",
+    "Krisp Webhook Header Auth credential in n8n",
+    "KRISP_WEBHOOK_LOG_PATH writable inside the n8n runtime",
+    "n8n Execute Command node enabled via NODES_EXCLUDE=[]"
+  ],
+  "failureModes": [
+    "missing or invalid Krisp secret header",
+    "non-transcript Krisp event without transcript text",
+    "missing stable meeting identity and no fallback title/timestamp",
+    "memory-api unavailable",
+    "non-2xx response from memory-api",
+    "Execute Command node unavailable in target n8n runtime"
+  ],
+  "notes": [
+    "Use Krisp-derived meeting/conversation identifiers for source_ref when available; otherwise fall back to a timestamped krisp slug.",
+    "Transcript text is required for durable ingest. Summary and action items are optional enrichments.",
+    "Append one NDJSON audit record per authenticated webhook event to /home/node/.n8n/krisp-ingest.ndjson with decision, source_ref, title, and failure/ignore reason when applicable.",
+    "This workflow is the vendor-specific adapter. The normalized contract remains MEM-05 / memory-api /ingest/transcript."
+  ]
+}
