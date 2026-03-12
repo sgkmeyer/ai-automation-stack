@@ -3,6 +3,7 @@
 import json
 from datetime import datetime
 from uuid import UUID
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field, field_validator
@@ -14,6 +15,17 @@ from ..memory_types import ENTRY_TYPES
 from ..synthesis import synthesize_answer
 
 router = APIRouter()
+
+
+def _display_zone() -> ZoneInfo:
+    try:
+        return ZoneInfo(settings.display_timezone)
+    except ZoneInfoNotFoundError:
+        return ZoneInfo("UTC")
+
+
+def _format_local_time(value: datetime) -> str:
+    return value.astimezone(_display_zone()).strftime("%Y-%m-%d %I:%M %p %Z")
 
 
 class RecallRequest(BaseModel):
@@ -47,6 +59,8 @@ class RecallEntry(BaseModel):
     body: str
     source: str
     occurred_at: datetime
+    occurred_at_local: str
+    display_timezone: str
     entities: list[dict]
 
 
@@ -55,6 +69,8 @@ class Citation(BaseModel):
     entry_id: UUID
     entry_type: str
     occurred_at: datetime
+    occurred_at_local: str
+    display_timezone: str
 
 
 class RecallResponse(BaseModel):
@@ -160,6 +176,8 @@ async def recall(req: RecallRequest):
             body=row["body"],
             source=row["source"],
             occurred_at=row["occurred_at"],
+            occurred_at_local=_format_local_time(row["occurred_at"]),
+            display_timezone=settings.display_timezone,
             entities=_decode_entities(row["entities"]),
         )
         for row in rows
@@ -173,7 +191,14 @@ async def recall(req: RecallRequest):
             answer = None
 
     citations = [
-        Citation(index=index, entry_id=entry.entry_id, entry_type=entry.entry_type, occurred_at=entry.occurred_at)
+        Citation(
+            index=index,
+            entry_id=entry.entry_id,
+            entry_type=entry.entry_type,
+            occurred_at=entry.occurred_at,
+            occurred_at_local=entry.occurred_at_local,
+            display_timezone=settings.display_timezone,
+        )
         for index, entry in enumerate(entries, start=1)
     ]
 
