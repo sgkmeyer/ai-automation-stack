@@ -1,6 +1,6 @@
 {
   "workflowName": "MEM-06 - Krisp Webhook Adapter",
-  "workflowVersion": "2026.03.12",
+  "workflowVersion": "2026.03.12.1",
   "status": "draft",
   "trigger": {
     "type": "webhook",
@@ -21,7 +21,6 @@
     "memory-api service on Docker network",
     "Memory API Header Auth credential in n8n",
     "Krisp Webhook Header Auth credential in n8n",
-    "KRISP_WEBHOOK_LOG_PATH writable inside the n8n runtime",
     "n8n Execute Command node enabled via NODES_EXCLUDE=[]"
   ],
   "failureModes": [
@@ -35,6 +34,7 @@
   "notes": [
     "Use Krisp-derived meeting/conversation identifiers for source_ref when available; otherwise fall back to a timestamped krisp slug.",
     "Transcript text is required for durable ingest. Summary and action items are optional enrichments.",
+    "Observed production Krisp transcript payloads nest the meeting object under data.meeting and transcript content under data.content.description.",
     "Append one NDJSON audit record per authenticated webhook event to /home/node/.n8n/krisp-ingest.ndjson with decision, source_ref, title, and failure/ignore reason when applicable.",
     "This workflow is the vendor-specific adapter. The normalized contract remains MEM-05 / memory-api /ingest/transcript."
   ]
