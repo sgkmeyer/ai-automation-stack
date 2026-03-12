@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     llm_provider: str = "anthropic"
     llm_api_key: str = ""
     llm_model: str = "claude-sonnet-4-20250514"
+    display_timezone: str = "America/Toronto"
     max_recall_results: int = 20
     max_body_length: int = 50000
 
