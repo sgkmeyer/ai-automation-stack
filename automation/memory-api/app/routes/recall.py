@@ -28,6 +28,18 @@ def _format_local_time(value: datetime) -> str:
     return value.astimezone(_display_zone()).strftime("%Y-%m-%d %I:%M %p %Z")
 
 
+def _ranking_bonus_expr() -> str:
+    return """
+        CASE
+            WHEN e.entry_type = 'action_item' THEN 0.95
+            WHEN e.source = 'transcript' AND COALESCE(e.structured->>'source_event_type', '') = 'action_items_generated' THEN 0.85
+            WHEN e.source = 'transcript' AND COALESCE(e.structured->>'source_event_type', '') = 'key_points_generated' THEN 0.75
+            WHEN e.source = 'transcript' AND COALESCE(e.structured->>'source_event_type', '') = 'transcript_created' THEN 0.15
+            ELSE 0
+        END
+    """
+
+
 class RecallRequest(BaseModel):
     query: str = Field(..., max_length=2000, description="Natural language question or search")
     entity_name: str | None = Field(default=None, description="Filter by entity name")
@@ -99,9 +111,9 @@ async def recall(req: RecallRequest):
         param_idx += 1
         conditions.append(f"e.tsv @@ websearch_to_tsquery('english', ${param_idx})")
         params.append(req.query)
-        rank_expr = f"ts_rank_cd(e.tsv, websearch_to_tsquery('english', ${param_idx}))"
+        rank_expr = f"(ts_rank_cd(e.tsv, websearch_to_tsquery('english', ${param_idx})) + {_ranking_bonus_expr()})"
     else:
-        rank_expr = "0"
+        rank_expr = _ranking_bonus_expr()
 
     if req.entity_name:
         param_idx += 1

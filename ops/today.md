@@ -17,6 +17,7 @@
 - GitOps deploy active: push to `main` → SSH → `gitops-deploy.sh`
 - Openclaw paired to Telegram (`@sg_tar_bot`), n8n API wired, Chromium CDP connected
 - Openclaw hooks enabled: `http://openclaw:18789/hooks/` (internal only, dedicated token)
+- Openclaw durable-memory recall now uses the internal Docker route (`http://n8n-webhook:5678/webhook/memory`) instead of the public HTTPS path
 - n8n credentials configured: Gmail, Google Drive, Postgres, HubSpot, Google OAuth (drive.file)
 - `public.leads` table live (unique on `domain`)
 - JS-01 workflow **active** (id: `chwneHrHVCQON462`) — full pipeline wired by TAR
@@ -136,6 +137,7 @@ See `ops/runbooks.md` for step-by-step procedure.
 - **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
 - **Obsidian ingress path** — currently manual `./scripts/sync-obsidian-vault.sh` from Mac to VM; no schedule yet
 - **Krisp upstream wiring** — live in production at `POST /webhook/memory/ingest/krisp`; first real meeting ingest validated on 2026-03-12 (`Stephan / Dana`, source_ref `krisp:019ce2c77998759e9e3d93b1baf7c19b`)
+- **Openclaw recall latency** — internal webhook routing deployed on 2026-03-12; `memory-api /recall` also now biases Krisp `key_points_generated` and `action_items_generated` over raw `transcript_created` rows for faster, smaller recall contexts
 - **Tailscale GitHub Action authkey deprecation warning** — OAuth clients require a paid plan (not available on Free); authkey still works, revisit if plan upgraded or Tailscale forces migration
 - **Dev stack running** — n8n 2.11.2 + Openclaw v2026.3.8 validated on dev (2026-03-11)
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM
