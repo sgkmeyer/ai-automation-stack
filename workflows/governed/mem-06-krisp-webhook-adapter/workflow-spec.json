@@ -33,7 +33,8 @@
   ],
   "notes": [
     "Use Krisp-derived meeting/conversation identifiers for source_ref when available; otherwise fall back to a timestamped krisp slug.",
-    "Transcript text is required for durable ingest. Summary and action items are optional enrichments.",
+    "Transcript-created events write the canonical meeting row; key-points and action-items events write suffixed source_refs so they do not clobber the transcript row.",
+    "Structured action-item arrays from Krisp should be forwarded into explicit action-item entries via /ingest/transcript.",
     "Observed production Krisp transcript payloads nest the meeting object under data.meeting and transcript content under data.content.description.",
     "Append one NDJSON audit record per authenticated webhook event to /home/node/.n8n/krisp-ingest.ndjson with decision, source_ref, title, and failure/ignore reason when applicable.",
     "This workflow is the vendor-specific adapter. The normalized contract remains MEM-05 / memory-api /ingest/transcript."

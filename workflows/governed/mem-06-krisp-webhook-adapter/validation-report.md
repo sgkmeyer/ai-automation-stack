@@ -9,6 +9,7 @@
 - Runtime compatibility: workflow is code-node-free; it avoids blocked `$env` expression access and does not depend on `n8n-task-runner`
 - Runtime gate: target n8n env must expose `NODES_EXCLUDE=[]` so the `Execute Command` node is available for audit-log append steps
 - Production payload note: on March 12, 2026, Krisp `transcript_created` delivered transcript text under `data.content.description` and meeting identity under `data.meeting.*`
+- Production payload note: on March 12, 2026, Krisp also delivered separate `key_points_generated` and `action_items_generated` events for the same meeting, requiring event-specific `source_ref` suffixes to avoid clobbering the transcript row.
 - Missing before dev apply:
   - re-import `MEM-06 - Krisp Webhook Adapter` into dev and production
   - replay the transcript-ready, transcript-only, and ignored-event fixtures against dev

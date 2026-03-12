@@ -44,20 +44,78 @@
   "ignoredNonTranscriptEvent": {
     "request": {
       "id": "019ce3d245217621be2d17e54449b44f",
-      "event": "key_points_generated",
+      "event": "outline_generated",
       "data": {
         "meeting": {
           "id": "krisp-meeting-003",
           "title": "Notes Without Transcript"
-        },
-        "content": {
-          "description": "This event should be ignored in v1 because no transcript text is present."
         }
       }
     },
     "expected": {
       "status": "ignored",
       "contains": ["ignored_reason", "event_type", "source_ref"]
+    }
+  },
+  "keyPointsGenerated": {
+    "request": {
+      "id": "019ce40512a2772b9b392c316a0c2186",
+      "event": "key_points_generated",
+      "data": {
+        "meeting": {
+          "id": "krisp-meeting-004",
+          "title": "Jennifer / Stephan",
+          "start_date": "2026-03-11T20:00:30.529Z",
+          "participants": [
+            { "email": "sgkmeyer@gmail.com" },
+            { "email": "jennifer.albrecht@riipen.com" }
+          ],
+          "url": "https://app.krisp.ai/n/krisp-meeting-004"
+        },
+        "raw_content": "- Purpose of the meeting: Jennifer extended a formal job offer to Stephan for a VP of Sales role at Riipen.\n- Stephan requested a follow-up conversation with Dana before finalizing."
+      }
+    },
+    "expected": {
+      "status": "ok",
+      "contains": ["summary_entry_id", "summary_operation"]
+    }
+  },
+  "actionItemsGenerated": {
+    "request": {
+      "id": "019ce40517b27143b06472cca4d55630",
+      "event": "action_items_generated",
+      "data": {
+        "meeting": {
+          "id": "krisp-meeting-004",
+          "title": "Jennifer / Stephan",
+          "start_date": "2026-03-11T20:00:30.529Z",
+          "participants": [
+            { "email": "sgkmeyer@gmail.com" },
+            { "email": "jennifer.albrecht@riipen.com" }
+          ],
+          "url": "https://app.krisp.ai/n/krisp-meeting-004"
+        },
+        "raw_content": "- [ ] Stephan to have a conversation with Dana about the cap table and investor profile.\n- [ ] Jennifer to arrange a follow-up conversation between Stephan and Dana.",
+        "content": [
+          {
+            "id": "task-1",
+            "title": "Stephan to have a conversation with Dana about the cap table and investor profile.",
+            "assignee": {
+              "email": "sgkmeyer@gmail.com"
+            },
+            "completed": false
+          },
+          {
+            "id": "task-2",
+            "title": "Jennifer to arrange a follow-up conversation between Stephan and Dana.",
+            "completed": false
+          }
+        ]
+      }
+    },
+    "expected": {
+      "status": "ok",
+      "contains": ["summary_entry_id", "summary_operation", "action_item_entry_ids"]
     }
   }
 }
