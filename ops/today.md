@@ -36,7 +36,7 @@
 
 ## Active Priorities (next session)
 
-- [ ] Wire Krisp transcript output into `/webhook/memory/ingest/krisp`
+- [x] Wire Krisp transcript output into `/webhook/memory/ingest/krisp` and validate first real production ingest (2026-03-12)
 - [ ] Generate end-user UAT scripts for memory through Openclaw, Obsidian, and Krisp
 - [ ] Create first real Obsidian seed notes and ingest them into memory
 - [ ] Decide on the long-term “second brain” pattern for current truth vs journal history vs durable events
@@ -135,7 +135,7 @@ See `ops/runbooks.md` for step-by-step procedure.
 
 - **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
 - **Obsidian ingress path** — currently manual `./scripts/sync-obsidian-vault.sh` from Mac to VM; no schedule yet
-- **Krisp upstream wiring** — dedicated adapter path is `POST /webhook/memory/ingest/krisp`; repo artifacts are in place and dev replay is validated VM-local against `n8n-webhook`, but production Krisp configuration is still pending
+- **Krisp upstream wiring** — live in production at `POST /webhook/memory/ingest/krisp`; first real meeting ingest validated on 2026-03-12 (`Stephan / Dana`, source_ref `krisp:019ce2c77998759e9e3d93b1baf7c19b`)
 - **Tailscale GitHub Action authkey deprecation warning** — OAuth clients require a paid plan (not available on Free); authkey still works, revisit if plan upgraded or Tailscale forces migration
 - **Dev stack running** — n8n 2.11.2 + Openclaw v2026.3.8 validated on dev (2026-03-11)
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM

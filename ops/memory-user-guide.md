@@ -315,7 +315,7 @@ That means later recall can find:
 
 ### Current End-User Workflow
 
-Preferred path once Krisp webhook wiring is enabled:
+Preferred path now that Krisp webhook wiring is live:
 
 - Krisp sends transcript-bearing webhook events directly to the memory stack
 - the adapter normalizes them and ingests them automatically
@@ -323,7 +323,7 @@ Preferred path once Krisp webhook wiring is enabled:
 
 Fallback path:
 
-- if Krisp webhook wiring is not yet live or a delivery fails, ingest the transcript manually
+- if a Krisp delivery fails or you need to backfill an older meeting, ingest the transcript manually
 
 Example:
 
