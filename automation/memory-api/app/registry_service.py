@@ -413,6 +413,18 @@ async def _fetch_item(conn, item_id: UUID) -> dict[str, Any] | None:
     return dict(row) if row else None
 
 
+def _metadata_dict(value: Any) -> dict[str, Any]:
+    if isinstance(value, dict):
+        return dict(value)
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+            return parsed if isinstance(parsed, dict) else {}
+        except json.JSONDecodeError:
+            return {}
+    return {}
+
+
 def _merge_metadata(metadata: dict[str, Any], user_note: str | None, user_tags: list[str]) -> dict[str, Any]:
     merged = dict(metadata or {})
     existing_tags = {str(tag).strip() for tag in merged.get("user_tags", []) if str(tag).strip()}
@@ -431,7 +443,7 @@ async def create_registry_capture(*, url: str, note: str | None, tags: list[str]
     async with get_conn() as conn:
         async with conn.transaction():
             existing = await conn.fetchrow("SELECT id, metadata FROM registry.items WHERE canonical_url = $1", canonical.canonical_url)
-            metadata = _merge_metadata(dict(existing["metadata"]) if existing else {}, note, tags)
+            metadata = _merge_metadata(_metadata_dict(existing["metadata"]) if existing else {}, note, tags)
             if existing:
                 item_id = existing["id"]
                 await conn.execute(
@@ -625,7 +637,7 @@ async def process_registry_item(item_id: UUID, *, reprocess: bool = False) -> di
         )
         archive_path = archive_registry_content(item_id, deep.source_kind, deep.canonical_host, deep.canonical_url, extracted)
 
-        metadata = dict(item["metadata"] or {})
+        metadata = _metadata_dict(item["metadata"])
         metadata.update(extracted.metadata)
         metadata["user_tags"] = user_tags
         if notes:
