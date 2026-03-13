@@ -10,6 +10,7 @@ from typing import Any
 from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
 from uuid import UUID
 
+import certifi
 import httpx
 from bs4 import BeautifulSoup
 from youtube_transcript_api import YouTubeTranscriptApi
@@ -35,6 +36,7 @@ DEFAULT_HEADERS = {
         "Chrome/134.0.0.0 Safari/537.36"
     )
 }
+HTTPX_VERIFY = certifi.where()
 
 
 @dataclass
@@ -141,6 +143,7 @@ async def canonicalize_url(url: str, *, deep: bool = False) -> CanonicalUrl:
             timeout=timeout,
             follow_redirects=True,
             headers=DEFAULT_HEADERS,
+            verify=HTTPX_VERIFY,
         ) as client:
             response = await client.request(method, candidate.canonical_url)
             if response.status_code in {403, 405, 501} and method == "HEAD":
@@ -170,7 +173,12 @@ def _youtube_video_id(url: str) -> str | None:
 
 async def _fetch_html_metadata(url: str) -> ExtractedContent:
     timeout = httpx.Timeout(settings.registry_fetch_timeout_seconds)
-    async with httpx.AsyncClient(timeout=timeout, follow_redirects=True, headers=DEFAULT_HEADERS) as client:
+    async with httpx.AsyncClient(
+        timeout=timeout,
+        follow_redirects=True,
+        headers=DEFAULT_HEADERS,
+        verify=HTTPX_VERIFY,
+    ) as client:
         response = await client.get(url)
         response.raise_for_status()
         html = response.text
@@ -220,7 +228,7 @@ async def _fetch_youtube_content(url: str) -> ExtractedContent:
     description = None
     timeout = httpx.Timeout(settings.registry_fetch_timeout_seconds)
     try:
-        async with httpx.AsyncClient(timeout=timeout, headers=DEFAULT_HEADERS) as client:
+        async with httpx.AsyncClient(timeout=timeout, headers=DEFAULT_HEADERS, verify=HTTPX_VERIFY) as client:
             oembed = await client.get(
                 "https://www.youtube.com/oembed",
                 params={"url": f"https://www.youtube.com/watch?v={video_id}", "format": "json"},
@@ -326,7 +334,7 @@ async def summarize_registry_item(
         "- preserve the original meaning; do not invent details.\n"
     )
 
-    async with httpx.AsyncClient(timeout=30) as client:
+    async with httpx.AsyncClient(timeout=30, verify=HTTPX_VERIFY) as client:
         if settings.llm_provider == "anthropic":
             response = await client.post(
                 "https://api.anthropic.com/v1/messages",

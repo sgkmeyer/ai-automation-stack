@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from uuid import UUID
 
@@ -130,6 +131,11 @@ class RegistryReviewRequest(BaseModel):
 def _format_item(row: dict) -> dict:
     captures = row.get("captures") or []
     metadata = row.get("metadata") or {}
+    if isinstance(metadata, str):
+        try:
+            metadata = json.loads(metadata)
+        except json.JSONDecodeError:
+            metadata = {}
     return {
         "item_id": str(row["id"]),
         "title": row.get("title"),
