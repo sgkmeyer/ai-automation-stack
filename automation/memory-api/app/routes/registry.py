@@ -130,6 +130,11 @@ class RegistryReviewRequest(BaseModel):
 
 def _format_item(row: dict) -> dict:
     captures = row.get("captures") or []
+    if isinstance(captures, str):
+        try:
+            captures = json.loads(captures)
+        except json.JSONDecodeError:
+            captures = []
     metadata = row.get("metadata") or {}
     if isinstance(metadata, str):
         try:
