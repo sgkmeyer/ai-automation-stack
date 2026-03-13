@@ -1,20 +1,26 @@
 # Registry External Interfaces
 
-The content registry is a private, registry-first subsystem. It is not part of
-the public `memory/*` webhook surface.
+The content registry is a registry-first subsystem. It is not part of the
+public `memory/*` webhook surface.
 
-## Private Base URL
+## Live Base URL
 
-Use a Tailnet-reachable hostname that resolves to the production VM and points
-at the n8n webhook listener.
+Current production ingress uses the existing n8n webhook domain plus a dedicated
+shared-secret header:
 
-Example shape:
+- Production base URL: `https://n8n.satoic.com/webhook/registry`
 
-```text
-http://<tailnet-hostname>:5678/webhook/registry
-```
+This means v1 is currently **secret-protected public ingress**, not a true
+Tailnet-only shortcut endpoint yet.
 
-Do not use `https://n8n.satoic.com` for the iPhone Shortcut in v1.
+## Planned Private-Only Follow-Up
+
+The remaining infrastructure follow-up is to add a genuine Tailnet-private
+front door for the iPhone Shortcut so capture does not rely on the public n8n
+domain at all.
+
+Until that is implemented, use the production base URL above with the shared
+secret header below.
 
 ## Shared Secret Header
 

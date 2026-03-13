@@ -1,7 +1,7 @@
 # Today — Current Build State
 
 > Manually maintained. Update at the end of each session alongside the dated session log.
-> Last updated: 2026-03-12
+> Last updated: 2026-03-13
 
 ---
 
@@ -38,7 +38,9 @@
 ## Active Priorities (next session)
 
 - [x] Wire Krisp transcript output into `/webhook/memory/ingest/krisp` and validate first real production ingest (2026-03-12)
+- [x] Build and deploy the V1 content registry backend, governed workflows, and production registry webhooks (2026-03-13)
 - [ ] Generate end-user UAT scripts for memory through Openclaw, Obsidian, and Krisp
+- [ ] Add a true Tailnet-private front door for the iPhone Shortcut registry capture path; current live v1 uses secret-protected `https://n8n.satoic.com/webhook/registry`
 - [ ] Create first real Obsidian seed notes and ingest them into memory
 - [ ] Decide on the long-term “second brain” pattern for current truth vs journal history vs durable events
 - [x] Update `gitops-deploy.sh` to restart Caddy when Caddyfile changes — already implemented via `caddy reload` (line 34)
@@ -137,6 +139,8 @@ See `ops/runbooks.md` for step-by-step procedure.
 - **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
 - **Obsidian ingress path** — currently manual `./scripts/sync-obsidian-vault.sh` from Mac to VM; no schedule yet
 - **Krisp upstream wiring** — live in production at `POST /webhook/memory/ingest/krisp`; first real meeting ingest validated on 2026-03-12 (`Stephan / Dana`, source_ref `krisp:019ce2c77998759e9e3d93b1baf7c19b`)
+- **Content registry v1** — live in production at `https://n8n.satoic.com/webhook/registry`; governed workflows `REG-01..REG-04` are active, TAR's ad hoc `Link Registry - Capture (private webhook)` workflows are all disabled, and registry items now store canonical URL, summary, why-it-matters, takeaways, capture history, review state, and raw archive path
+- **Registry ingress model** — current live capture path is secret-protected public ingress on `n8n.satoic.com`; true Tailnet-only shortcut routing is still a follow-up
 - **Openclaw recall latency** — internal webhook routing deployed on 2026-03-12; `memory-api /recall` also now biases Krisp `key_points_generated` and `action_items_generated` over raw `transcript_created` rows for faster, smaller recall contexts
 - **Tailscale GitHub Action authkey deprecation warning** — OAuth clients require a paid plan (not available on Free); authkey still works, revisit if plan upgraded or Tailscale forces migration
 - **Dev stack running** — n8n 2.11.2 + Openclaw v2026.3.8 validated on dev (2026-03-11)
