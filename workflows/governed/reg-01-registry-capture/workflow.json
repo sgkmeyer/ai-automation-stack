@@ -1,0 +1,107 @@
+{
+  "id": "reg01registrycapture",
+  "name": "REG-01 - Registry Capture",
+  "active": false,
+  "meta": {
+    "workflowVersion": "2026.03.13.1",
+    "owner": "Codex",
+    "status": "draft"
+  },
+  "versionId": "45679351-f476-4df2-b4df-a9c7dc6562a5",
+  "pinData": {},
+  "tags": [],
+  "triggerCount": 0,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "7cdb4ca1-c318-4c4f-a627-79d3ee8191df",
+      "position": [
+        220,
+        320
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "registry-webhook-header-auth",
+          "name": "Registry Webhook Header Auth"
+        }
+      },
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "registry/capture",
+        "responseMode": "responseNode",
+        "authentication": "headerAuth"
+      }
+    },
+    {
+      "id": "Call registry capture",
+      "name": "Call registry capture",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        620,
+        320
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "memory-api-header-auth",
+          "name": "Memory API Header Auth"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-api:8100/registry/capture",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const body = $node[\"Webhook\"].json.body ?? $node[\"Webhook\"].json; const tags = Array.isArray(body.tags) ? body.tags : (typeof body.tags === 'string' ? body.tags.split(',').map((item) => item.trim()).filter(Boolean) : []); return { url: body.url, note: body.note ?? null, tags, capture_channel: body.capture_channel ?? 'ios_shortcut' }; })() }}"
+      }
+    },
+    {
+      "id": "Respond capture",
+      "name": "Respond capture",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        980,
+        320
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": "={{ $node[\"Call registry capture\"].json.error ? 502 : 200 }}",
+        "responseBody": "={{ $node[\"Call registry capture\"].json.error ? { status: 'error', error: $node[\"Call registry capture\"].json.error.message || $node[\"Call registry capture\"].json.error.description || 'registry_capture_failed' } : $node[\"Call registry capture\"].json }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Call registry capture",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call registry capture": {
+      "main": [
+        [
+          {
+            "node": "Respond capture",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "workflowName": "REG-02 - Registry Processor",
+  "workflowVersion": "2026.03.13.1",
+  "status": "draft",
+  "trigger": {
+    "type": "webhook",
+    "path": "registry/process",
+    "method": "POST"
+  },
+  "purpose": "Provide a private operator and TARS entry point for reprocessing or explicitly processing a registry item through memory-api /registry/process.",
+  "inputs": {
+    "required": [
+      "item_id"
+    ],
+    "optional": [
+      "reprocess"
+    ]
+  },
+  "outputs": {
+    "success": [
+      "item_id",
+      "processing_status"
+    ],
+    "error": [
+      "status",
+      "error"
+    ]
+  },
+  "dependencies": [
+    "memory-api service on Docker network",
+    "Memory API Header Auth credential in n8n",
+    "Registry Webhook Header Auth credential in n8n"
+  ],
+  "failureModes": [
+    "missing or invalid registry secret header",
+    "missing item_id",
+    "memory-api unavailable",
+    "registry item not found",
+    "non-2xx response from memory-api"
+  ],
+  "notes": [
+    "The background processing path is primarily initiated by REG-01 via memory-api background tasks.",
+    "REG-02 exists so operators and TARS can explicitly retry or reprocess a registry item without direct DB access."
+  ]
+}

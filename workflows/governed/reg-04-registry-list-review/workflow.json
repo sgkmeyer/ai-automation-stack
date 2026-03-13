@@ -1,0 +1,193 @@
+{
+  "id": "reg04registrylistreview",
+  "name": "REG-04 - Registry List / Review",
+  "active": false,
+  "meta": {
+    "workflowVersion": "2026.03.13.1",
+    "owner": "Codex",
+    "status": "draft"
+  },
+  "versionId": "eea0d513-7fd0-4df0-b0be-d07936310937",
+  "pinData": {},
+  "tags": [],
+  "triggerCount": 0,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "id": "List Webhook",
+      "name": "List Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "587fc8a2-cac9-4531-b8fb-56b7e2fb7a58",
+      "position": [
+        220,
+        220
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "registry-webhook-header-auth",
+          "name": "Registry Webhook Header Auth"
+        }
+      },
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "registry/list",
+        "responseMode": "responseNode",
+        "authentication": "headerAuth"
+      }
+    },
+    {
+      "id": "Call registry list",
+      "name": "Call registry list",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        620,
+        220
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "memory-api-header-auth",
+          "name": "Memory API Header Auth"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-api:8100/registry/list",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const body = $node[\"List Webhook\"].json.body ?? $node[\"List Webhook\"].json; return { review_state: body.review_state ?? null, source_kind: body.source_kind ?? null, topics: Array.isArray(body.topics) ? body.topics : [], user_tags: Array.isArray(body.user_tags) ? body.user_tags : [], from: body.from ?? null, to: body.to ?? null, limit: body.limit ?? 10, page: body.page ?? 1, sort: body.sort ?? 'newest' }; })() }}"
+      }
+    },
+    {
+      "id": "Respond list",
+      "name": "Respond list",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        980,
+        220
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": "={{ $node[\"Call registry list\"].json.error ? 502 : 200 }}",
+        "responseBody": "={{ $node[\"Call registry list\"].json.error ? { status: 'error', error: $node[\"Call registry list\"].json.error.message || $node[\"Call registry list\"].json.error.description || 'registry_list_failed' } : $node[\"Call registry list\"].json }}"
+      }
+    },
+    {
+      "id": "Review Webhook",
+      "name": "Review Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "54c34a70-dc75-4cb4-b4c5-595f0059460b",
+      "position": [
+        220,
+        500
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "registry-webhook-header-auth",
+          "name": "Registry Webhook Header Auth"
+        }
+      },
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "registry/review",
+        "responseMode": "responseNode",
+        "authentication": "headerAuth"
+      }
+    },
+    {
+      "id": "Call registry review",
+      "name": "Call registry review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        620,
+        500
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "memory-api-header-auth",
+          "name": "Memory API Header Auth"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-api:8100/registry/review",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const body = $node[\"Review Webhook\"].json.body ?? $node[\"Review Webhook\"].json; return { item_id: body.item_id, action: body.action }; })() }}"
+      }
+    },
+    {
+      "id": "Respond review",
+      "name": "Respond review",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        980,
+        500
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": "={{ $node[\"Call registry review\"].json.error ? 502 : 200 }}",
+        "responseBody": "={{ $node[\"Call registry review\"].json.error ? { status: 'error', error: $node[\"Call registry review\"].json.error.message || $node[\"Call registry review\"].json.error.description || 'registry_review_failed' } : $node[\"Call registry review\"].json }}"
+      }
+    }
+  ],
+  "connections": {
+    "List Webhook": {
+      "main": [
+        [
+          {
+            "node": "Call registry list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call registry list": {
+      "main": [
+        [
+          {
+            "node": "Respond list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Review Webhook": {
+      "main": [
+        [
+          {
+            "node": "Call registry review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call registry review": {
+      "main": [
+        [
+          {
+            "node": "Respond review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

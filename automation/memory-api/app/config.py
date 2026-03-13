@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     display_timezone: str = "America/Toronto"
     max_recall_results: int = 20
     max_body_length: int = 50000
+    registry_archive_root: str = "/var/lib/registry-archive"
+    registry_fetch_timeout_seconds: float = 15.0
+    registry_max_extract_chars: int = 20000
 
     model_config = SettingsConfigDict(env_prefix="MEMORY_")
 

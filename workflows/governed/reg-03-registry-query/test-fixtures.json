@@ -1,0 +1,19 @@
+{
+  "happyPath": {
+    "request": {
+      "query": "ai prospecting",
+      "review_state": "inbox",
+      "limit": 3,
+      "page": 1,
+      "mode": "answer"
+    },
+    "expected": {
+      "contains": [
+        "items",
+        "total",
+        "page",
+        "limit"
+      ]
+    }
+  }
+}

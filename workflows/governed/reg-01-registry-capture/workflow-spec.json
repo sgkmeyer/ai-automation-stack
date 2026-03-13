@@ -1,0 +1,50 @@
+{
+  "workflowName": "REG-01 - Registry Capture",
+  "workflowVersion": "2026.03.13.1",
+  "status": "draft",
+  "trigger": {
+    "type": "webhook",
+    "path": "registry/capture",
+    "method": "POST"
+  },
+  "purpose": "Accept a private link-registry capture from the iPhone Shortcut or TARS, authenticate it with a shared secret header, and delegate the durable write plus background processing enqueue to memory-api /registry/capture.",
+  "inputs": {
+    "required": [
+      "url"
+    ],
+    "optional": [
+      "note",
+      "tags",
+      "capture_channel"
+    ]
+  },
+  "outputs": {
+    "success": [
+      "ok",
+      "item_id",
+      "processing_status",
+      "review_state",
+      "message"
+    ],
+    "error": [
+      "status",
+      "error"
+    ]
+  },
+  "dependencies": [
+    "memory-api service on Docker network",
+    "Memory API Header Auth credential in n8n",
+    "Registry Webhook Header Auth credential in n8n"
+  ],
+  "failureModes": [
+    "missing or invalid registry secret header",
+    "invalid or unsupported URL payload",
+    "memory-api unavailable",
+    "non-2xx response from memory-api"
+  ],
+  "notes": [
+    "REG-01 performs the fast private ingress only; canonicalization and durable capture writes are delegated to memory-api.",
+    "The workflow should return immediately with success and must not wait for deep extraction or summarization to finish.",
+    "The shared secret header should be stable enough for iPhone Shortcut usage and private Tailnet routing."
+  ]
+}

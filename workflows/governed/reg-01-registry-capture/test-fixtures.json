@@ -1,0 +1,26 @@
+{
+  "happyPath": {
+    "request": {
+      "url": "https://youtu.be/dQw4w9WgXcQ",
+      "note": "Potential GTM video to revisit",
+      "capture_channel": "ios_shortcut"
+    },
+    "expected": {
+      "status": "ok",
+      "contains": [
+        "item_id",
+        "processing_status",
+        "review_state",
+        "message"
+      ]
+    }
+  },
+  "invalidUrl": {
+    "request": {
+      "url": "not-a-url"
+    },
+    "expected": {
+      "statusCode": 422
+    }
+  }
+}

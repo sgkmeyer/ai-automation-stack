@@ -1,0 +1,54 @@
+{
+  "workflowName": "REG-03 - Registry Query",
+  "workflowVersion": "2026.03.13.1",
+  "status": "draft",
+  "trigger": {
+    "type": "webhook",
+    "path": "registry/query",
+    "method": "POST"
+  },
+  "purpose": "Provide the private registry-first query interface for TARS and Openclaw, delegating ranked retrieval to memory-api /registry/query.",
+  "inputs": {
+    "required": [],
+    "optional": [
+      "query",
+      "source_kind",
+      "review_state",
+      "from",
+      "to",
+      "topics",
+      "user_tags",
+      "limit",
+      "page",
+      "mode"
+    ]
+  },
+  "outputs": {
+    "success": [
+      "mode",
+      "items",
+      "total",
+      "page",
+      "limit"
+    ],
+    "error": [
+      "status",
+      "error"
+    ]
+  },
+  "dependencies": [
+    "memory-api service on Docker network",
+    "Memory API Header Auth credential in n8n",
+    "Registry Webhook Header Auth credential in n8n"
+  ],
+  "failureModes": [
+    "missing or invalid registry secret header",
+    "memory-api unavailable",
+    "invalid filter payload",
+    "non-2xx response from memory-api"
+  ],
+  "notes": [
+    "TARS should use REG-03 as the first query path for saved-content questions instead of memory recall.",
+    "The workflow returns registry-native summaries and takeaways; TARS can decide how much to synthesize on top."
+  ]
+}

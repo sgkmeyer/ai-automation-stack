@@ -1,0 +1,72 @@
+{
+  "workflowName": "REG-04 - Registry List / Review",
+  "workflowVersion": "2026.03.13.1",
+  "status": "draft",
+  "trigger": {
+    "type": "webhook",
+    "paths": [
+      {
+        "path": "registry/list",
+        "method": "POST"
+      },
+      {
+        "path": "registry/review",
+        "method": "POST"
+      }
+    ]
+  },
+  "purpose": "Support TARS inbox browsing and conversational curation by delegating paginated list and review-state updates to memory-api.",
+  "inputs": {
+    "list": {
+      "optional": [
+        "review_state",
+        "source_kind",
+        "topics",
+        "user_tags",
+        "from",
+        "to",
+        "limit",
+        "page",
+        "sort"
+      ]
+    },
+    "review": {
+      "required": [
+        "item_id",
+        "action"
+      ]
+    }
+  },
+  "outputs": {
+    "list": [
+      "items",
+      "total",
+      "page",
+      "limit",
+      "sort"
+    ],
+    "review": [
+      "ok",
+      "item_id",
+      "review_state",
+      "title",
+      "canonical_url"
+    ]
+  },
+  "dependencies": [
+    "memory-api service on Docker network",
+    "Memory API Header Auth credential in n8n",
+    "Registry Webhook Header Auth credential in n8n"
+  ],
+  "failureModes": [
+    "missing or invalid registry secret header",
+    "invalid list filter payload",
+    "invalid review action",
+    "memory-api unavailable",
+    "registry item not found"
+  ],
+  "notes": [
+    "REG-04 is the curation surface for TARS. Long inboxes should be paginated and summarized by TARS instead of dumped verbatim.",
+    "The workflow intentionally separates durable list/review writes from memory promotion; `promote_to_memory` is a later phase."
+  ]
+}

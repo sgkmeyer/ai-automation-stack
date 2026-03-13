@@ -14,13 +14,19 @@ async def health():
     try:
         async with get_conn() as conn:
             await conn.fetchval("SELECT 1")
-            schema_exists = await conn.fetchval(
+            memory_schema_exists = await conn.fetchval(
                 "SELECT EXISTS(SELECT 1 FROM information_schema.schemata WHERE schema_name = 'memory')"
+            )
+            registry_schema_exists = await conn.fetchval(
+                "SELECT EXISTS(SELECT 1 FROM information_schema.schemata WHERE schema_name = 'registry')"
             )
         return {
             "status": "healthy",
             "db": "connected",
-            "schema": "ready" if schema_exists else "missing",
+            "schema": {
+                "memory": "ready" if memory_schema_exists else "missing",
+                "registry": "ready" if registry_schema_exists else "missing",
+            },
         }
     except Exception as exc:
         return JSONResponse(

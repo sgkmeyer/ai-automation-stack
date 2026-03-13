@@ -364,6 +364,11 @@ services:
       - MEMORY_LLM_API_KEY=${MEMORY_LLM_API_KEY}
       - MEMORY_LLM_MODEL=${MEMORY_LLM_MODEL:-claude-sonnet-4-20250514}
       - MEMORY_DISPLAY_TIMEZONE=${MEMORY_DISPLAY_TIMEZONE:-America/Toronto}
+      - MEMORY_REGISTRY_ARCHIVE_ROOT=${MEMORY_REGISTRY_ARCHIVE_ROOT:-/var/lib/registry-archive}
+      - MEMORY_REGISTRY_FETCH_TIMEOUT_SECONDS=${MEMORY_REGISTRY_FETCH_TIMEOUT_SECONDS:-15}
+      - MEMORY_REGISTRY_MAX_EXTRACT_CHARS=${MEMORY_REGISTRY_MAX_EXTRACT_CHARS:-20000}
+    volumes:
+      - ./registry-archive:/var/lib/registry-archive
     depends_on:
       db:
         condition: service_healthy

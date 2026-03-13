@@ -15,6 +15,8 @@ automation/openclaw/delivery-queue/
 automation/openclaw/telegram/
 automation/openclaw/workspace/memory/
 automation/openclaw/workspace/*-response.json
+automation/registry-archive/*
+!automation/registry-archive/README.md
 
 # runtime backups/logs
 automation/docker-compose.yml.bak.*

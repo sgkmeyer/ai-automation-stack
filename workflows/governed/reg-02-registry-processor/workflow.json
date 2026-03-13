@@ -1,0 +1,107 @@
+{
+  "id": "reg02registryprocessor",
+  "name": "REG-02 - Registry Processor",
+  "active": false,
+  "meta": {
+    "workflowVersion": "2026.03.13.1",
+    "owner": "Codex",
+    "status": "draft"
+  },
+  "versionId": "72606d06-6417-4806-9a61-1932a6e6ea70",
+  "pinData": {},
+  "tags": [],
+  "triggerCount": 0,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "0cc83105-1cb1-46ec-af0d-0ec470f9d4af",
+      "position": [
+        220,
+        320
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "registry-webhook-header-auth",
+          "name": "Registry Webhook Header Auth"
+        }
+      },
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "registry/process",
+        "responseMode": "responseNode",
+        "authentication": "headerAuth"
+      }
+    },
+    {
+      "id": "Call registry process",
+      "name": "Call registry process",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        620,
+        320
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "memory-api-header-auth",
+          "name": "Memory API Header Auth"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-api:8100/registry/process",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const body = $node[\"Webhook\"].json.body ?? $node[\"Webhook\"].json; return { item_id: body.item_id, reprocess: body.reprocess === true }; })() }}"
+      }
+    },
+    {
+      "id": "Respond process",
+      "name": "Respond process",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        980,
+        320
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": "={{ $node[\"Call registry process\"].json.error ? 502 : 200 }}",
+        "responseBody": "={{ $node[\"Call registry process\"].json.error ? { status: 'error', error: $node[\"Call registry process\"].json.error.message || $node[\"Call registry process\"].json.error.description || 'registry_process_failed' } : $node[\"Call registry process\"].json }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Call registry process",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call registry process": {
+      "main": [
+        [
+          {
+            "node": "Respond process",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

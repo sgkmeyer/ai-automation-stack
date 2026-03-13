@@ -1,0 +1,107 @@
+{
+  "id": "reg03registryquery",
+  "name": "REG-03 - Registry Query",
+  "active": false,
+  "meta": {
+    "workflowVersion": "2026.03.13.1",
+    "owner": "Codex",
+    "status": "draft"
+  },
+  "versionId": "daff6c31-f39c-42a7-88d5-f4f0e9af7ceb",
+  "pinData": {},
+  "tags": [],
+  "triggerCount": 0,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "id": "Webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "97784569-aeda-4a16-a7c9-12167f94dd6b",
+      "position": [
+        220,
+        320
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "registry-webhook-header-auth",
+          "name": "Registry Webhook Header Auth"
+        }
+      },
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "registry/query",
+        "responseMode": "responseNode",
+        "authentication": "headerAuth"
+      }
+    },
+    {
+      "id": "Call registry query",
+      "name": "Call registry query",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        620,
+        320
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "memory-api-header-auth",
+          "name": "Memory API Header Auth"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-api:8100/registry/query",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const body = $node[\"Webhook\"].json.body ?? $node[\"Webhook\"].json; return { query: body.query ?? null, source_kind: body.source_kind ?? null, review_state: body.review_state ?? null, from: body.from ?? null, to: body.to ?? null, topics: Array.isArray(body.topics) ? body.topics : [], user_tags: Array.isArray(body.user_tags) ? body.user_tags : [], limit: body.limit ?? 10, page: body.page ?? 1, mode: body.mode ?? 'answer' }; })() }}"
+      }
+    },
+    {
+      "id": "Respond query",
+      "name": "Respond query",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        980,
+        320
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": "={{ $node[\"Call registry query\"].json.error ? 502 : 200 }}",
+        "responseBody": "={{ $node[\"Call registry query\"].json.error ? { status: 'error', error: $node[\"Call registry query\"].json.error.message || $node[\"Call registry query\"].json.error.description || 'registry_query_failed' } : $node[\"Call registry query\"].json }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Call registry query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call registry query": {
+      "main": [
+        [
+          {
+            "node": "Respond query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

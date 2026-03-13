@@ -1,0 +1,20 @@
+{
+  "happyPath": {
+    "request": {
+      "item_id": "11111111-1111-1111-1111-111111111111",
+      "reprocess": true
+    },
+    "expected": {
+      "contains": [
+        "item_id",
+        "processing_status"
+      ]
+    }
+  },
+  "failurePath": {
+    "request": {},
+    "expected": {
+      "statusCode": 422
+    }
+  }
+}

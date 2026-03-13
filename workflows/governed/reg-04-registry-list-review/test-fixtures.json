@@ -1,0 +1,32 @@
+{
+  "listInbox": {
+    "request": {
+      "review_state": "inbox",
+      "limit": 3,
+      "page": 1,
+      "sort": "oldest"
+    },
+    "expected": {
+      "contains": [
+        "items",
+        "total",
+        "page",
+        "limit",
+        "sort"
+      ]
+    }
+  },
+  "reviewArchive": {
+    "request": {
+      "item_id": "11111111-1111-1111-1111-111111111111",
+      "action": "archive"
+    },
+    "expected": {
+      "contains": [
+        "ok",
+        "item_id",
+        "review_state"
+      ]
+    }
+  }
+}
