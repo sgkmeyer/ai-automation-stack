@@ -3,6 +3,11 @@
 The content registry is a registry-first subsystem. It is not part of the
 public `memory/*` webhook surface.
 
+For end-user usage and testing, see:
+
+- [registry-user-guide.md](/Users/sgkmeyer/ai-automation-stack/ops/registry-user-guide.md#L1)
+- [registry-uat.md](/Users/sgkmeyer/ai-automation-stack/ops/registry-uat.md#L1)
+
 ## Live Base URL
 
 Current production ingress uses the existing n8n webhook domain plus a dedicated
