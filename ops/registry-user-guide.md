@@ -111,6 +111,142 @@ You should expect these behaviors in v1:
 - there is **no separate web UI** yet
 - browsing happens through TARS
 
+## Set Up The iPhone Shortcut
+
+The current live setup uses an iPhone Share Sheet Shortcut that posts directly
+to the registry capture endpoint.
+
+### Values You Need
+
+Use these exact live values:
+
+- URL:
+  - `https://n8n.satoic.com/webhook/registry/capture`
+- Header name:
+  - `x-registry-webhook-secret`
+- Header value:
+  - read it locally from:
+    - `/tmp/registry_webhook_secret_prod_2026-03-13`
+
+To view the current secret on your Mac without pasting it into chat:
+
+```bash
+cat /tmp/registry_webhook_secret_prod_2026-03-13
+```
+
+### Build The Shortcut
+
+On iPhone:
+
+1. Open the `Shortcuts` app.
+2. Tap `+` to create a new shortcut.
+3. Name it:
+   - `Save to TARS Registry`
+4. Tap the info/settings area for the shortcut and enable:
+   - `Show in Share Sheet`
+5. Under Share Sheet types, make sure it accepts:
+   - `URLs`
+   - `Safari web pages` if available
+
+### Add The Actions
+
+Add these actions in order:
+
+1. `Get URLs from Input`
+2. `If`:
+   - `Provided Input` `has any value`
+3. Inside the `If` block:
+   - add `Ask for Input`
+   - prompt text:
+     - `Add a short note?`
+   - input type:
+     - `Text`
+4. Add `Get Contents of URL`
+
+Configure `Get Contents of URL` like this:
+
+- Method:
+  - `POST`
+- URL:
+  - `https://n8n.satoic.com/webhook/registry/capture`
+- Headers:
+  - `x-registry-webhook-secret` = the value from `/tmp/registry_webhook_secret_prod_2026-03-13`
+  - `Content-Type` = `application/json`
+- Request Body:
+  - `JSON`
+
+JSON fields:
+
+- `url`
+  - value: the URL from `Get URLs from Input`
+- `note`
+  - value: the result of `Ask for Input`
+- `capture_channel`
+  - value: `ios_shortcut`
+
+5. Add `Show Notification`
+   - text:
+     - `Saved to TARS Registry`
+
+6. In the `Otherwise` block, optionally add:
+   - `Show Notification`
+   - text:
+     - `No URL found to save`
+
+### Minimal Shortcut Logic
+
+The payload should look like:
+
+```json
+{
+  "url": "<shared url>",
+  "note": "<optional short note>",
+  "capture_channel": "ios_shortcut"
+}
+```
+
+### First Test
+
+After saving the Shortcut:
+
+1. Open Safari on iPhone.
+2. Open any normal web page.
+3. Tap `Share`.
+4. Run `Save to TARS Registry`.
+5. Enter a short test note.
+6. Wait a few seconds.
+7. Ask TARS:
+   - `Show my reading inbox`
+
+Expected:
+
+- the item should appear in the registry inbox
+
+### Recommended Note Style
+
+Use notes that answer:
+
+- why you saved it
+- why it matters
+- what bucket it belongs to
+
+Examples:
+
+- `good AI GTM example`
+- `watch later for leadership`
+- `possible Riipen strategy input`
+- `interesting pricing idea`
+
+### Current Limitation
+
+Today this Shortcut is using:
+
+- a public HTTPS endpoint
+- plus a strong shared secret header
+
+That is functional now, but it is not the final private-only design yet. The
+planned follow-up is a true Tailnet-private front door for the Shortcut.
+
 ## How To Use It Day To Day
 
 ### Save Something
