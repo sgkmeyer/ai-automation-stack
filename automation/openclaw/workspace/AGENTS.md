@@ -16,6 +16,7 @@ Before doing anything else:
 4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 5. **If in MAIN SESSION**: Read `MEMORY_POLICY.md`
 6. **If in MAIN SESSION**: Skim `MEMORY_POLICY_EXAMPLES.md` when memory behavior is relevant or uncertain
+7. **If in MAIN SESSION**: Skim `REGISTRY_POLICY.md` and `REGISTRY_POLICY_EXAMPLES.md` when saved-link or reading-inbox behavior is relevant or uncertain
 
 Don't ask permission. Just do it.
 
@@ -59,6 +60,26 @@ Use these mappings by default in direct chats:
 After calling the CLI, summarize the result for the human instead of dumping raw JSON unless they ask for the raw response.
 The wrapper logs each invocation to `memory/command-log.ndjson` for local auditability.
 Follow [MEMORY_POLICY.md](/Users/sgkmeyer/ai-automation-stack/automation/openclaw/workspace/MEMORY_POLICY.md) for the decision rules and [MEMORY_POLICY_EXAMPLES.md](/Users/sgkmeyer/ai-automation-stack/automation/openclaw/workspace/MEMORY_POLICY_EXAMPLES.md) for concrete patterns.
+
+### Shared Registry Commands
+
+When the shared registry CLI is available, use it for saved-link retrieval and inbox curation:
+
+- `./bin/registry query --query "..." --limit 5`
+- `./bin/registry list --review-state inbox --limit 3 --sort oldest`
+- `./bin/registry review --item-id UUID --action archive`
+- Friendly wrappers:
+  - `./bin/query-registry "..."`
+  - `./bin/list-registry --limit 3`
+  - `./bin/review-registry ITEM_ID archive`
+
+Use these mappings by default in direct chats:
+
+- "what did I save about ...", "show my saved items on ..." -> `query`
+- "show my reading inbox", "what did I just save?" -> `list`
+- "archive the first one", "mark this reviewed" -> `review`
+
+Registry is the source of truth for saved links and their summaries. Use registry first for saved-content questions; use memory first for broader cross-system recall. Follow [REGISTRY_POLICY.md](/Users/sgkmeyer/ai-automation-stack/automation/openclaw/workspace/REGISTRY_POLICY.md) for the decision rules and [REGISTRY_POLICY_EXAMPLES.md](/Users/sgkmeyer/ai-automation-stack/automation/openclaw/workspace/REGISTRY_POLICY_EXAMPLES.md) for concrete patterns.
 
 ### 🧠 MEMORY.md - Your Local Summary Memory
 

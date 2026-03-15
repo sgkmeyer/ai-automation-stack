@@ -37,10 +37,10 @@ When you save a link, the system tries to:
 
 ## Current Reality
 
-As of March 13, 2026:
+As of March 14, 2026:
 
 - the registry backend is live in production
-- TARS can query it through the registry workflows
+- TARS can query it through the registry workflows once the Openclaw registry wrapper is deployed
 - the current capture endpoint is:
   - `https://n8n.satoic.com/webhook/registry/capture`
 - capture is protected by the `x-registry-webhook-secret` header
@@ -146,22 +146,25 @@ On iPhone:
    - `Show in Share Sheet`
 5. Under Share Sheet types, make sure it accepts:
    - `URLs`
+   - `Text`
    - `Safari web pages` if available
 
 ### Add The Actions
 
 Add these actions in order:
 
-1. `Get URLs from Input`
-2. `If`:
-   - `Provided Input` `has any value`
-3. Inside the `If` block:
+1. `Get Text from Input`
+2. `Get URLs from Text`
+3. `Get First Item from URLs`
+4. `If`:
+   - `Item from List` `has any value`
+5. Inside the `If` block:
    - add `Ask for Input`
    - prompt text:
      - `Add a short note?`
    - input type:
      - `Text`
-4. Add `Get Contents of URL`
+6. Add `Get Contents of URL`
 
 Configure `Get Contents of URL` like this:
 
@@ -178,17 +181,17 @@ Configure `Get Contents of URL` like this:
 JSON fields:
 
 - `url`
-  - value: the URL from `Get URLs from Input`
+  - value: `Item from List`
 - `note`
   - value: the result of `Ask for Input`
 - `capture_channel`
   - value: `ios_shortcut`
 
-5. Add `Show Notification`
+7. Add `Show Notification`
    - text:
      - `Saved to TARS Registry`
 
-6. In the `Otherwise` block, optionally add:
+8. In the `Otherwise` block, optionally add:
    - `Show Notification`
    - text:
      - `No URL found to save`
@@ -246,6 +249,21 @@ Today this Shortcut is using:
 
 That is functional now, but it is not the final private-only design yet. The
 planned follow-up is a true Tailnet-private front door for the Shortcut.
+
+## How TARS Uses The Registry
+
+TARS should use the registry first for saved-link questions like:
+
+- `What did I save about AI GTM?`
+- `Show my reading inbox`
+- `What did I just save?`
+- `Archive the first one`
+
+The Openclaw workspace wrappers for that path are:
+
+- `./bin/query-registry`
+- `./bin/list-registry`
+- `./bin/review-registry`
 
 ## How To Use It Day To Day
 

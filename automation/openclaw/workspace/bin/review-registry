@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -ne 2 ]]; then
+  printf 'usage: ./bin/review-registry ITEM_ID ACTION\n' >&2
+  exit 1
+fi
+
+exec ./bin/registry review --item-id "$1" --action "$2"

@@ -57,3 +57,21 @@ Add whatever helps you do your job. This is your cheat sheet.
   - `POST /ingest/transcript`
 - Use shared memory for durable facts, recall, and context. Use workspace files for working notes and local summaries.
 - Local audit log: `memory/command-log.ndjson`
+
+## Registry Interfaces
+
+- Shared content registry lives behind the registry webhooks, not the memory webhooks.
+- Workspace wrapper: `./bin/registry`
+- Friendly wrappers:
+  - `./bin/query-registry`
+  - `./bin/list-registry`
+  - `./bin/review-registry`
+- Production base URL: `https://n8n.satoic.com/webhook/registry`
+- Main endpoints:
+  - `POST /capture`
+  - `POST /query`
+  - `POST /list`
+  - `POST /review`
+  - `POST /process`
+- Use registry first for saved links, summaries, and reading inbox behavior.
+- Local audit log: `registry/command-log.ndjson`

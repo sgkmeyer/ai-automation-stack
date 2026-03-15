@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+limit="5"
+page="1"
+review_state="inbox"
+sort="oldest"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --limit)
+      limit="${2-}"
+      shift 2
+      ;;
+    --page)
+      page="${2-}"
+      shift 2
+      ;;
+    --review-state)
+      review_state="${2-}"
+      shift 2
+      ;;
+    --sort)
+      sort="${2-}"
+      shift 2
+      ;;
+    *)
+      printf 'unknown arg for ./bin/list-registry: %s\n' "$1" >&2
+      exit 1
+      ;;
+  esac
+done
+
+exec ./bin/registry list --limit "${limit}" --page "${page}" --review-state "${review_state}" --sort "${sort}"

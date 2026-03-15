@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+  printf 'usage: ./bin/query-registry QUERY [--limit N] [--mode answer|list|summary]\n' >&2
+  exit 1
+fi
+
+query=""
+limit="5"
+mode="answer"
+page="1"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --limit)
+      limit="${2-}"
+      shift 2
+      ;;
+    --mode)
+      mode="${2-}"
+      shift 2
+      ;;
+    --page)
+      page="${2-}"
+      shift 2
+      ;;
+    *)
+      if [[ -n "${query}" ]]; then
+        query="${query} $1"
+      else
+        query="$1"
+      fi
+      shift
+      ;;
+  esac
+done
+
+exec ./bin/registry query --query "${query}" --limit "${limit}" --mode "${mode}" --page "${page}"

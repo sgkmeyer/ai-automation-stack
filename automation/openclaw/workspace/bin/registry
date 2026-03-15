@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_script="/home/node/repo/scripts/registry-webhook.sh"
+log_file="/home/node/.openclaw/workspace/registry/command-log.ndjson"
+
+if [[ ! -x "${repo_script}" ]]; then
+  printf 'registry webhook CLI not found at %s\n' "${repo_script}" >&2
+  exit 1
+fi
+
+export REGISTRY_WEBHOOK_BASE_URL="${REGISTRY_WEBHOOK_BASE_URL:-https://n8n.satoic.com/webhook/registry}"
+export REGISTRY_WEBHOOK_SECRET="${REGISTRY_WEBHOOK_SECRET:-}"
+
+mkdir -p "$(dirname "${log_file}")"
+
+command_name="${1:-}"
+status="ok"
+
+if output="$("${repo_script}" "$@" 2>&1)"; then
+  :
+else
+  status="error"
+fi
+
+COMMAND_NAME="${command_name}" STATUS_VALUE="${status}" python3 - "$@" >>"${log_file}" <<'PY'
+import json
+import os
+import sys
+from datetime import datetime, timezone
+
+print(json.dumps({
+    "ts": datetime.now(timezone.utc).isoformat(),
+    "command": os.environ.get("COMMAND_NAME", ""),
+    "args": sys.argv[1:],
+    "status": os.environ.get("STATUS_VALUE", "ok"),
+}))
+PY
+
+printf '%s\n' "${output}"
+
+if [[ "${status}" != "ok" ]]; then
+  exit 1
+fi
