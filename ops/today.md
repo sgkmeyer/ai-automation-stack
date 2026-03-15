@@ -1,7 +1,7 @@
 # Today — Current Build State
 
 > Manually maintained. Update at the end of each session alongside the dated session log.
-> Last updated: 2026-03-13
+> Last updated: 2026-03-14
 
 ---
 
@@ -37,8 +37,17 @@
 
 ## Active Priorities (next session)
 
+Roadmap lock-in:
+- Use [roadmap-priorities.md](/Users/sgkmeyer/ai-automation-stack/ops/roadmap-priorities.md) as the current prioritization baseline.
+- The current sequencing is:
+  - trust layer first
+  - daily utility second
+  - coherence third
+  - operating-system feel last
+
 - [x] Wire Krisp transcript output into `/webhook/memory/ingest/krisp` and validate first real production ingest (2026-03-12)
 - [x] Build and deploy the V1 content registry backend, governed workflows, and production registry webhooks (2026-03-13)
+- [ ] Execute the first trust-layer tranche from [roadmap-priorities.md](/Users/sgkmeyer/ai-automation-stack/ops/roadmap-priorities.md): registry capture hardening, memory hygiene/deduplication, Openclaw capability hardening follow-up, state reversibility design, unified recall router v1
 - [ ] Generate end-user UAT scripts for memory through Openclaw, Obsidian, and Krisp
 - [ ] Add a true Tailnet-private front door for the iPhone Shortcut registry capture path; current live v1 uses secret-protected `https://n8n.satoic.com/webhook/registry`
 - [ ] Create first real Obsidian seed notes and ingest them into memory
