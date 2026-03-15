@@ -40,7 +40,7 @@ When you save a link, the system tries to:
 As of March 14, 2026:
 
 - the registry backend is live in production
-- TARS can query it through the registry workflows once the Openclaw registry wrapper is deployed
+- TARS can query it through the registry workflows and the Openclaw registry wrapper
 - the current capture endpoint is:
   - `https://n8n.satoic.com/webhook/registry/capture`
 - capture is protected by the `x-registry-webhook-secret` header
