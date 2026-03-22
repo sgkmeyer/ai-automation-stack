@@ -253,7 +253,7 @@ EOF
   deploy-dev)
     run_vm_cmd \
       "Start/update dev stack on VM (automation-dev project)" \
-      "set -euo pipefail; cd ${VM_DIR}; docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml -f docker-compose.dev.yml --project-name automation-dev up -d --scale caddy=0"
+      "set -euo pipefail; ${VM_REPO_DIR}/scripts/gitops-deploy-dev.sh"
     ;;
   ps-dev)
     run_vm_cmd \
