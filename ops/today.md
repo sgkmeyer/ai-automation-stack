@@ -48,8 +48,9 @@ Roadmap lock-in:
 - [x] Wire Krisp transcript output into `/webhook/memory/ingest/krisp` and validate first real production ingest (2026-03-12)
 - [x] Build and deploy the V1 content registry backend, governed workflows, and production registry webhooks (2026-03-13)
 - [x] Execute Tranche A trust-layer slice: registry hardening, memory hygiene/deduplication pass, and Openclaw capability hardening follow-up (2026-03-21)
-- [ ] Design state reversibility for archive/dedupe/promotion mutations
-- [ ] Build unified recall router v1 across memory, transcripts, registry, and context
+- [x] Design state reversibility for archive/dedupe/promotion mutations; see [tranche-b-state-reversibility.md](/Users/sgkmeyer/ai-automation-stack/ops/tranche-b-state-reversibility.md) (2026-03-21)
+- [x] Define unified recall router v1 policy/spec; see [unified-recall-router-v1.md](/Users/sgkmeyer/ai-automation-stack/ops/unified-recall-router-v1.md) (2026-03-21)
+- [ ] Implement unified recall router v1 across memory, transcripts, registry, and context
 - [ ] Generate end-user UAT scripts for memory through Openclaw, Obsidian, and Krisp
 - [ ] Add a true Tailnet-private front door for the iPhone Shortcut registry capture path; current live v1 uses secret-protected `https://n8n.satoic.com/webhook/registry`
 - [ ] Create first real Obsidian seed notes and ingest them into memory
@@ -153,6 +154,7 @@ See `ops/runbooks.md` for step-by-step procedure.
 - **Content registry v1** — live in production at `https://n8n.satoic.com/webhook/registry`; governed workflows `REG-01..REG-04` are active, TAR's ad hoc `Link Registry - Capture (private webhook)` workflows are all disabled, and registry items now store canonical URL, summary, why-it-matters, takeaways, capture history, review state, and raw archive path
 - **Openclaw registry retrieval** — deployed on 2026-03-14; TARS now has registry-first wrappers (`./bin/query-registry`, `./bin/list-registry`, `./bin/review-registry`) in the production Openclaw workspace and can retrieve saved-link items without going through memory recall
 - **Tranche A trust hardening** — deployed on 2026-03-21 (`d4b2884` on prod). Registry capture now converges obvious `http`/`https` duplicates, blocked pages degrade to `blocked_metadata_only` items instead of hard failure, transcript ingest now links participant-derived person/company entities, and recall supports partial entity-name/alias matches. Openclaw capability rollout is now documented in [`openclaw-capability-rollout.md`](/Users/sgkmeyer/ai-automation-stack/ops/openclaw-capability-rollout.md).
+- **Tranche B planning baseline** — state reversibility and unified recall routing are now specified in [`tranche-b-state-reversibility.md`](/Users/sgkmeyer/ai-automation-stack/ops/tranche-b-state-reversibility.md) and [`unified-recall-router-v1.md`](/Users/sgkmeyer/ai-automation-stack/ops/unified-recall-router-v1.md). The next implementation step is the smallest viable router slice plus the first mutation journal path.
 - **Registry ingress model** — current live capture path is secret-protected public ingress on `n8n.satoic.com`; true Tailnet-only shortcut routing is still a follow-up
 - **Openclaw recall latency** — internal webhook routing deployed on 2026-03-12; `memory-api /recall` also now biases Krisp `key_points_generated` and `action_items_generated` over raw `transcript_created` rows for faster, smaller recall contexts
 - **Registry blocked-page fallback** — now preserves usable items for blocked sources, but summaries are intentionally minimal when only URL-level metadata is available
