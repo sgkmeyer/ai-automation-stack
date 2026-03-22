@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
@@ -178,6 +179,22 @@ def _fallback_extracted_content(canonical: CanonicalUrl, *, reason: str, status_
         extraction_mode="blocked_metadata_only" if status_code in {401, 403, 429} else "url_metadata_only",
         metadata=metadata,
     )
+
+
+def _registry_item_preference(row: dict[str, Any]) -> tuple[int, int, int, int, datetime, datetime]:
+    parsed = urlparse(str(row.get("canonical_url") or ""))
+    return (
+        1 if parsed.scheme == "https" else 0,
+        1 if row.get("processing_status") == "ready" else 0,
+        1 if bool(row.get("summary")) else 0,
+        1 if bool(row.get("title")) else 0,
+        row.get("processed_at") or datetime.min.replace(tzinfo=timezone.utc),
+        row.get("last_captured_at") or datetime.min.replace(tzinfo=timezone.utc),
+    )
+
+
+def _pick_preferred_registry_item(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    return max(rows, key=_registry_item_preference)
 
 
 async def canonicalize_url(url: str, *, deep: bool = False) -> CanonicalUrl:
@@ -502,25 +519,24 @@ async def create_registry_capture(*, url: str, note: str | None, tags: list[str]
     lookup_urls = _scheme_equivalent_urls(canonical.canonical_url, canonical.source_kind)
     async with get_conn() as conn:
         async with conn.transaction():
-            existing = await conn.fetchrow(
+            existing_rows = await conn.fetch(
                 """
-                SELECT id, metadata
+                SELECT *
                 FROM registry.items
                 WHERE canonical_url = ANY($1::text[])
-                ORDER BY
-                    CASE
-                        WHEN canonical_url = $2 THEN 0
-                        ELSE 1
-                    END,
-                    last_captured_at DESC
-                LIMIT 1
                 """,
                 lookup_urls,
-                canonical.canonical_url,
             )
-            metadata = _merge_metadata(_metadata_dict(existing["metadata"]) if existing else {}, note, tags)
+            existing = [dict(row) for row in existing_rows]
             if existing:
-                item_id = existing["id"]
+                preferred = _pick_preferred_registry_item(existing)
+                item_id = preferred["id"]
+                for row in existing:
+                    if row["id"] != item_id:
+                        item_id = await _merge_registry_items(conn, row["id"], item_id)
+
+                merged_row = await _fetch_item(conn, item_id)
+                metadata = _merge_metadata(_metadata_dict((merged_row or {}).get("metadata")) if merged_row else {}, note, tags)
                 await conn.execute(
                     """
                     UPDATE registry.items
@@ -539,6 +555,7 @@ async def create_registry_capture(*, url: str, note: str | None, tags: list[str]
                     json.dumps(metadata),
                 )
             else:
+                metadata = _merge_metadata({}, note, tags)
                 item_id = await conn.fetchval(
                     """
                     INSERT INTO registry.items (
