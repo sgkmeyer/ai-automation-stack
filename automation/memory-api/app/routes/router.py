@@ -55,11 +55,11 @@ def classify_intent(query: str) -> tuple[str, str]:
         return "saved_content_lookup", "content/bookmark wording suggests registry lookup"
 
     if any(phrase in lowered for phrase in ("what did", "summarize my call", "action items", "follow-up", "what happened in today", "meeting with", "call with")) and (
-        "said" in lowered or "meeting" in lowered or "call" in lowered or "transcript" in lowered
+        "say" in lowered or "said" in lowered or "meeting" in lowered or "call" in lowered or "transcript" in lowered
     ):
         return "conversation_recall", "question asks about what was said or what happened in a conversation"
 
-    if any(token in lowered for token in ("meeting", "call", "transcript", "said", "discussed", "action items", "follow-up")):
+    if any(token in lowered for token in ("meeting", "call", "transcript", "say", "said", "discussed", "action items", "follow-up")):
         return "conversation_recall", "meeting/transcript wording suggests transcript-first recall"
 
     if any(token in lowered for token in ("today", "latest", "just now", "current", "this chat", "this thread")):
