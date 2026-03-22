@@ -77,13 +77,13 @@ async def search_memory_entries(
             e.id IN (
                 SELECT ee.entry_id FROM memory.entry_entities ee
                 JOIN memory.entities ent ON ent.id = ee.entity_id
-                WHERE ent.normalized_name = LOWER(${param_idx})
-                   OR ent.normalized_name LIKE '%' || LOWER(${param_idx}) || '%'
+                WHERE ent.normalized_name = LOWER(${param_idx}::text)
+                   OR ent.normalized_name LIKE '%' || LOWER(${param_idx}::text) || '%'
                    OR EXISTS (
                         SELECT 1
                         FROM unnest(ent.aliases) AS alias
-                        WHERE LOWER(alias) = LOWER(${param_idx})
-                           OR LOWER(alias) LIKE '%' || LOWER(${param_idx}) || '%'
+                        WHERE LOWER(alias) = LOWER(${param_idx}::text)
+                           OR LOWER(alias) LIKE '%' || LOWER(${param_idx}::text) || '%'
                    )
             )
             """
@@ -165,7 +165,7 @@ async def search_memory_entries(
 
 def _memory_rank_expr(query: str, params: list[object], param_idx: int) -> str:
     if query:
-        return f"(ts_rank_cd(e.tsv, websearch_to_tsquery('english', ${param_idx + 1})) + {ranking_bonus_expr()})"
+        return f"(ts_rank_cd(e.tsv, websearch_to_tsquery('english', ${param_idx + 1}::text)) + {ranking_bonus_expr()})"
     return ranking_bonus_expr()
 
 
@@ -246,4 +246,3 @@ async def search_context_entries(*, query: str, limit: int = 10) -> tuple[list[d
         }
         for row in rows
     ], int(total or 0)
-
