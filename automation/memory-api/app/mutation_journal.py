@@ -13,6 +13,20 @@ def _as_json(value: dict[str, Any] | None) -> str:
     return json.dumps(value or {})
 
 
+def _decode_json(value: Any) -> dict[str, Any]:
+    if value is None:
+        return {}
+    if isinstance(value, str):
+        try:
+            decoded = json.loads(value)
+        except json.JSONDecodeError:
+            return {}
+        return decoded if isinstance(decoded, dict) else {}
+    if isinstance(value, dict):
+        return value
+    return {}
+
+
 async def record_mutation(
     conn,
     *,
@@ -127,7 +141,7 @@ async def rollback_mutation(
             if not current:
                 raise ValueError(f"registry item {mutation_row['target_id']} not found")
 
-            before_state = mutation_row.get("before_state") or {}
+            before_state = _decode_json(mutation_row.get("before_state"))
             previous_review_state = before_state.get("review_state")
             if not previous_review_state:
                 raise ValueError(f"mutation {mutation_id} has no prior review_state")
@@ -181,4 +195,3 @@ async def rollback_mutation(
         raise ValueError(
             f"rollback for {mutation_row['subsystem']}/{mutation_row['mutation_type']} is not implemented"
         )
-

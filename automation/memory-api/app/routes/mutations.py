@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
 from ..auth import verify_token
-from ..mutation_journal import list_mutations, rollback_mutation
+from ..mutation_journal import _decode_json, list_mutations, rollback_mutation
 
 router = APIRouter()
 
@@ -40,12 +40,12 @@ async def mutations_query(req: MutationQueryRequest):
                 "mutation_type": row["mutation_type"],
                 "target_id": str(row["target_id"]),
                 "reason": row["reason"],
-                "before_state": row["before_state"] or {},
-                "after_state": row["after_state"] or {},
+                "before_state": _decode_json(row["before_state"]),
+                "after_state": _decode_json(row["after_state"]),
                 "rollback_mode": row["rollback_mode"],
                 "rollback_status": row["rollback_status"],
                 "rolled_back_by_mutation_id": str(row["rolled_back_by_mutation_id"]) if row["rolled_back_by_mutation_id"] else None,
-                "metadata": row["metadata"] or {},
+                "metadata": _decode_json(row["metadata"]),
             }
             for row in rows
         ]
@@ -61,4 +61,3 @@ async def mutations_rollback(req: MutationRollbackRequest):
         reason=req.reason,
     )
     return {"ok": True, **result}
-
