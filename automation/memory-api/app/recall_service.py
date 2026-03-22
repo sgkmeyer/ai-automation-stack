@@ -63,6 +63,7 @@ async def search_memory_entries(
     rank_expr = _memory_rank_expr(query, params, param_idx)
     if query:
         param_idx += 1
+        conditions.append(f"e.tsv @@ websearch_to_tsquery('english', ${param_idx}::text)")
         params.append(query)
 
     if lane == "transcripts":
