@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_script="/home/node/repo/scripts/recall-router.sh"
+log_file="/home/node/.openclaw/workspace/router/command-log.ndjson"
+
+if [[ ! -x "${repo_script}" ]]; then
+  printf 'unified recall CLI not found at %s\n' "${repo_script}" >&2
+  exit 1
+fi
+
+export MEMORY_API_BASE_URL="${MEMORY_API_BASE_URL:-http://memory-api:8100}"
+export MEMORY_API_TOKEN="${MEMORY_API_TOKEN:-}"
+
+mkdir -p "$(dirname "${log_file}")"
+
+status="ok"
+command_name="${1:-recall}"
+
+if output="$("${repo_script}" "$@" 2>&1)"; then
+  :
+else
+  status="error"
+fi
+
+COMMAND_NAME="${command_name}" STATUS_VALUE="${status}" python3 - "$@" >>"${log_file}" <<'PY'
+import json
+import os
+import sys
+from datetime import datetime, timezone
+
+print(json.dumps({
+    "ts": datetime.now(timezone.utc).isoformat(),
+    "command": os.environ.get("COMMAND_NAME", ""),
+    "args": sys.argv[1:],
+    "status": os.environ.get("STATUS_VALUE", "ok"),
+}))
+PY
+
+printf '%s\n' "${output}"
+
+if [[ "${status}" != "ok" ]]; then
+  exit 1
+fi

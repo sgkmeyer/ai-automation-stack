@@ -48,11 +48,13 @@ When the shared memory CLI is available, use it for durable memory operations:
   - `./bin/remember "..." --tags a,b`
   - `./bin/recall-memory "..."`
   - `./bin/context-memory get|set|delete ...`
+  - `./bin/recall-unified --query "..."`
 
 Use these mappings by default in direct chats:
 
 - "remember this", "make note of this", "don't forget this" -> `log`
 - "what do you remember about ...", "recall ...", "search memory for ..." -> `recall`
+- natural cross-store recall like "what did I save about ...", "what did Dana say ...", "what do you remember about ..." -> `./bin/recall-unified --query "..."`
 - "set my current context ...", "remember that right now ..." -> `context-set`
 - "what is my current context" -> `context-get`
 - "clear/remove/delete that context" -> `context-delete`
@@ -60,6 +62,7 @@ Use these mappings by default in direct chats:
 After calling the CLI, summarize the result for the human instead of dumping raw JSON unless they ask for the raw response.
 The wrapper logs each invocation to `memory/command-log.ndjson` for local auditability.
 Follow [MEMORY_POLICY.md](/Users/sgkmeyer/ai-automation-stack/automation/openclaw/workspace/MEMORY_POLICY.md) for the decision rules and [MEMORY_POLICY_EXAMPLES.md](/Users/sgkmeyer/ai-automation-stack/automation/openclaw/workspace/MEMORY_POLICY_EXAMPLES.md) for concrete patterns.
+Use `./bin/recall-unified` first when the user asks a natural recall question and the right backing store is not obvious upfront.
 
 ### Shared Registry Commands
 

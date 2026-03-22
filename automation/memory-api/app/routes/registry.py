@@ -119,6 +119,9 @@ class RegistryListRequest(BaseModel):
 class RegistryReviewRequest(BaseModel):
     item_id: UUID
     action: str
+    reason: str | None = Field(default=None, max_length=2000)
+    actor_type: str = Field(default="tars", max_length=100)
+    actor_id: str | None = Field(default="registry_api", max_length=200)
 
     @field_validator("action")
     @classmethod
@@ -231,11 +234,18 @@ async def registry_list(req: RegistryListRequest):
 
 @router.post("/registry/review", dependencies=[Depends(verify_token)])
 async def registry_review(req: RegistryReviewRequest):
-    row = await review_registry_item(req.item_id, req.action)
+    row = await review_registry_item(
+        req.item_id,
+        req.action,
+        actor_type=req.actor_type,
+        actor_id=req.actor_id,
+        reason=req.reason,
+    )
     return {
         "ok": True,
         "item_id": str(row["id"]),
         "review_state": row["review_state"],
         "title": row["title"],
         "canonical_url": row["canonical_url"],
+        "mutation_id": str(row["mutation_id"]) if row.get("mutation_id") else None,
     }

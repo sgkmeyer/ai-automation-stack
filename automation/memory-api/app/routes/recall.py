@@ -1,43 +1,18 @@
 """Structured retrieval endpoint."""
 
-import json
 from datetime import datetime
 from uuid import UUID
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field, field_validator
 
 from ..auth import verify_token
 from ..config import settings
-from ..db import get_conn
 from ..memory_types import ENTRY_TYPES
+from ..recall_service import decode_entities, format_local_time, search_memory_entries
 from ..synthesis import synthesize_answer
 
 router = APIRouter()
-
-
-def _display_zone() -> ZoneInfo:
-    try:
-        return ZoneInfo(settings.display_timezone)
-    except ZoneInfoNotFoundError:
-        return ZoneInfo("UTC")
-
-
-def _format_local_time(value: datetime) -> str:
-    return value.astimezone(_display_zone()).strftime("%Y-%m-%d %I:%M %p %Z")
-
-
-def _ranking_bonus_expr() -> str:
-    return """
-        CASE
-            WHEN e.entry_type = 'action_item' THEN 0.95
-            WHEN e.source = 'transcript' AND COALESCE(e.structured->>'source_event_type', '') = 'action_items_generated' THEN 0.85
-            WHEN e.source = 'transcript' AND COALESCE(e.structured->>'source_event_type', '') = 'key_points_generated' THEN 0.75
-            WHEN e.source = 'transcript' AND COALESCE(e.structured->>'source_event_type', '') = 'transcript_created' THEN 0.15
-            ELSE 0
-        END
-    """
 
 
 class RecallRequest(BaseModel):
@@ -91,112 +66,29 @@ class RecallResponse(BaseModel):
     citations: list[Citation] = Field(default_factory=list)
     total_found: int
 
-
-def _decode_entities(raw_entities) -> list[dict]:
-    if not raw_entities:
-        return []
-    if isinstance(raw_entities, str):
-        return json.loads(raw_entities)
-    return raw_entities
-
-
 @router.post("/recall", response_model=RecallResponse, dependencies=[Depends(verify_token)])
 async def recall(req: RecallRequest):
     """Search memory with structured filters plus full-text search."""
-    conditions: list[str] = []
-    params: list[object] = []
-    param_idx = 0
-
-    if req.query:
-        param_idx += 1
-        conditions.append(f"e.tsv @@ websearch_to_tsquery('english', ${param_idx})")
-        params.append(req.query)
-        rank_expr = f"(ts_rank_cd(e.tsv, websearch_to_tsquery('english', ${param_idx})) + {_ranking_bonus_expr()})"
-    else:
-        rank_expr = _ranking_bonus_expr()
-
-    if req.entity_name:
-        param_idx += 1
-        conditions.append(
-            f"""
-            e.id IN (
-                SELECT ee.entry_id FROM memory.entry_entities ee
-                JOIN memory.entities ent ON ent.id = ee.entity_id
-                WHERE ent.normalized_name = LOWER(${param_idx})
-                   OR ent.normalized_name LIKE '%' || LOWER(${param_idx}) || '%'
-                   OR EXISTS (
-                        SELECT 1
-                        FROM unnest(ent.aliases) AS alias
-                        WHERE LOWER(alias) = LOWER(${param_idx})
-                           OR LOWER(alias) LIKE '%' || LOWER(${param_idx}) || '%'
-                   )
-            )
-            """
-        )
-        params.append(req.entity_name)
-
-    if req.entry_type:
-        param_idx += 1
-        conditions.append(f"e.entry_type = ${param_idx}")
-        params.append(req.entry_type)
-
-    if req.after:
-        param_idx += 1
-        conditions.append(f"e.occurred_at >= ${param_idx}")
-        params.append(req.after)
-
-    if req.before:
-        param_idx += 1
-        conditions.append(f"e.occurred_at <= ${param_idx}")
-        params.append(req.before)
-
-    where_clause = " AND ".join(conditions) if conditions else "TRUE"
-
-    param_idx += 1
-    limit_param = param_idx
-    effective_limit = min(req.limit, settings.max_recall_results)
-
-    query = f"""
-        SELECT
-            e.id, e.entry_type, e.body, e.source, e.occurred_at,
-            {rank_expr} AS rank,
-            COALESCE(
-                json_agg(
-                    json_build_object('name', ent.name, 'type', ent.entity_type, 'role', ee.role)
-                ) FILTER (WHERE ent.id IS NOT NULL),
-                '[]'::json
-            ) AS entities
-        FROM memory.entries e
-        LEFT JOIN memory.entry_entities ee ON ee.entry_id = e.id
-        LEFT JOIN memory.entities ent ON ent.id = ee.entity_id
-        WHERE {where_clause}
-        GROUP BY e.id
-        ORDER BY rank DESC, e.occurred_at DESC
-        LIMIT ${limit_param}
-    """
-    params.append(effective_limit)
-
-    async with get_conn() as conn:
-        rows = await conn.fetch(query, *params)
-        count_query = f"""
-            SELECT COUNT(DISTINCT e.id)
-            FROM memory.entries e
-            LEFT JOIN memory.entry_entities ee ON ee.entry_id = e.id
-            LEFT JOIN memory.entities ent ON ent.id = ee.entity_id
-            WHERE {where_clause}
-        """
-        total = await conn.fetchval(count_query, *params[:-1])
+    rows, total = await search_memory_entries(
+        query=req.query,
+        entity_name=req.entity_name,
+        entry_type=req.entry_type,
+        after=req.after,
+        before=req.before,
+        limit=req.limit,
+        lane="all",
+    )
 
     entries = [
         RecallEntry(
-            entry_id=row["id"],
-            entry_type=row["entry_type"],
+            entry_id=UUID(row["id"]),
+            entry_type=row["source_type"],
             body=row["body"],
             source=row["source"],
-            occurred_at=row["occurred_at"],
-            occurred_at_local=_format_local_time(row["occurred_at"]),
+            occurred_at=datetime.fromisoformat(row["occurred_at"]),
+            occurred_at_local=row["occurred_at_local"],
             display_timezone=settings.display_timezone,
-            entities=_decode_entities(row["entities"]),
+            entities=[{"name": name, "type": "unknown", "role": "mentioned"} for name in row.get("entity_refs", [])],
         )
         for row in rows
     ]

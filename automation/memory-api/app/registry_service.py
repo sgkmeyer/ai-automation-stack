@@ -17,6 +17,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 
 from .config import settings
 from .db import get_conn
+from .mutation_journal import record_mutation
 
 TRACKING_QUERY_PARAMS = {
     "fbclid",
@@ -1086,10 +1087,29 @@ async def list_registry(
     return [dict(row) for row in rows], int(total or 0)
 
 
-async def review_registry_item(item_id: UUID, action: str) -> dict[str, Any]:
+async def review_registry_item(
+    item_id: UUID,
+    action: str,
+    *,
+    actor_type: str = "tars",
+    actor_id: str | None = "registry_api",
+    reason: str | None = None,
+) -> dict[str, Any]:
     mapping = {"mark_reviewed": "reviewed", "archive": "archived", "mark_inbox": "inbox"}
     new_state = mapping[action]
-    async with get_conn() as conn:
+    async with get_conn() as conn, conn.transaction():
+        current = await conn.fetchrow(
+            """
+            SELECT id, review_state, title, canonical_url
+            FROM registry.items
+            WHERE id = $1
+            FOR UPDATE
+            """,
+            item_id,
+        )
+        if not current:
+            raise ValueError(f"registry item {item_id} not found")
+
         row = await conn.fetchrow(
             """
             UPDATE registry.items
@@ -1100,6 +1120,20 @@ async def review_registry_item(item_id: UUID, action: str) -> dict[str, Any]:
             item_id,
             new_state,
         )
-    if not row:
-        raise ValueError(f"registry item {item_id} not found")
-    return dict(row)
+        mutation = await record_mutation(
+            conn,
+            actor_type=actor_type,
+            actor_id=actor_id,
+            subsystem="registry",
+            mutation_type="review_state_change",
+            target_id=item_id,
+            reason=reason or f"registry review action: {action}",
+            before_state={"review_state": current["review_state"]},
+            after_state={"review_state": new_state},
+            rollback_mode="inverse_mutation",
+            rollback_status="available",
+            metadata={"action": action},
+        )
+    response = dict(row)
+    response["mutation_id"] = mutation["id"]
+    return response

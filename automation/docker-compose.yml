@@ -310,6 +310,8 @@ services:
       - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
       - OPENCLAW_CONFIG_PATH=/home/node/.openclaw/config.json
       - MEMORY_WEBHOOK_BASE_URL=http://n8n-webhook:5678/webhook/memory
+      - MEMORY_API_BASE_URL=http://memory-api:8100
+      - MEMORY_API_TOKEN=${MEMORY_API_TOKEN}
       - REGISTRY_WEBHOOK_BASE_URL=${REGISTRY_WEBHOOK_BASE_URL:-https://n8n.satoic.com/webhook/registry}
       - REGISTRY_WEBHOOK_SECRET=${REGISTRY_WEBHOOK_SECRET}
       - BRAVE_API_KEY=${BRAVE_API_KEY}

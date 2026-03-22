@@ -47,16 +47,22 @@ Add whatever helps you do your job. This is your cheat sheet.
   - `./bin/remember`
   - `./bin/recall-memory`
   - `./bin/context-memory`
+  - `./bin/recall-unified`
 - Production base URL: `https://n8n.satoic.com/webhook/memory`
 - Dev base URL: `http://100.82.169.113:5679/webhook/memory`
+- Internal routed-recall base URL: `http://memory-api:8100`
 - Main endpoints:
   - `POST /log`
   - `POST /recall`
   - `POST /context`
   - `POST /ingest/document`
   - `POST /ingest/transcript`
+  - `POST /router/recall`
+  - `POST /mutations/query`
+  - `POST /mutations/rollback`
 - Use shared memory for durable facts, recall, and context. Use workspace files for working notes and local summaries.
 - Local audit log: `memory/command-log.ndjson`
+- Routed recall audit log: `router/command-log.ndjson`
 
 ## Registry Interfaces
 
