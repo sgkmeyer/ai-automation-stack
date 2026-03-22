@@ -19,6 +19,36 @@ Routes:
 - `POST /ingest/document`
 - `POST /ingest/transcript`
 
+## Internal Memory-API Interfaces
+
+These routes are internal-only and are intended for Openclaw/TARS and operator
+tooling. They are not exposed directly through the public n8n webhook surface.
+
+Base URL on the Docker network:
+
+- `http://memory-api:8100`
+
+Routes:
+
+- `POST /router/recall`
+  - unified recall router over registry, transcripts, durable memory, and
+    current context
+  - returns:
+    - intent classification
+    - primary and secondary lanes
+    - routing reason
+    - answer mode
+    - normalized results
+    - lane attempts with confidence and result density
+
+- `POST /mutations/query`
+  - query the mutation journal for reversible user-driven mutations
+
+- `POST /mutations/rollback`
+  - rollback a supported mutation by `mutation_id`
+  - current rollback scope:
+    - registry `review_state_change`
+
 ## Source Adapters
 
 The normalized transcript ingest route is not the same thing as a vendor-facing
@@ -81,6 +111,7 @@ Additional OpenClaw-friendly wrappers:
 ```bash
 ./bin/remember "Met Sam for coffee" --tags relationship
 ./bin/recall-memory "coffee with Sam"
+./bin/recall-unified --query "what did I save about AI GTM"
 ./bin/context-memory set --domain prefs --key coffee --value "flat white"
 ```
 
