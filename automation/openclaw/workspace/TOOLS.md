@@ -75,3 +75,9 @@ Add whatever helps you do your job. This is your cheat sheet.
   - `POST /process`
 - Use registry first for saved links, summaries, and reading inbox behavior.
 - Local audit log: `registry/command-log.ndjson`
+
+## Capability Rollout
+
+- A subsystem is not usable by TARS until the wrapper, docs, env, and live in-container verification are all done.
+- Rollout checklist:
+  [openclaw-capability-rollout.md](/Users/sgkmeyer/ai-automation-stack/ops/openclaw-capability-rollout.md)

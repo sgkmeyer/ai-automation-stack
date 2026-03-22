@@ -19,6 +19,8 @@ from ..ingestion import (
     create_ingestion_job,
     ensure_utc,
     link_entities,
+    merge_entities,
+    participant_entities,
     upsert_entry_by_source_ref,
 )
 from ..memory_types import ENTRY_TYPES
@@ -26,6 +28,15 @@ from ..memory_types import ENTRY_TYPES
 router = APIRouter()
 
 DOCUMENT_SOURCES = {"obsidian", "manual", "n8n", "system"}
+
+
+def _compose_transcript_body(title: str | None, content: str, participants: list[str]) -> str:
+    participant_line = ", ".join(participant.strip() for participant in participants if participant and participant.strip())
+    if not participant_line:
+        return compose_entry_body(title, content)
+
+    contextual_content = f"Participants: {participant_line}\n\n{content.strip()}"
+    return compose_entry_body(title, contextual_content)
 
 
 class IngestDocumentRequest(BaseModel):
@@ -170,16 +181,19 @@ async def ingest_transcript(req: IngestTranscriptRequest):
     """Ingest a transcript summary plus optional explicit action-item entries."""
     occurred = ensure_utc(req.occurred_at)
     summary_text = (req.summary or "").strip() or req.transcript_text.strip()
-    summary_body = compose_entry_body(req.title, summary_text)
+    summary_body = _compose_transcript_body(req.title, summary_text, req.participants)
     summary_checksum = checksum_for(
         req.source_ref,
         req.title or "",
         req.transcript_text,
         req.summary or "",
+        tuple(req.participants),
         tuple(req.action_items),
     )
     summary_extraction = await classify_text(summary_body, "transcript_summary")
     summary_extraction["entry_type"] = "transcript_summary"
+    participant_entity_candidates = participant_entities(req.participants)
+    summary_entities = merge_entities(summary_extraction["entities"], participant_entity_candidates)
 
     summary_structured = dict(req.metadata)
     if req.tags:
@@ -208,7 +222,7 @@ async def ingest_transcript(req: IngestTranscriptRequest):
                     occurred_at=occurred,
                     structured=summary_structured,
                 )
-                summary_linked = await link_entities(conn, summary_entry_id, summary_extraction["entities"])
+                summary_linked = await link_entities(conn, summary_entry_id, summary_entities)
 
                 action_item_entry_ids: list[UUID] = []
                 action_item_changes = 0
@@ -217,7 +231,7 @@ async def ingest_transcript(req: IngestTranscriptRequest):
                     item_text = item.strip()
                     if not item_text:
                         continue
-                    action_checksum = checksum_for(req.source_ref, "action_item", index, item_text)
+                    action_checksum = checksum_for(req.source_ref, "action_item", index, item_text, tuple(req.participants))
                     action_structured = {
                         "ingest_kind": "transcript_action_item",
                         "parent_source_ref": req.source_ref,
@@ -228,6 +242,7 @@ async def ingest_transcript(req: IngestTranscriptRequest):
                         action_structured["tags"] = req.tags
                     action_extraction = await classify_text(item_text, "action_item")
                     action_extraction["entry_type"] = "action_item"
+                    action_entities = merge_entities(action_extraction["entities"], participant_entity_candidates)
                     action_entry_id, action_operation = await upsert_entry_by_source_ref(
                         conn,
                         source=req.source,
@@ -238,7 +253,7 @@ async def ingest_transcript(req: IngestTranscriptRequest):
                         structured=action_structured,
                     )
                     action_item_entry_ids.append(action_entry_id)
-                    linked = await link_entities(conn, action_entry_id, action_extraction["entities"])
+                    linked = await link_entities(conn, action_entry_id, action_entities)
                     total_entities += len(linked)
                     if action_operation != "unchanged":
                         action_item_changes += 1

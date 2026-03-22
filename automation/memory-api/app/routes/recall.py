@@ -123,7 +123,13 @@ async def recall(req: RecallRequest):
                 SELECT ee.entry_id FROM memory.entry_entities ee
                 JOIN memory.entities ent ON ent.id = ee.entity_id
                 WHERE ent.normalized_name = LOWER(${param_idx})
-                   OR LOWER(${param_idx}) = ANY(SELECT LOWER(a) FROM unnest(ent.aliases) a)
+                   OR ent.normalized_name LIKE '%' || LOWER(${param_idx}) || '%'
+                   OR EXISTS (
+                        SELECT 1
+                        FROM unnest(ent.aliases) AS alias
+                        WHERE LOWER(alias) = LOWER(${param_idx})
+                           OR LOWER(alias) LIKE '%' || LOWER(${param_idx}) || '%'
+                   )
             )
             """
         )

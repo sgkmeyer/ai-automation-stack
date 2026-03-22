@@ -71,6 +71,27 @@ def detect_source_kind(host: str) -> str:
     return "unknown"
 
 
+def _scheme_equivalent_urls(canonical_url: str, source_kind: str) -> list[str]:
+    if source_kind != "web":
+        return [canonical_url]
+
+    parsed = urlparse(canonical_url)
+    if parsed.scheme not in {"http", "https"}:
+        return [canonical_url]
+
+    alternate = urlunparse(
+        (
+            "https" if parsed.scheme == "http" else "http",
+            parsed.netloc,
+            parsed.path,
+            parsed.params,
+            parsed.query,
+            parsed.fragment,
+        )
+    )
+    return [canonical_url, alternate]
+
+
 def _strip_tracking_params(query: list[tuple[str, str]]) -> list[tuple[str, str]]:
     cleaned: list[tuple[str, str]] = []
     for key, value in query:
@@ -124,6 +145,38 @@ def _canonicalize_parsed(parsed) -> CanonicalUrl:
         source_kind=detect_source_kind(host),
         redirected=False,
         final_url=canonical_url,
+    )
+
+
+def _fallback_title_for_url(url: str) -> str:
+    parsed = urlparse(url)
+    host = parsed.netloc.lower().removeprefix("www.") or "saved link"
+    segments = [segment for segment in parsed.path.split("/") if segment]
+    if not segments:
+        return host
+
+    last_segment = re.sub(r"[-_]+", " ", segments[-1]).strip()
+    last_segment = re.sub(r"\.[a-z0-9]{1,6}$", "", last_segment, flags=re.IGNORECASE)
+    if not last_segment:
+        return host
+    return f"{host} - {last_segment.title()}"
+
+
+def _fallback_extracted_content(canonical: CanonicalUrl, *, reason: str, status_code: int | None = None) -> ExtractedContent:
+    metadata: dict[str, Any] = {
+        "resolved_url": canonical.final_url or canonical.canonical_url,
+        "fallback_reason": reason,
+    }
+    if status_code is not None:
+        metadata["fetch_status_code"] = status_code
+
+    return ExtractedContent(
+        title=_fallback_title_for_url(canonical.canonical_url),
+        description=None,
+        text=None,
+        raw_text=None,
+        extraction_mode="blocked_metadata_only" if status_code in {401, 403, 429} else "url_metadata_only",
+        metadata=metadata,
     )
 
 
@@ -274,7 +327,14 @@ async def extract_registry_content(canonical: CanonicalUrl) -> ExtractedContent:
     if canonical.source_kind == "youtube":
         return await _fetch_youtube_content(canonical.canonical_url)
 
-    content = await _fetch_html_metadata(canonical.canonical_url)
+    try:
+        content = await _fetch_html_metadata(canonical.canonical_url)
+    except httpx.HTTPStatusError as exc:
+        return _fallback_extracted_content(
+            canonical,
+            reason=str(exc),
+            status_code=exc.response.status_code if exc.response else None,
+        )
     if canonical.source_kind in {"x", "tiktok"}:
         return ExtractedContent(
             title=content.title,
@@ -439,9 +499,25 @@ def _merge_metadata(metadata: dict[str, Any], user_note: str | None, user_tags: 
 
 async def create_registry_capture(*, url: str, note: str | None, tags: list[str], capture_channel: str) -> dict[str, Any]:
     canonical = await canonicalize_url(url, deep=False)
+    lookup_urls = _scheme_equivalent_urls(canonical.canonical_url, canonical.source_kind)
     async with get_conn() as conn:
         async with conn.transaction():
-            existing = await conn.fetchrow("SELECT id, metadata FROM registry.items WHERE canonical_url = $1", canonical.canonical_url)
+            existing = await conn.fetchrow(
+                """
+                SELECT id, metadata
+                FROM registry.items
+                WHERE canonical_url = ANY($1::text[])
+                ORDER BY
+                    CASE
+                        WHEN canonical_url = $2 THEN 0
+                        ELSE 1
+                    END,
+                    last_captured_at DESC
+                LIMIT 1
+                """,
+                lookup_urls,
+                canonical.canonical_url,
+            )
             metadata = _merge_metadata(_metadata_dict(existing["metadata"]) if existing else {}, note, tags)
             if existing:
                 item_id = existing["id"]
@@ -536,8 +612,72 @@ async def _merge_registry_items(conn, from_item_id: UUID, to_item_id: UUID) -> U
     if from_item_id == to_item_id:
         return to_item_id
 
+    from_row = await conn.fetchrow("SELECT * FROM registry.items WHERE id = $1", from_item_id)
+    to_row = await conn.fetchrow("SELECT * FROM registry.items WHERE id = $1", to_item_id)
+    if not from_row or not to_row:
+        return to_item_id
+
+    from_metadata = _metadata_dict(from_row["metadata"])
+    to_metadata = _metadata_dict(to_row["metadata"])
+    merged_metadata = dict(from_metadata)
+    merged_metadata.update(to_metadata)
+    merged_metadata["user_tags"] = sorted(
+        {
+            str(tag).strip()
+            for tag in [*from_metadata.get("user_tags", []), *to_metadata.get("user_tags", [])]
+            if isinstance(tag, str) and str(tag).strip()
+        }
+    )
+    note_search_lines = [
+        line.strip()
+        for line in [from_metadata.get("note_search", ""), to_metadata.get("note_search", "")]
+        if isinstance(line, str) and line.strip()
+    ]
+    if note_search_lines:
+        merged_metadata["note_search"] = "\n".join(dict.fromkeys(note_search_lines))
+
     await conn.execute("UPDATE registry.captures SET item_id = $2 WHERE item_id = $1", from_item_id, to_item_id)
     await conn.execute("UPDATE registry.jobs SET item_id = $2 WHERE item_id = $1", from_item_id, to_item_id)
+    await conn.execute(
+        """
+        UPDATE registry.items
+        SET original_url = CASE
+                WHEN title IS NULL AND summary IS NULL AND why_it_matters IS NULL
+                    THEN COALESCE($2, original_url)
+                ELSE original_url
+            END,
+            canonical_host = COALESCE(NULLIF(canonical_host, ''), $3),
+            source_kind = CASE
+                WHEN source_kind = 'unknown' THEN $4
+                ELSE source_kind
+            END,
+            capture_channel = COALESCE(NULLIF(capture_channel, ''), $5),
+            review_state = CASE
+                WHEN review_state = 'inbox' OR $6 = 'inbox' THEN 'inbox'
+                WHEN review_state = 'reviewed' OR $6 = 'reviewed' THEN 'reviewed'
+                ELSE 'archived'
+            END,
+            metadata = $7::jsonb,
+            raw_archive_path = COALESCE(raw_archive_path, $8),
+            first_captured_at = LEAST(first_captured_at, $9),
+            last_captured_at = GREATEST(last_captured_at, $10),
+            processed_at = COALESCE(processed_at, $11),
+            last_error = COALESCE(last_error, $12)
+        WHERE id = $1
+        """,
+        to_item_id,
+        from_row["original_url"],
+        from_row["canonical_host"],
+        from_row["source_kind"],
+        from_row["capture_channel"],
+        from_row["review_state"],
+        json.dumps(merged_metadata),
+        from_row["raw_archive_path"],
+        from_row["first_captured_at"],
+        from_row["last_captured_at"],
+        from_row["processed_at"],
+        from_row["last_error"],
+    )
     await conn.execute("DELETE FROM registry.items WHERE id = $1", from_item_id)
     return to_item_id
 
@@ -600,27 +740,41 @@ async def process_registry_item(item_id: UUID, *, reprocess: bool = False) -> di
 
         async with get_conn() as conn:
             async with conn.transaction():
-                if deep.canonical_url != item["canonical_url"]:
+                lookup_urls = _scheme_equivalent_urls(deep.canonical_url, deep.source_kind)
+                if deep.canonical_url != item["canonical_url"] or len(lookup_urls) > 1:
                     existing = await conn.fetchrow(
-                        "SELECT id FROM registry.items WHERE canonical_url = $1 AND id <> $2",
-                        deep.canonical_url,
+                        """
+                        SELECT id
+                        FROM registry.items
+                        WHERE canonical_url = ANY($1::text[]) AND id <> $2
+                        ORDER BY
+                            CASE
+                                WHEN canonical_url = $3 THEN 0
+                                ELSE 1
+                            END,
+                            last_captured_at DESC
+                        LIMIT 1
+                        """,
+                        lookup_urls,
                         item_id,
+                        deep.canonical_url,
                     )
                     if existing:
                         item_id = await _merge_registry_items(conn, item_id, existing["id"])
-                    await conn.execute(
-                        """
-                        UPDATE registry.items
-                        SET canonical_url = $2,
-                            canonical_host = $3,
-                            source_kind = $4
-                        WHERE id = $1
-                        """,
-                        item_id,
-                        deep.canonical_url,
-                        deep.canonical_host,
-                        deep.source_kind,
-                    )
+                    if deep.canonical_url != item["canonical_url"]:
+                        await conn.execute(
+                            """
+                            UPDATE registry.items
+                            SET canonical_url = $2,
+                                canonical_host = $3,
+                                source_kind = $4
+                            WHERE id = $1
+                            """,
+                            item_id,
+                            deep.canonical_url,
+                            deep.canonical_host,
+                            deep.source_kind,
+                        )
                     item = await _fetch_item(conn, item_id)
 
         async with get_conn() as conn:
@@ -644,7 +798,7 @@ async def process_registry_item(item_id: UUID, *, reprocess: bool = False) -> di
         metadata["extraction_mode"] = extracted.extraction_mode
         metadata["capture_count"] = int(capture_count or 0)
 
-        processing_status = "ready" if summary["summary"] else "failed"
+        processing_status = "ready" if any([summary["summary"], summary["title"], deep.canonical_url]) else "failed"
         async with get_conn() as conn:
             async with conn.transaction():
                 await conn.execute(

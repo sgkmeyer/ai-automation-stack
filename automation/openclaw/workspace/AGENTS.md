@@ -172,6 +172,19 @@ Reactions are lightweight social signals. Humans use them constantly — they sa
 
 Skills provide your tools. When you need one, check its `SKILL.md`. Keep local notes (camera names, SSH details, voice preferences) in `TOOLS.md`.
 
+### Capability Rollout Rule
+
+Do not assume a backend feature is usable just because a workflow or API route exists.
+
+A shared capability is only "live for TARS" when all of these are true:
+
+- the backend/service route exists
+- the workspace wrapper exists in `./bin`
+- `AGENTS.md` / `TOOLS.md` describe when to use it
+- the wrapper has been verified from inside the live Openclaw environment
+
+Follow [openclaw-capability-rollout.md](/Users/sgkmeyer/ai-automation-stack/ops/openclaw-capability-rollout.md) when adding or validating shared capabilities.
+
 **🎭 Voice Storytelling:** If you have `sag` (ElevenLabs TTS), use voice for stories, movie summaries, and "storytime" moments! Way more engaging than walls of text. Surprise people with funny voices.
 
 **📝 Platform Formatting:**
