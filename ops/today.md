@@ -1,7 +1,7 @@
 # Today — Current Build State
 
 > Manually maintained. Update at the end of each session alongside the dated session log.
-> Last updated: 2026-03-21
+> Last updated: 2026-03-27
 
 ---
 
@@ -9,7 +9,7 @@
 
 **Production stack** (`automation` project on Oracle Free Tier VM):
 - All 11 services up: caddy, db, redis, n8n, n8n-worker, n8n-webhook, n8n-task-runner, openclaw, chromium, portainer, toolbox
-- **Stack versions (updated 2026-03-11):** n8n 2.11.2, Openclaw 2026.3.8, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
+- **Stack versions (updated 2026-03-27):** n8n 2.11.2, Openclaw 2026.3.24, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
 - Public endpoints:
   - `https://n8n.satoic.com` → 200 (app auth)
   - `https://openclaw.satoic.com` → 200 (gateway token auth only, no Caddy basic_auth)
@@ -18,6 +18,7 @@
 - Openclaw paired to Telegram (`@sg_tar_bot`), n8n API wired, Chromium CDP connected
 - Openclaw hooks enabled: `http://openclaw:18789/hooks/` (internal only, dedicated token)
 - Openclaw durable-memory recall now uses the internal Docker route (`http://n8n-webhook:5678/webhook/memory`) instead of the public HTTPS path
+- Production Openclaw Codex OAuth was refreshed on 2026-03-27 after a `refresh_token_reused` failure; live agent queries are working again and the current OAuth expiry is `2026-04-06T16:44:11Z`
 - n8n credentials configured: Gmail, Google Drive, Postgres, HubSpot, Google OAuth (drive.file)
 - `public.leads` table live (unique on `domain`)
 - JS-01 workflow **active** (id: `chwneHrHVCQON462`) — full pipeline wired by TAR
@@ -96,6 +97,7 @@ Roadmap lock-in:
 - [x] Hardening rollout validated end-to-end: dev deploy+smoke and prod deploy+smoke green (2026-03-05)
 - [x] Openclaw upgraded v2026.3.1 → v2026.3.2; version pin updated in Dockerfile (2026-03-05)
 - [x] Openclaw upgraded v2026.3.2 → v2026.3.8; dev-validated, production deployed (2026-03-11)
+- [x] Openclaw upgraded v2026.3.8 → v2026.3.24 (2026-03-27)
 - [x] n8n upgraded 2.9.2 → 2.11.2; dev-validated, production deployed (2026-03-11)
 - [x] Openclaw UID ownership fix: explicit UID 1000 chown in gitops-deploy, vm-cron-backup, restore (2026-03-11)
 - [x] gitops-deploy-dev.sh: added stash/ownership handling parity with production deploy script (2026-03-11)
@@ -164,13 +166,13 @@ See `ops/runbooks.md` for step-by-step procedure.
 - **Registry blocked-page fallback** — now preserves usable items for blocked sources, but summaries are intentionally minimal when only URL-level metadata is available
 - **Dev deploy helper** — `vm-safe.sh deploy-dev` now calls `gitops-deploy-dev.sh` so dev validations rebuild project-scoped images instead of reusing stale containers
 - **Tailscale GitHub Action authkey deprecation warning** — OAuth clients require a paid plan (not available on Free); authkey still works, revisit if plan upgraded or Tailscale forces migration
-- **Dev stack running** — n8n 2.11.2 + Openclaw v2026.3.8 validated on dev (2026-03-11)
+- **Dev stack running** — Openclaw v2026.3.24 validated on dev after redeploy (2026-03-27)
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json`; propagated to all n8n services (2026-02-23)
 - **`POSTGRES_PASSWORD` format** — keep it URL-safe (`A-Za-z0-9._~-`) unless the compose-built DSNs are updated to URL-encode credentials; `memory-api` consumes a full DB URL assembled from env vars
 - **Openclaw config schema (v2026.2.26+)** — `trustedProxies` and `controlUi` inside `gateway` section; `gateway.auth.rateLimit` uses `maxAttempts/windowMs/lockoutMs/exemptLoopback` (not `enabled/window/maxFailures`)
 - **Openclaw security audit baseline** — 0 critical on both dev/prod (2026-03-03); see `ops/security-audit-2026-03-03.md`
-- **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.3.8`
+- **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.3.24`
 - **Caddy bind-mount reload** — Caddyfile changes require explicit `docker compose restart caddy`; `docker compose up -d` does not detect bind-mount file changes
 - **Openclaw device pairing** — new browser platforms (e.g., iPhone) require approval from an already-paired session; pending devices visible in `openclaw/devices/pending.json`
 - **Openclaw basic_auth removed** — `openclaw.satoic.com` no longer uses Caddy basic_auth; gateway token (256-bit) is sole auth. Portainer still has basic_auth.
