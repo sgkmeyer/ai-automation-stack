@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import re
-import shutil
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path, PurePosixPath
@@ -152,11 +151,13 @@ def _serialize_frontmatter(frontmatter: dict[str, Any]) -> str:
     lines = ["---"]
     for key in ("title", "type", "status", "tags", "source_refs", "updated_at", "confidence"):
         value = frontmatter.get(key)
-        if value in {None, "", []}:
-            continue
         if isinstance(value, list):
+            if not value:
+                continue
             lines.append(f"{key}:")
             lines.extend(f"- {item}" for item in value)
+            continue
+        if value in (None, ""):
             continue
         lines.append(f"{key}: {value}")
     lines.append("---")
