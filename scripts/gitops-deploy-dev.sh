@@ -44,6 +44,15 @@ if git stash list | head -1 | grep -q "gitops-deploy-dev auto-stash"; then
   }
 fi
 
+# Hand ownership back to the container user before starting Openclaw so the
+# mounted runtime directory is writable from first boot.
+if [ -d automation/openclaw ]; then
+  printf "Pre-fixing Openclaw directory ownership (UID 1000:1000)...\n"
+  sudo chown -R 1000:1000 automation/openclaw 2>/dev/null && \
+    printf "Openclaw .openclaw ownership prepared.\n" || \
+    printf "Warning: could not pre-fix Openclaw ownership.\n"
+fi
+
 # Deploy the dev stack (isolated volumes, port 5679, Tailscale-only access)
 cd automation
 
@@ -55,7 +64,7 @@ docker compose \
   --project-name automation-dev \
   up -d --build --scale caddy=0
 
-# Fix Openclaw volume ownership (container runs as 'node' = UID 1000).
+# Re-apply after deploy in case the runtime created new root-owned paths.
 printf "Fixing Openclaw directory ownership (UID 1000:1000)...\n"
 sudo chown -R 1000:1000 "${REPO_DIR}/automation/openclaw" 2>/dev/null && \
   printf "Openclaw .openclaw ownership fixed.\n" || \

@@ -45,6 +45,15 @@ if git stash list | head -1 | grep -q "gitops-deploy auto-stash"; then
   }
 fi
 
+# Hand ownership back to the container user before starting Openclaw so the
+# mounted runtime directory is writable from first boot.
+if [ -d automation/openclaw ]; then
+  printf "Pre-fixing Openclaw directory ownership (UID 1000:1000)...\n"
+  sudo chown -R 1000:1000 automation/openclaw 2>/dev/null && \
+    printf "Openclaw .openclaw ownership prepared.\n" || \
+    printf "Warning: could not pre-fix Openclaw ownership.\n"
+fi
+
 # Deploy the automation stack
 cd automation
 
@@ -57,8 +66,7 @@ docker compose \
 # Keep ingress config hot without requiring restarts.
 docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile || true
 
-# Fix Openclaw volume ownership (container runs as 'node' = UID 1000).
-# Use host-level chown so this works even if the container isn't ready yet.
+# Re-apply after deploy in case the runtime created new root-owned paths.
 printf "Fixing Openclaw directory ownership (UID 1000:1000)...\n"
 sudo chown -R 1000:1000 "${REPO_DIR}/automation/openclaw" 2>/dev/null && \
   printf "Openclaw .openclaw ownership fixed.\n" || \
