@@ -7,7 +7,9 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 # To upgrade: change this version, rebuild, and redeploy.
 # The gateway entrypoint runs /app/openclaw.mjs, so we must replace /app contents.
 ARG OPENCLAW_VERSION=2026.4.9
-RUN npm i -g "openclaw@${OPENCLAW_VERSION}" && \
+# Newer alpine/openclaw bases already include an openclaw binary; force allows us
+# to replace the bundled CLI with the explicitly pinned version for reproducibility.
+RUN npm i -g --force "openclaw@${OPENCLAW_VERSION}" && \
     rm -rf /app/* && \
     cp -a /usr/local/lib/node_modules/openclaw/. /app/
 
