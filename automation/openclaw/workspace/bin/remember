@@ -26,4 +26,5 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-exec ./bin/memory log --source tars --text "${text}" ${tags:+--tags "${tags}"}
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "${script_dir}/memory" log --source tars --text "${text}" ${tags:+--tags "${tags}"}
