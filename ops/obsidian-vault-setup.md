@@ -93,6 +93,16 @@ Templates/
 Attachments/
 ```
 
+If you are enabling the Hybrid Memory Stack wiki lane, also bootstrap the
+canonical wiki structure with:
+
+```bash
+./scripts/bootstrap-obsidian-wiki.sh
+```
+
+That creates the wiki control pages, review queue folders, and initial seed
+pages used for Phase 1 hydration.
+
 Recommended ingest targets at first:
 
 - `Daily/`
@@ -223,6 +233,9 @@ My recommendation:
 
 - start with **Mode A**
 - move to a scheduled sync only after manual ingest feels stable
+
+For the wiki-specific review/promotion loop, see
+[obsidian-wiki-hydration.md](/Users/sgkmeyer/ai-automation-stack/ops/obsidian-wiki-hydration.md).
 
 ## Step 10: Stable Identity Rule
 

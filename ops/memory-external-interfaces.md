@@ -48,6 +48,13 @@ Routes:
   - rollback a supported mutation by `mutation_id`
   - current rollback scope:
     - registry `review_state_change`
+- `GET /wiki/health`
+- `POST /wiki/search`
+- `POST /wiki/page`
+- `POST /wiki/proposals`
+- `POST /wiki/proposals/list`
+- `POST /wiki/proposals/review`
+- `POST /wiki/lint`
 
 ## Source Adapters
 
@@ -112,6 +119,8 @@ Additional OpenClaw-friendly wrappers:
 ./bin/remember "Met Sam for coffee" --tags relationship
 ./bin/recall-memory "coffee with Sam"
 ./bin/recall-unified --query "what did I save about AI GTM"
+./bin/wiki health
+./bin/query-wiki "hybrid memory" --limit 5
 ./bin/context-memory set --domain prefs --key coffee --value "flat white"
 ```
 

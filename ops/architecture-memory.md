@@ -128,6 +128,12 @@ That means:
 - write-capable routes should carry actor metadata for audit and cross-agent
   debugging
 
+For the implemented Phase 1 closeout and next-step operating plan, see
+[hybrid-memory-phase1-closeout.md](/Users/sgkmeyer/ai-automation-stack/ops/hybrid-memory-phase1-closeout.md).
+
+For the Obsidian-side hydration loop, see
+[obsidian-wiki-hydration.md](/Users/sgkmeyer/ai-automation-stack/ops/obsidian-wiki-hydration.md).
+
 ## Week 2 Extensions
 
 ### File-Backed Ingestion
