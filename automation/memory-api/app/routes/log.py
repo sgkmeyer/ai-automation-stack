@@ -7,6 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field, field_validator
 
+from ..actor import ActorFields, with_actor_metadata
 from ..auth import verify_token
 from ..config import settings
 from ..db import get_conn
@@ -16,7 +17,7 @@ from ..memory_types import SOURCES, normalize_extraction
 router = APIRouter()
 
 
-class LogRequest(BaseModel):
+class LogRequest(ActorFields):
     text: str = Field(..., max_length=settings.max_body_length, description="Natural language log entry")
     source: str = Field(default="tars", description="Input channel")
     occurred_at: datetime | None = Field(default=None, description="When this happened (defaults to now)")
@@ -43,7 +44,7 @@ class LogResponse(BaseModel):
 async def create_log(req: LogRequest):
     """Log an entry with automatic entity extraction and classification."""
     occurred = req.occurred_at or datetime.now(timezone.utc)
-    structured = dict(req.structured or {})
+    structured = with_actor_metadata(dict(req.structured or {}), req)
     if req.tags:
         structured["tags"] = req.tags
 

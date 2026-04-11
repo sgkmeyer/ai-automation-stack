@@ -515,9 +515,31 @@ def _merge_metadata(metadata: dict[str, Any], user_note: str | None, user_tags: 
     return merged
 
 
-async def create_registry_capture(*, url: str, note: str | None, tags: list[str], capture_channel: str) -> dict[str, Any]:
+async def create_registry_capture(
+    *,
+    url: str,
+    note: str | None,
+    tags: list[str],
+    capture_channel: str,
+    actor_type: str | None = None,
+    actor_id: str | None = None,
+    session_id: str | None = None,
+    source_client: str | None = None,
+    reason: str | None = None,
+) -> dict[str, Any]:
     canonical = await canonicalize_url(url, deep=False)
     lookup_urls = _scheme_equivalent_urls(canonical.canonical_url, canonical.source_kind)
+    actor_metadata = {
+        key: value
+        for key, value in {
+            "actor_type": actor_type,
+            "actor_id": actor_id,
+            "session_id": session_id,
+            "source_client": source_client,
+            "reason": reason,
+        }.items()
+        if value not in {None, ""}
+    }
     async with get_conn() as conn:
         async with conn.transaction():
             existing_rows = await conn.fetch(
@@ -538,6 +560,8 @@ async def create_registry_capture(*, url: str, note: str | None, tags: list[str]
 
                 merged_row = await _fetch_item(conn, item_id)
                 metadata = _merge_metadata(_metadata_dict((merged_row or {}).get("metadata")) if merged_row else {}, note, tags)
+                if actor_metadata:
+                    metadata["last_capture_actor"] = actor_metadata
                 await conn.execute(
                     """
                     UPDATE registry.items
@@ -557,6 +581,8 @@ async def create_registry_capture(*, url: str, note: str | None, tags: list[str]
                 )
             else:
                 metadata = _merge_metadata({}, note, tags)
+                if actor_metadata:
+                    metadata["last_capture_actor"] = actor_metadata
                 item_id = await conn.fetchval(
                     """
                     INSERT INTO registry.items (
@@ -1093,6 +1119,8 @@ async def review_registry_item(
     *,
     actor_type: str = "tars",
     actor_id: str | None = "registry_api",
+    session_id: str | None = None,
+    source_client: str | None = None,
     reason: str | None = None,
 ) -> dict[str, Any]:
     mapping = {"mark_reviewed": "reviewed", "archive": "archived", "mark_inbox": "inbox"}
@@ -1132,7 +1160,17 @@ async def review_registry_item(
             after_state={"review_state": new_state},
             rollback_mode="inverse_mutation",
             rollback_status="available",
-            metadata={"action": action},
+            metadata={
+                "action": action,
+                **{
+                    key: value
+                    for key, value in {
+                        "session_id": session_id,
+                        "source_client": source_client,
+                    }.items()
+                    if value not in {None, ""}
+                },
+            },
         )
     response = dict(row)
     response["mutation_id"] = mutation["id"]

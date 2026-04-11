@@ -30,6 +30,7 @@
   - public memory webhooks live at `https://n8n.satoic.com/webhook/memory`
   - Openclaw memory wrappers/policy deployed
   - document + transcript ingest routes live
+  - hybrid wiki lane implemented in repo: direct `memory-api` wiki endpoints, Openclaw wiki wrappers, proposal review queue, and actor-attributed writes ready for deploy
 
 **VM layout:**
 - Repo: `/home/ubuntu/ai-automation-stack` (cloned from GitHub)
@@ -57,6 +58,7 @@ Roadmap lock-in:
 - [x] Implement first reversible mutation path for registry review-state changes (2026-03-21)
 - [ ] Expand mutation rollback coverage beyond registry review-state changes
 - [ ] Tune transcript recall quality for narrower person/topic phrasing under the unified router
+- [x] Implement hybrid memory stack Phase 1 baseline: wiki lane, proposal queue, actor-neutral write contract, and Openclaw wiki wrappers (2026-04-10)
 - [ ] Generate end-user UAT scripts for memory through Openclaw, Obsidian, and Krisp
 - [ ] Add a true Tailnet-private front door for the iPhone Shortcut registry capture path; current live v1 uses secret-protected `https://n8n.satoic.com/webhook/registry`
 - [ ] Create first real Obsidian seed notes and ingest them into memory
@@ -164,7 +166,9 @@ See `ops/runbooks.md` for step-by-step procedure.
 - **Tranche A trust hardening** — deployed on 2026-03-21 (`d4b2884` on prod). Registry capture now converges obvious `http`/`https` duplicates, blocked pages degrade to `blocked_metadata_only` items instead of hard failure, transcript ingest now links participant-derived person/company entities, and recall supports partial entity-name/alias matches. Openclaw capability rollout is now documented in [`openclaw-capability-rollout.md`](/Users/sgkmeyer/ai-automation-stack/ops/openclaw-capability-rollout.md).
 - **Tranche B live first slice** — deployed on 2026-03-21 (`30fa2bb` on prod/dev). The stack now has a mutation journal (`ops.mutation_journal`), rollback support for registry review-state changes, internal mutation routes (`POST /mutations/query`, `POST /mutations/rollback`), and a unified recall router at `POST /router/recall` with intent classification, lane selection, fallback policy, routing reason, and normalized lane attempts/results.
 - **Unified recall behavior** — Openclaw now has `./bin/recall-unified`, which routes saved-content queries to registry first and conversation questions to transcript-first recall when cues like `said` or `what happened` are present. The router is working in prod/dev; remaining weaknesses are retrieval-quality issues on some narrow transcript phrasings, not missing routing paths.
+- **Hybrid wiki lane (repo state)** — the repo now includes a file-backed wiki lane with `memory-api` endpoints for wiki health/search/page/proposals/review/lint, a reviewable outbox for Mac-canonical sync-back, Openclaw `./bin/wiki` and `./bin/query-wiki` wrappers, and actor-attributed write contracts intended for TARS, Claude Code, Hermes, and future agents. Live deploy/validation is the next step for this slice.
 - **Registry ingress model** — current live capture path is secret-protected public ingress on `n8n.satoic.com`; true Tailnet-only shortcut routing is still a follow-up
+- **Wiki sync model** — Phase 1 assumes the Mac Obsidian vault remains canonical; approved wiki proposals accumulate in the VPS outbox and must be synced back through review rather than auto-canonicalized
 - **Openclaw recall latency** — internal webhook routing deployed on 2026-03-12; `memory-api /recall` also now biases Krisp `key_points_generated` and `action_items_generated` over raw `transcript_created` rows for faster, smaller recall contexts
 - **Registry blocked-page fallback** — now preserves usable items for blocked sources, but summaries are intentionally minimal when only URL-level metadata is available
 - **Dev deploy helper** — `vm-safe.sh deploy-dev` now calls `gitops-deploy-dev.sh` so dev validations rebuild project-scoped images instead of reusing stale containers

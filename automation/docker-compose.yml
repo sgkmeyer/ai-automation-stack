@@ -371,8 +371,13 @@ services:
       - MEMORY_REGISTRY_ARCHIVE_ROOT=${MEMORY_REGISTRY_ARCHIVE_ROOT:-/var/lib/registry-archive}
       - MEMORY_REGISTRY_FETCH_TIMEOUT_SECONDS=${MEMORY_REGISTRY_FETCH_TIMEOUT_SECONDS:-15}
       - MEMORY_REGISTRY_MAX_EXTRACT_CHARS=${MEMORY_REGISTRY_MAX_EXTRACT_CHARS:-20000}
+      - MEMORY_WIKI_VAULT_ROOT=/var/lib/wiki-vault
+      - MEMORY_WIKI_PROPOSAL_ROOT=/var/lib/wiki-proposals
+      - MEMORY_WIKI_STALE_DAYS=${MEMORY_WIKI_STALE_DAYS:-90}
     volumes:
       - ./registry-archive:/var/lib/registry-archive
+      - ${MEMORY_WIKI_VAULT_HOST_PATH:-./wiki-vault}:/var/lib/wiki-vault
+      - ${MEMORY_WIKI_PROPOSAL_HOST_PATH:-./wiki-proposals}:/var/lib/wiki-proposals
     depends_on:
       db:
         condition: service_healthy

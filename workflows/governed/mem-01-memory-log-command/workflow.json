@@ -44,7 +44,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { text: $json.body?.text ?? $json.text, source: $json.body?.source ?? $json.source ?? 'tars', occurred_at: $json.body?.occurred_at ?? $json.occurred_at ?? null, source_ref: $json.body?.source_ref ?? $json.source_ref ?? null, tags: $json.body?.tags ?? $json.tags ?? [], structured: $json.body?.structured ?? $json.structured ?? {} } }}"
+        "jsonBody": "={{ { text: $json.body?.text ?? $json.text, source: $json.body?.source ?? $json.source ?? 'tars', occurred_at: $json.body?.occurred_at ?? $json.occurred_at ?? null, source_ref: $json.body?.source_ref ?? $json.source_ref ?? null, tags: $json.body?.tags ?? $json.tags ?? [], structured: $json.body?.structured ?? $json.structured ?? {}, actor_type: $json.body?.actor_type ?? $json.actor_type ?? null, actor_id: $json.body?.actor_id ?? $json.actor_id ?? null, session_id: $json.body?.session_id ?? $json.session_id ?? null, source_client: $json.body?.source_client ?? $json.source_client ?? null, reason: $json.body?.reason ?? $json.reason ?? null } }}"
       }
     },
     {

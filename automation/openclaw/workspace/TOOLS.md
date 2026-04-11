@@ -48,6 +48,8 @@ Add whatever helps you do your job. This is your cheat sheet.
   - `./bin/recall-memory`
   - `./bin/context-memory`
   - `./bin/recall-unified`
+  - `./bin/wiki`
+  - `./bin/query-wiki`
 - Production base URL: `https://n8n.satoic.com/webhook/memory`
 - Dev base URL: `http://100.82.169.113:5679/webhook/memory`
 - Internal routed-recall base URL: `http://memory-api:8100`
@@ -60,9 +62,17 @@ Add whatever helps you do your job. This is your cheat sheet.
   - `POST /router/recall`
   - `POST /mutations/query`
   - `POST /mutations/rollback`
+  - `GET /wiki/health`
+  - `POST /wiki/search`
+  - `POST /wiki/page`
+  - `POST /wiki/proposals`
+  - `POST /wiki/proposals/list`
+  - `POST /wiki/proposals/review`
+  - `POST /wiki/lint`
 - Use shared memory for durable facts, recall, and context. Use workspace files for working notes and local summaries.
 - Local audit log: `memory/command-log.ndjson`
 - Routed recall audit log: `router/command-log.ndjson`
+- Wiki audit log: `wiki/command-log.ndjson`
 
 ## Registry Interfaces
 
@@ -81,6 +91,14 @@ Add whatever helps you do your job. This is your cheat sheet.
   - `POST /process`
 - Use registry first for saved links, summaries, and reading inbox behavior.
 - Local audit log: `registry/command-log.ndjson`
+
+## Wiki Interfaces
+
+- Shared wiki capabilities live behind direct `memory-api` endpoints, not only in Openclaw-local files.
+- Canonical ownership in Phase 1:
+  - wiki pages = compiled knowledge artifacts
+  - memory/context/registry remain service-canonical
+- Use the wiki for deeper syntheses, project/company/topic views, and proposal-driven knowledge updates.
 
 ## Capability Rollout
 

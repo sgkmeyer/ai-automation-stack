@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo_script="/home/node/repo/scripts/memory-webhook.sh"
-log_file="/home/node/.openclaw/workspace/memory/command-log.ndjson"
+repo_script="/home/node/repo/scripts/wiki-api.sh"
+log_file="/home/node/.openclaw/workspace/wiki/command-log.ndjson"
 
 if [[ ! -x "${repo_script}" ]]; then
-  printf 'memory webhook CLI not found at %s\n' "${repo_script}" >&2
+  printf 'wiki api CLI not found at %s\n' "${repo_script}" >&2
   exit 1
 fi
 
-export MEMORY_WEBHOOK_BASE_URL="${MEMORY_WEBHOOK_BASE_URL:-https://n8n.satoic.com/webhook/memory}"
+export MEMORY_API_BASE_URL="${MEMORY_API_BASE_URL:-http://memory-api:8100}"
+export MEMORY_API_TOKEN="${MEMORY_API_TOKEN:-}"
 export MEMORY_DEFAULT_ACTOR_TYPE="${MEMORY_DEFAULT_ACTOR_TYPE:-tars}"
 export MEMORY_DEFAULT_ACTOR_ID="${MEMORY_DEFAULT_ACTOR_ID:-openclaw}"
 export MEMORY_DEFAULT_SOURCE_CLIENT="${MEMORY_DEFAULT_SOURCE_CLIENT:-openclaw}"

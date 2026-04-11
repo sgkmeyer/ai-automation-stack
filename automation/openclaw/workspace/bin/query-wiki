@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+  printf 'usage: ./bin/query-wiki QUERY [--limit N] [--page-types a,b]\n' >&2
+  exit 1
+fi
+
+query=""
+limit="5"
+page_types=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --limit)
+      limit="${2-}"
+      shift 2
+      ;;
+    --page-types)
+      page_types="${2-}"
+      shift 2
+      ;;
+    *)
+      if [[ -n "${query}" ]]; then
+        query="${query} $1"
+      else
+        query="$1"
+      fi
+      shift
+      ;;
+  esac
+done
+
+exec ./bin/wiki search --query "${query}" --limit "${limit}" ${page_types:+--page-types "${page_types}"}

@@ -18,6 +18,11 @@ Usage:
 Environment:
   REGISTRY_WEBHOOK_BASE_URL  Defaults to https://n8n.satoic.com/webhook/registry
   REGISTRY_WEBHOOK_SECRET    Required. Sent as x-registry-webhook-secret.
+  REGISTRY_DEFAULT_ACTOR_TYPE
+  REGISTRY_DEFAULT_ACTOR_ID
+  REGISTRY_DEFAULT_SESSION_ID
+  REGISTRY_DEFAULT_SOURCE_CLIENT
+  REGISTRY_DEFAULT_REASON
 
 Examples:
   scripts/registry-webhook.sh capture --url "https://example.com" --note "good GTM example"
@@ -51,6 +56,22 @@ import os
 raw = os.environ.get("CSV_VALUE", "")
 items = [item.strip() for item in raw.split(",") if item.strip()]
 print(json.dumps(items))
+PY
+}
+
+actor_env_json() {
+  python3 - <<'PY'
+import json
+import os
+
+payload = {
+    "actor_type": os.environ.get("REGISTRY_DEFAULT_ACTOR_TYPE") or None,
+    "actor_id": os.environ.get("REGISTRY_DEFAULT_ACTOR_ID") or None,
+    "session_id": os.environ.get("REGISTRY_DEFAULT_SESSION_ID") or None,
+    "source_client": os.environ.get("REGISTRY_DEFAULT_SOURCE_CLIENT") or None,
+    "reason": os.environ.get("REGISTRY_DEFAULT_REASON") or None,
+}
+print(json.dumps({key: value for key, value in payload.items() if value is not None}))
 PY
 }
 
@@ -91,7 +112,7 @@ case "${command}" in
       esac
     done
     require_value "--url" "${url}"
-    payload="$(URL="${url}" NOTE="${note}" TAGS_JSON="$(split_csv_json "${tags}")" CAPTURE_CHANNEL="${capture_channel}" python3 - <<'PY'
+    payload="$(URL="${url}" NOTE="${note}" TAGS_JSON="$(split_csv_json "${tags}")" CAPTURE_CHANNEL="${capture_channel}" ACTOR_JSON="$(actor_env_json)" python3 - <<'PY'
 import json
 import os
 
@@ -101,6 +122,7 @@ payload = {
     "tags": json.loads(os.environ["TAGS_JSON"]),
     "capture_channel": os.environ["CAPTURE_CHANNEL"],
 }
+payload.update(json.loads(os.environ["ACTOR_JSON"]))
 print(json.dumps(payload))
 PY
 )"
@@ -208,14 +230,16 @@ PY
     done
     require_value "--item-id" "${item_id}"
     require_value "--action" "${action}"
-    payload="$(ITEM_ID="${item_id}" ACTION="${action}" python3 - <<'PY'
+    payload="$(ITEM_ID="${item_id}" ACTION="${action}" ACTOR_JSON="$(actor_env_json)" python3 - <<'PY'
 import json
 import os
 
-print(json.dumps({
+payload = {
     "item_id": os.environ["ITEM_ID"],
     "action": os.environ["ACTION"],
-}))
+}
+payload.update(json.loads(os.environ["ACTOR_JSON"]))
+print(json.dumps(payload))
 PY
 )"
     post_json "review" "${payload}"

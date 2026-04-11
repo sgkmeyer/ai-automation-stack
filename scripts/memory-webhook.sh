@@ -18,6 +18,11 @@ Usage:
 
 Environment:
   MEMORY_WEBHOOK_BASE_URL  Defaults to https://n8n.satoic.com/webhook/memory
+  MEMORY_DEFAULT_ACTOR_TYPE
+  MEMORY_DEFAULT_ACTOR_ID
+  MEMORY_DEFAULT_SESSION_ID
+  MEMORY_DEFAULT_SOURCE_CLIENT
+  MEMORY_DEFAULT_REASON
 
 Examples:
   scripts/memory-webhook.sh log --text "Met Sam for coffee" --tags relationship
@@ -48,6 +53,22 @@ import os
 raw = os.environ.get("CSV_VALUE", "")
 items = [item.strip() for item in raw.split(",") if item.strip()]
 print(json.dumps(items))
+PY
+}
+
+actor_env_json() {
+  python3 - <<'PY'
+import json
+import os
+
+payload = {
+    "actor_type": os.environ.get("MEMORY_DEFAULT_ACTOR_TYPE") or None,
+    "actor_id": os.environ.get("MEMORY_DEFAULT_ACTOR_ID") or None,
+    "session_id": os.environ.get("MEMORY_DEFAULT_SESSION_ID") or None,
+    "source_client": os.environ.get("MEMORY_DEFAULT_SOURCE_CLIENT") or None,
+    "reason": os.environ.get("MEMORY_DEFAULT_REASON") or None,
+}
+print(json.dumps({key: value for key, value in payload.items() if value is not None}))
 PY
 }
 
@@ -97,7 +118,7 @@ case "${command}" in
       esac
     done
     require_value "--text" "${text}"
-    payload="$(TEXT="${text}" SOURCE="${source}" TAGS_JSON="$(split_csv_json "${tags}")" python3 - <<'PY'
+    payload="$(TEXT="${text}" SOURCE="${source}" TAGS_JSON="$(split_csv_json "${tags}")" ACTOR_JSON="$(actor_env_json)" python3 - <<'PY'
 import json
 import os
 
@@ -106,6 +127,7 @@ payload = {
     "source": os.environ["SOURCE"],
     "tags": json.loads(os.environ["TAGS_JSON"]),
 }
+payload.update(json.loads(os.environ["ACTOR_JSON"]))
 print(json.dumps(payload))
 PY
 )"
@@ -162,16 +184,18 @@ PY
     require_value "--domain" "${domain}"
     require_value "--key" "${key}"
     require_value "--value" "${value}"
-    payload="$(DOMAIN="${domain}" KEY="${key}" VALUE="${value}" python3 - <<'PY'
+    payload="$(DOMAIN="${domain}" KEY="${key}" VALUE="${value}" ACTOR_JSON="$(actor_env_json)" python3 - <<'PY'
 import json
 import os
 
-print(json.dumps({
+payload = {
     "action": "set",
     "domain": os.environ["DOMAIN"],
     "key": os.environ["KEY"],
     "value": os.environ["VALUE"],
-}))
+}
+payload.update(json.loads(os.environ["ACTOR_JSON"]))
+print(json.dumps(payload))
 PY
 )"
     post_json "context" "${payload}"
@@ -190,15 +214,17 @@ PY
     done
     require_value "--domain" "${domain}"
     require_value "--key" "${key}"
-    payload="$(DOMAIN="${domain}" KEY="${key}" python3 - <<'PY'
+    payload="$(DOMAIN="${domain}" KEY="${key}" ACTOR_JSON="$(actor_env_json)" python3 - <<'PY'
 import json
 import os
 
-print(json.dumps({
+payload = {
     "action": "delete",
     "domain": os.environ["DOMAIN"],
     "key": os.environ["KEY"],
-}))
+}
+payload.update(json.loads(os.environ["ACTOR_JSON"]))
+print(json.dumps(payload))
 PY
 )"
     post_json "context" "${payload}"
@@ -223,7 +249,7 @@ PY
     done
     require_value "--source-ref" "${source_ref}"
     require_value "--file" "${file_path}"
-    payload="$(SOURCE="${source}" SOURCE_REF="${source_ref}" TITLE="${title}" TAGS_JSON="$(split_csv_json "${tags}")" CONTENT_JSON="$(read_file_json "${file_path}")" python3 - <<'PY'
+    payload="$(SOURCE="${source}" SOURCE_REF="${source_ref}" TITLE="${title}" TAGS_JSON="$(split_csv_json "${tags}")" CONTENT_JSON="$(read_file_json "${file_path}")" ACTOR_JSON="$(actor_env_json)" python3 - <<'PY'
 import json
 import os
 from pathlib import Path
@@ -238,6 +264,7 @@ payload = {
     "content": json.loads(os.environ["CONTENT_JSON"]),
     "tags": json.loads(os.environ["TAGS_JSON"]),
 }
+payload.update(json.loads(os.environ["ACTOR_JSON"]))
 print(json.dumps(payload))
 PY
 )"
@@ -265,7 +292,7 @@ PY
     done
     require_value "--source-ref" "${source_ref}"
     require_value "--file" "${file_path}"
-    payload="$(SOURCE_REF="${source_ref}" TITLE="${title}" SUMMARY="${summary}" PARTICIPANTS_JSON="$(split_csv_json "${participants}")" ACTION_ITEMS_JSON="$(split_csv_json "${action_items}")" TRANSCRIPT_JSON="$(read_file_json "${file_path}")" python3 - <<'PY'
+    payload="$(SOURCE_REF="${source_ref}" TITLE="${title}" SUMMARY="${summary}" PARTICIPANTS_JSON="$(split_csv_json "${participants}")" ACTION_ITEMS_JSON="$(split_csv_json "${action_items}")" TRANSCRIPT_JSON="$(read_file_json "${file_path}")" ACTOR_JSON="$(actor_env_json)" python3 - <<'PY'
 import json
 import os
 
@@ -277,6 +304,7 @@ payload = {
     "participants": json.loads(os.environ["PARTICIPANTS_JSON"]),
     "action_items": json.loads(os.environ["ACTION_ITEMS_JSON"]),
 }
+payload.update(json.loads(os.environ["ACTOR_JSON"]))
 print(json.dumps(payload))
 PY
 )"

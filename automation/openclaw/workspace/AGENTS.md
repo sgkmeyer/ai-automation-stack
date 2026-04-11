@@ -17,6 +17,7 @@ Before doing anything else:
 5. **If in MAIN SESSION**: Read `MEMORY_POLICY.md`
 6. **If in MAIN SESSION**: Skim `MEMORY_POLICY_EXAMPLES.md` when memory behavior is relevant or uncertain
 7. **If in MAIN SESSION**: Skim `REGISTRY_POLICY.md` and `REGISTRY_POLICY_EXAMPLES.md` when saved-link or reading-inbox behavior is relevant or uncertain
+8. **If in MAIN SESSION**: Skim `WIKI_POLICY.md` when the user wants synthesis, dossiers, or a deeper picture
 
 Don't ask permission. Just do it.
 
@@ -26,12 +27,13 @@ You wake up fresh each session. Use memory in layers:
 
 - **Shared durable memory:** the automation stack's memory webhooks/API are the canonical long-term store
 - **Daily notes:** `memory/YYYY-MM-DD.md` (create `memory/` if needed) — local working notes and session continuity
-- **Long-term file:** `MEMORY.md` — a curated local summary for direct sessions, not the system of record
+- **Long-term file:** `MEMORY.md` — a thin local boot brief for direct sessions, not the system of record
+- **Shared wiki lane:** compiled knowledge artifacts and proposal-driven syntheses
 
 Capture what matters, but keep the boundary clean:
 
 - Use the shared memory layer for durable facts, recall, context, transcripts, and notes that should survive tool changes
-- Use workspace files for working memory, local summaries, and offline fallback
+- Use workspace files for working memory, thin boot summaries, and offline fallback
 - Avoid writing the same long-term fact into multiple stores unless there is a clear reason
 - Skip secrets unless asked to keep them
 
@@ -64,6 +66,26 @@ The wrapper logs each invocation to `memory/command-log.ndjson` for local audita
 Follow [MEMORY_POLICY.md](/Users/sgkmeyer/ai-automation-stack/automation/openclaw/workspace/MEMORY_POLICY.md) for the decision rules and [MEMORY_POLICY_EXAMPLES.md](/Users/sgkmeyer/ai-automation-stack/automation/openclaw/workspace/MEMORY_POLICY_EXAMPLES.md) for concrete patterns.
 Use `./bin/recall-unified` first when the user asks a natural recall question and the right backing store is not obvious upfront.
 
+### Shared Wiki Commands
+
+When the shared wiki CLI is available, use it for deeper synthesized knowledge:
+
+- `./bin/wiki health`
+- `./bin/query-wiki "..." --limit 5`
+- `./bin/wiki page --page-ref wiki/projects/example.md`
+- `./bin/wiki propose --page-type projects --title "Example" --content "..."`
+- `./bin/wiki proposals --status pending_review`
+- `./bin/wiki review --proposal-id UUID --action approve`
+- `./bin/wiki lint`
+
+Use these mappings by default in direct chats:
+
+- "give me the deeper picture", "synthesize what we know", "show the project/company/topic view" -> `./bin/query-wiki "..."`, then fall back to `./bin/recall-unified` if needed
+- high-value multi-source synthesis worth keeping -> create a wiki proposal
+- do not treat a proposal as canonical until it has been reviewed
+
+Follow [WIKI_POLICY.md](/Users/sgkmeyer/ai-automation-stack/automation/openclaw/workspace/WIKI_POLICY.md) for the decision rules.
+
 ### Shared Registry Commands
 
 When the shared registry CLI is available, use it for saved-link retrieval and inbox curation:
@@ -89,10 +111,9 @@ Registry is the source of truth for saved links and their summaries. Use registr
 - **ONLY load in main session** (direct chats with your human)
 - **DO NOT load in shared contexts** (Discord, group chats, sessions with other people)
 - This is for **security** — it may contain personal context that shouldn't leak to strangers
-- You can **read, edit, and update** MEMORY.md freely in main sessions
-- Write significant events, thoughts, decisions, opinions, lessons learned
-- Treat this as a compact briefing layer, not the canonical long-term database
-- Over time, review your daily files and update MEMORY.md with what is worth keeping locally
+- Treat this as a compact boot brief, not the canonical long-term database
+- Keep it thin: startup context, operational reminders, fallback continuity pointers
+- Put enduring synthesized knowledge in the shared wiki lane instead of expanding MEMORY.md into a second knowledge base
 
 ### 📝 Write It Down - No "Mental Notes"!
 

@@ -8,6 +8,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field, field_validator
 
+from ..actor import ActorFields, with_actor_metadata
 from ..auth import verify_token
 from ..config import settings
 from ..db import get_conn
@@ -39,7 +40,7 @@ def _compose_transcript_body(title: str | None, content: str, participants: list
     return compose_entry_body(title, contextual_content)
 
 
-class IngestDocumentRequest(BaseModel):
+class IngestDocumentRequest(ActorFields):
     source: str = Field(default="obsidian", description="Document source channel")
     source_ref: str = Field(..., min_length=1, max_length=1000, description="Stable file/key identity")
     source_type: str = Field(default="md", min_length=1, max_length=50)
@@ -83,7 +84,7 @@ class IngestDocumentResponse(BaseModel):
     checksum: str
 
 
-class IngestTranscriptRequest(BaseModel):
+class IngestTranscriptRequest(ActorFields):
     source_ref: str = Field(..., min_length=1, max_length=1000, description="Transcript file or meeting identity")
     title: str | None = Field(default=None, max_length=500)
     transcript_text: str = Field(..., min_length=1, max_length=settings.max_body_length)
@@ -130,7 +131,7 @@ async def ingest_document(req: IngestDocumentRequest):
     default_entry_type = req.entry_type or ("journal" if req.source == "obsidian" else "observation")
     extraction = await classify_text(body, default_entry_type)
 
-    structured = dict(req.metadata)
+    structured = with_actor_metadata(dict(req.metadata), req)
     if req.tags:
         structured["tags"] = req.tags
     structured.update(
@@ -195,7 +196,7 @@ async def ingest_transcript(req: IngestTranscriptRequest):
     participant_entity_candidates = participant_entities(req.participants)
     summary_entities = merge_entities(summary_extraction["entities"], participant_entity_candidates)
 
-    summary_structured = dict(req.metadata)
+    summary_structured = with_actor_metadata(dict(req.metadata), req)
     if req.tags:
         summary_structured["tags"] = req.tags
     summary_structured.update(
@@ -232,12 +233,15 @@ async def ingest_transcript(req: IngestTranscriptRequest):
                     if not item_text:
                         continue
                     action_checksum = checksum_for(req.source_ref, "action_item", index, item_text, tuple(req.participants))
-                    action_structured = {
+                    action_structured = with_actor_metadata(
+                        {
                         "ingest_kind": "transcript_action_item",
                         "parent_source_ref": req.source_ref,
                         "parent_entry_id": str(summary_entry_id),
                         "checksum": action_checksum,
-                    }
+                        },
+                        req,
+                    )
                     if req.tags:
                         action_structured["tags"] = req.tags
                     action_extraction = await classify_text(item_text, "action_item")

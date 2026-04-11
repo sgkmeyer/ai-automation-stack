@@ -61,7 +61,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ (() => { const body = $node[\"Webhook\"].json.body ?? $node[\"Webhook\"].json; const tags = Array.isArray(body.tags) ? body.tags : (typeof body.tags === 'string' ? body.tags.split(',').map((item) => item.trim()).filter(Boolean) : []); return { url: body.url, note: body.note ?? null, tags, capture_channel: body.capture_channel ?? 'ios_shortcut' }; })() }}"
+        "jsonBody": "={{ (() => { const body = $node[\"Webhook\"].json.body ?? $node[\"Webhook\"].json; const tags = Array.isArray(body.tags) ? body.tags : (typeof body.tags === 'string' ? body.tags.split(',').map((item) => item.trim()).filter(Boolean) : []); return { url: body.url, note: body.note ?? null, tags, capture_channel: body.capture_channel ?? 'ios_shortcut', actor_type: body.actor_type ?? null, actor_id: body.actor_id ?? null, session_id: body.session_id ?? null, source_client: body.source_client ?? null, reason: body.reason ?? null }; })() }}"
       }
     },
     {

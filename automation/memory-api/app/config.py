@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     registry_archive_root: str = "/var/lib/registry-archive"
     registry_fetch_timeout_seconds: float = 15.0
     registry_max_extract_chars: int = 20000
+    wiki_vault_root: str = "/var/lib/wiki-vault"
+    wiki_proposal_root: str = "/var/lib/wiki-proposals"
+    wiki_stale_days: int = 90
 
     model_config = SettingsConfigDict(env_prefix="MEMORY_")
 

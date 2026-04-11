@@ -7,6 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
+from ..actor import ActorFields
 from ..auth import verify_token
 from ..mutation_journal import _decode_json, list_mutations, rollback_mutation
 
@@ -19,11 +20,10 @@ class MutationQueryRequest(BaseModel):
     limit: int = Field(default=20, ge=1, le=100)
 
 
-class MutationRollbackRequest(BaseModel):
+class MutationRollbackRequest(ActorFields):
     mutation_id: UUID
     actor_type: str = Field(default="operator", max_length=100)
     actor_id: str | None = Field(default="memory-api", max_length=200)
-    reason: str | None = Field(default=None, max_length=2000)
 
 
 @router.post("/mutations/query", dependencies=[Depends(verify_token)])

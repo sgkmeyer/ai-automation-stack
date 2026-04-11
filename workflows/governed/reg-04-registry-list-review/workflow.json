@@ -125,7 +125,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ (() => { const body = $node[\"Review Webhook\"].json.body ?? $node[\"Review Webhook\"].json; return { item_id: body.item_id, action: body.action }; })() }}"
+        "jsonBody": "={{ (() => { const body = $node[\"Review Webhook\"].json.body ?? $node[\"Review Webhook\"].json; return { item_id: body.item_id, action: body.action, actor_type: body.actor_type ?? null, actor_id: body.actor_id ?? null, session_id: body.session_id ?? null, source_client: body.source_client ?? null, reason: body.reason ?? null }; })() }}"
       }
     },
     {

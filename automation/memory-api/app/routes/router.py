@@ -12,6 +12,7 @@ from ..auth import verify_token
 from ..config import settings
 from ..recall_service import format_local_time, search_context_entries, search_memory_entries
 from ..registry_service import list_registry, query_registry
+from ..wiki_service import search_wiki_pages
 
 router = APIRouter()
 
@@ -65,7 +66,21 @@ def classify_intent(query: str) -> tuple[str, str]:
     if any(token in lowered for token in ("today", "latest", "just now", "current", "this chat", "this thread")):
         return "current_context_lookup", "recency/current-session wording suggests current-context lookup"
 
-    if any(phrase in lowered for phrase in ("brief me on", "full picture", "what changed this week")):
+    if any(
+        phrase in lowered
+        for phrase in (
+            "brief me on",
+            "full picture",
+            "what changed this week",
+            "deeper picture",
+            "synthesize what we know",
+            "project view",
+            "company view",
+            "topic view",
+            "evolved over time",
+            "how has this evolved",
+        )
+    ):
         return "broad_synthesis", "broad briefing wording suggests a synthesis-oriented lookup"
 
     if any(phrase in lowered for phrase in ("what do you remember", "what do you know", "remind me what you know", "background", "history", "profile")):
@@ -74,7 +89,16 @@ def classify_intent(query: str) -> tuple[str, str]:
     return "durable_knowledge_recall", "defaulting to durable knowledge recall for a broad memory-shaped question"
 
 
-def lane_policy(intent_type: str) -> tuple[str, str | None]:
+def synthesis_secondary_lane(query: str) -> str:
+    lowered = _lower(query)
+    if any(token in lowered for token in ("save", "saved", "link", "article", "bookmark", "registry", "reading inbox")):
+        return "registry"
+    if any(token in lowered for token in ("meeting", "call", "transcript", "said", "discussed", "action items", "follow-up")):
+        return "transcripts"
+    return "memory"
+
+
+def lane_policy(intent_type: str, query: str) -> tuple[str, str | None]:
     if intent_type == "saved_content_lookup":
         return "registry", "memory"
     if intent_type == "conversation_recall":
@@ -85,6 +109,8 @@ def lane_policy(intent_type: str) -> tuple[str, str | None]:
         return "current_context", "memory"
     if intent_type == "task_or_open_loop_recall":
         return "tasks", "memory"
+    if intent_type == "broad_synthesis":
+        return "wiki", synthesis_secondary_lane(query)
     return "memory", "transcripts"
 
 
@@ -226,13 +252,16 @@ async def run_lane(lane: str, query: str, entity_name: str | None, limit: int) -
     if lane == "current_context":
         return await search_context_entries(query=query, limit=limit)
 
+    if lane == "wiki":
+        return search_wiki_pages(query=query, limit=limit)
+
     return [], 0
 
 
 @router.post("/router/recall", dependencies=[Depends(verify_token)])
 async def unified_recall(req: UnifiedRecallRequest):
     intent_type, routing_reason = classify_intent(req.query)
-    primary_lane, secondary_lane = lane_policy(intent_type)
+    primary_lane, secondary_lane = lane_policy(intent_type, req.query)
     lane_query, entity_name = derive_lane_query(req.query, intent_type)
 
     primary_results, primary_total = await run_lane(primary_lane, lane_query, entity_name, req.limit)

@@ -51,6 +51,83 @@ updated in place instead of appended.
 
 Tracks every ingestion attempt with status, counts, and error messages.
 
+## Hybrid Stack Shape
+
+Phase 1 now treats memory as a hybrid system with distinct canonical lanes.
+
+### Shared Conversational Memory
+
+Use for:
+
+- durable conversational facts
+- preferences
+- commitments
+- important decisions
+
+This remains service-backed and optimized for quick agent recall.
+
+### Context Register
+
+Use for:
+
+- current priorities
+- temporary assumptions
+- "true right now" state
+
+This remains mutable and service-backed.
+
+### Registry
+
+Use for:
+
+- saved links
+- reading inbox
+- review lifecycle state
+
+This remains the canonical saved-content subsystem.
+
+### Wiki Lane
+
+Use for:
+
+- compiled, human-readable syntheses
+- person/company/project/topic pages
+- source summary pages
+- longitudinal knowledge artifacts
+
+The wiki lane is file-backed for inspectability, but Phase 1 uses a reviewable
+proposal flow rather than direct runtime canonicalization.
+
+### Local Workspace Files
+
+Use for:
+
+- bootstrapping
+- local working notes
+- fallback continuity
+
+These are not canonical long-term memory.
+
+## Routing Rules
+
+- conversational recall stays memory/context/registry/transcript first
+- broad synthesis questions are wiki-first with selective fallback
+- store provenance should remain visible in answers
+- OpenClaw builtin semantic memory is treated as a helper/cache, not a
+  canonical lane
+
+## Agent-Neutral Contract
+
+The service APIs are the durable capability boundary.
+
+That means:
+
+- TARS/OpenClaw shell wrappers are convenience adapters
+- Claude Code, Hermes, and future agents should be able to call the same
+  memory/context/registry/wiki contracts directly
+- write-capable routes should carry actor metadata for audit and cross-agent
+  debugging
+
 ## Week 2 Extensions
 
 ### File-Backed Ingestion

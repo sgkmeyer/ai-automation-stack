@@ -128,4 +128,34 @@ print(json.dumps(json.loads(resp.read()), indent=2))
 "
 
 echo ""
+echo "=== Wiki Health ==="
+run_memory_api_exec "
+import json
+import urllib.request
+req = urllib.request.Request(
+    'http://localhost:8100/wiki/health',
+    headers={'Authorization': 'Bearer ${TOKEN}'}
+)
+resp = urllib.request.urlopen(req)
+print(json.dumps(json.loads(resp.read()), indent=2))
+"
+
+echo ""
+echo "=== Wiki Lint ==="
+run_memory_api_exec "
+import json
+import urllib.request
+data = json.dumps({
+    'limit': 10
+}).encode()
+req = urllib.request.Request(
+    'http://localhost:8100/wiki/lint',
+    data=data,
+    headers={'Authorization': 'Bearer ${TOKEN}', 'Content-Type': 'application/json'}
+)
+resp = urllib.request.urlopen(req)
+print(json.dumps(json.loads(resp.read()), indent=2))
+"
+
+echo ""
 echo "=== All tests passed ==="

@@ -44,7 +44,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { source: $json.body?.source ?? $json.source ?? 'obsidian', source_ref: $json.body?.source_ref ?? $json.source_ref, source_type: $json.body?.source_type ?? $json.source_type ?? 'md', title: $json.body?.title ?? $json.title ?? null, content: $json.body?.content ?? $json.content, occurred_at: $json.body?.occurred_at ?? $json.occurred_at ?? null, entry_type: $json.body?.entry_type ?? $json.entry_type ?? null, tags: $json.body?.tags ?? $json.tags ?? [], metadata: $json.body?.metadata ?? $json.metadata ?? {} } }}"
+        "jsonBody": "={{ { source: $json.body?.source ?? $json.source ?? 'obsidian', source_ref: $json.body?.source_ref ?? $json.source_ref, source_type: $json.body?.source_type ?? $json.source_type ?? 'md', title: $json.body?.title ?? $json.title ?? null, content: $json.body?.content ?? $json.content, occurred_at: $json.body?.occurred_at ?? $json.occurred_at ?? null, entry_type: $json.body?.entry_type ?? $json.entry_type ?? null, tags: $json.body?.tags ?? $json.tags ?? [], metadata: $json.body?.metadata ?? $json.metadata ?? {}, actor_type: $json.body?.actor_type ?? $json.actor_type ?? null, actor_id: $json.body?.actor_id ?? $json.actor_id ?? null, session_id: $json.body?.session_id ?? $json.session_id ?? null, source_client: $json.body?.source_client ?? $json.source_client ?? null, reason: $json.body?.reason ?? $json.reason ?? null } }}"
       }
     },
     {

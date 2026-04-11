@@ -9,6 +9,7 @@ from uuid import UUID
 from fastapi import APIRouter, BackgroundTasks, Depends
 from pydantic import BaseModel, Field, HttpUrl, field_validator
 
+from ..actor import ActorFields
 from ..auth import verify_token
 from ..registry_service import create_registry_capture, list_registry, process_registry_item, query_registry, review_registry_item
 
@@ -20,7 +21,7 @@ REGISTRY_MODES = {"answer", "list", "summary"}
 REGISTRY_REVIEW_ACTIONS = {"mark_reviewed", "archive", "mark_inbox"}
 
 
-class RegistryCaptureRequest(BaseModel):
+class RegistryCaptureRequest(ActorFields):
     url: HttpUrl
     note: str | None = Field(default=None, max_length=2000)
     tags: list[str] = Field(default_factory=list)
@@ -116,10 +117,9 @@ class RegistryListRequest(BaseModel):
         return value
 
 
-class RegistryReviewRequest(BaseModel):
+class RegistryReviewRequest(ActorFields):
     item_id: UUID
     action: str
-    reason: str | None = Field(default=None, max_length=2000)
     actor_type: str = Field(default="tars", max_length=100)
     actor_id: str | None = Field(default="registry_api", max_length=200)
 
@@ -172,6 +172,11 @@ async def registry_capture(req: RegistryCaptureRequest, background_tasks: Backgr
         note=req.note,
         tags=req.tags,
         capture_channel=req.capture_channel,
+        actor_type=req.actor_type,
+        actor_id=req.actor_id,
+        session_id=req.session_id,
+        source_client=req.source_client,
+        reason=req.reason,
     )
     background_tasks.add_task(process_registry_item, result["item_id"])
     return RegistryCaptureResponse(
@@ -239,6 +244,8 @@ async def registry_review(req: RegistryReviewRequest):
         req.action,
         actor_type=req.actor_type,
         actor_id=req.actor_id,
+        session_id=req.session_id,
+        source_client=req.source_client,
         reason=req.reason,
     )
     return {

@@ -72,7 +72,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { key: $json.body?.key ?? $json.key, value: $json.body?.value ?? $json.value } }}"
+        "jsonBody": "={{ { key: $json.body?.key ?? $json.key, value: $json.body?.value ?? $json.value, actor_type: $json.body?.actor_type ?? $json.actor_type ?? null, actor_id: $json.body?.actor_id ?? $json.actor_id ?? null, session_id: $json.body?.session_id ?? $json.session_id ?? null, source_client: $json.body?.source_client ?? $json.source_client ?? null, reason: $json.body?.reason ?? $json.reason ?? null } }}"
       }
     },
     {
@@ -88,7 +88,10 @@
         "method": "DELETE",
         "url": "=http://memory-api:8100/context/{{$json.body?.domain ?? $json.domain}}/{{$json.body?.key ?? $json.key}}",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth"
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { actor_type: $json.body?.actor_type ?? $json.actor_type ?? null, actor_id: $json.body?.actor_id ?? $json.actor_id ?? null, session_id: $json.body?.session_id ?? $json.session_id ?? null, source_client: $json.body?.source_client ?? $json.source_client ?? null, reason: $json.body?.reason ?? $json.reason ?? null } }}"
       }
     },
     {
