@@ -34,3 +34,9 @@ jobs:
             --env-file /dev/null \
             config > /dev/null
           echo "Compose config: OK"
+
+      - name: memory-api recall regression tests
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r automation/memory-api/requirements.txt
+          python3 -m unittest discover -s automation/memory-api/tests -p 'test_*.py'

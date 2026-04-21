@@ -5,7 +5,7 @@
 - Auth model in repo: Webhook node `headerAuth` using the governed credential name `Krisp Webhook Header Auth`
 - Normalization: handled inside the workflow adapter before calling `memory-api /ingest/transcript`
 - Transcript persistence and idempotency: delegated to `memory-api` using stable `source_ref`
-- Audit trail target: `/home/node/.n8n/krisp-ingest.ndjson` as NDJSON append-only log
+- Audit trail target: `/home/node/.n8n/krisp-ingest.ndjson` inside the shared n8n data volume as an NDJSON append-only log
 - Runtime compatibility: workflow is code-node-free; it avoids blocked `$env` expression access and does not depend on `n8n-task-runner`
 - Runtime gate: target n8n env must expose `NODES_EXCLUDE=[]` so the `Execute Command` node is available for audit-log append steps
 - Production payload note: on March 12, 2026, Krisp `transcript_created` delivered transcript text under `data.content.description` and meeting identity under `data.meeting.*`

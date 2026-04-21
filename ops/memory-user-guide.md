@@ -348,7 +348,7 @@ For replay-based validation from your laptop, use:
 ```bash
 KRISP_WEBHOOK_SECRET=REPLACE_ME \
 scripts/replay-krisp-webhook.sh \
-  --payload workflows/governed/mem-06-krisp-webhook-adapter/fixtures/transcript-ready.json
+  --fixture transcriptReady
 ```
 
 Current note for dev validation:

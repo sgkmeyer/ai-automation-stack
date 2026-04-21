@@ -112,7 +112,7 @@ Note:
 - In the current queue-mode dev overlay, host port `5679` is the editor/UI on `n8n`, not the production webhook listener on `n8n-webhook`
 - Dev replay currently needs to run inside the VM against `n8n-webhook` itself unless the dev webhook listener is exposed separately
 
-Replay a sample or captured Krisp webhook body into the dev adapter from the VM side:
+Replay a governed Krisp fixture into the dev adapter from the VM side:
 
 ```bash
 ssh satoic-production "cd /home/ubuntu/automation && \
@@ -124,14 +124,28 @@ ssh satoic-production "cd /home/ubuntu/automation && \
      --header=x-krisp-webhook-secret:REPLACE_WITH_KRISP_WEBHOOK_SECRET \
      --post-file=/tmp/krisp-transcript.json \
      http://127.0.0.1:5678/webhook/memory/ingest/krisp'" \
-  < workflows/governed/mem-06-krisp-webhook-adapter/fixtures/transcript-ready.json
+  < <(python3 - <<'PY'
+import json
+from pathlib import Path
+
+fixtures = json.loads(Path("workflows/governed/mem-06-krisp-webhook-adapter/test-fixtures.json").read_text())
+print(json.dumps(fixtures["transcriptReady"]["request"]))
+PY
+)
 ```
 
 Expected result:
 
 - transcript-bearing payloads return a successful ingest response
 - non-transcript payloads return an ignored response
-- the Krisp adapter appends an audit line to `/home/node/.n8n/krisp-ingest.ndjson`
+- the Krisp adapter appends an audit line to `/home/node/.n8n/krisp-ingest.ndjson` inside the `n8n`/`n8n-webhook` volume
+
+Inspect the recent audit lines from production:
+
+```bash
+ssh satoic-production \
+  "docker exec automation-n8n-webhook-1 sh -lc 'tail -n 10 /home/node/.n8n/krisp-ingest.ndjson'"
+```
 
 ## Reset Memory
 

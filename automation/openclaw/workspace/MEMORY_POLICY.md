@@ -24,8 +24,10 @@ Do not turn every conversation into a write. Be selective.
 
 - durable memory write:
   - `./bin/remember "..." --tags a,b`
-- targeted recall:
+- exact / structured memory-only recall:
   - `./bin/recall-memory "..." --limit 5`
+- natural-language routed recall:
+  - `./bin/recall-unified --query "..."`
 - current-state context:
   - `./bin/context-memory set --domain DOMAIN --key KEY --value VALUE`
   - `./bin/context-memory get`
@@ -56,6 +58,9 @@ Recall before answering when:
 - the user asks for prior context on a person, company, project, or topic
 - the user asks for synthesis across earlier conversations
 - the answer likely depends on prior durable memory
+
+Default to `./bin/recall-unified --query "..."` for natural-language recall requests.
+Use `./bin/recall-memory "..."` when the lookup is exact, memory-only, or intentionally narrow.
 
 Do not recall for:
 

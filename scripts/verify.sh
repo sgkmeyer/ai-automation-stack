@@ -11,3 +11,4 @@ cd "${repo_root}"
 ./scripts/vm-safe.sh --yes ps
 ./scripts/vm-safe.sh --yes check-external
 ./scripts/verify-memory-webhook.sh
+./scripts/verify-krisp-ingest.sh

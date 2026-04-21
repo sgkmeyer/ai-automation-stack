@@ -70,6 +70,7 @@ Add whatever helps you do your job. This is your cheat sheet.
   - `POST /wiki/proposals/review`
   - `POST /wiki/lint`
 - Use shared memory for durable facts, recall, and context. Use workspace files for working notes and local summaries.
+- Default to `./bin/recall-unified` for natural-language recall. Keep `./bin/recall-memory` for exact or memory-only searches.
 - Local audit log: `memory/command-log.ndjson`
 - Routed recall audit log: `router/command-log.ndjson`
 - Wiki audit log: `wiki/command-log.ndjson`

@@ -117,6 +117,7 @@ Additional OpenClaw-friendly wrappers:
 
 ```bash
 ./bin/remember "Met Sam for coffee" --tags relationship
+./bin/recall-unified --query "what do you remember about coffee with Sam"
 ./bin/recall-memory "coffee with Sam"
 ./bin/recall-unified --query "what did I save about AI GTM"
 ./bin/wiki health

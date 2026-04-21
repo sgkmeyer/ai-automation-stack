@@ -28,6 +28,16 @@ User:
 
 Action:
 
+- run `./bin/recall-unified --query "what do you remember about Dana from Stripe?"`
+- summarize the result naturally
+
+## Exact Recall
+
+User:
+"Search memory for Dana Stripe."
+
+Action:
+
 - run `./bin/recall-memory "Dana Stripe" --limit 5`
 - summarize the result naturally
 
