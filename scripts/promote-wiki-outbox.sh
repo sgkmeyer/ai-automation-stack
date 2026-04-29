@@ -82,14 +82,14 @@ Append-only record of notable wiki maintenance events.
 EOF
 fi
 
-printf '\n- %s promoted `%s` from approved proposal `%s` into `%s`' \
+printf '\n- %s promoted %s from approved proposal %s into %s' \
   "${reviewed_at:-unknown-time}" \
-  "${title}" \
-  "${proposal_id}" \
-  "${page_ref}" >>"${log_path}"
+  "\`${title}\`" \
+  "\`${proposal_id}\`" \
+  "\`${page_ref}\`" >>"${log_path}"
 
 if [[ -n "${review_actor}" ]]; then
-  printf ' (review actor: `%s`)' "${review_actor}" >>"${log_path}"
+  printf ' (review actor: %s)' "\`${review_actor}\`" >>"${log_path}"
 fi
 printf '\n' >>"${log_path}"
 

@@ -45,6 +45,7 @@ run_memory_api_exec() {
     if [[ -n "${remote_host}" ]]; then
         local quoted
         printf -v quoted "%q" "${python_snippet}"
+        # shellcheck disable=SC2029
         ssh "${remote_host}" "cd ${remote_repo_root} && docker compose ${compose_args[*]} exec -T memory-api python -c ${quoted}"
     else
         docker compose "${compose_args[@]}" exec memory-api python -c "${python_snippet}"

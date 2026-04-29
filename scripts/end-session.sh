@@ -70,6 +70,7 @@ read -r -p "Press Enter when ready to continue... " _ || true
 hr
 
 say "4) Update README 'latest session' pointer"
+# shellcheck disable=SC2016
 if [[ -f "${repo_root}/README.md" ]] && grep -qE '^- `/Users/sgkmeyer/ai-automation-stack/ops/SESSION-[0-9]{4}-[0-9]{2}-[0-9]{2}\.md` latest session handoff summary$' "${repo_root}/README.md"; then
   sed -i.bak -E "s|^- \`/Users/sgkmeyer/ai-automation-stack/ops/SESSION-[0-9]{4}-[0-9]{2}-[0-9]{2}\\.md\` latest session handoff summary$|- \`/Users/sgkmeyer/ai-automation-stack/ops/SESSION-${today}.md\` latest session handoff summary|" "${repo_root}/README.md" || true
   rm -f "${repo_root}/README.md.bak"
