@@ -9,7 +9,7 @@
 
 **Production stack** (`automation` project on Oracle Free Tier VM):
 - All 11 services up: caddy, db, redis, n8n, n8n-worker, n8n-webhook, n8n-task-runner, openclaw, chromium, portainer, toolbox
-- **Stack versions (updated 2026-04-10):** n8n 2.11.2, Openclaw 2026.4.9, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
+- **Stack versions (updated 2026-04-29):** n8n 2.11.2, Openclaw 2026.4.26, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
 - Public endpoints:
   - `https://n8n.satoic.com` → 200 (app auth)
   - `https://openclaw.satoic.com` → 200 (gateway token auth only, no Caddy basic_auth)
@@ -181,7 +181,7 @@ See `ops/runbooks.md` for step-by-step procedure.
 - **`POSTGRES_PASSWORD` format** — keep it URL-safe (`A-Za-z0-9._~-`) unless the compose-built DSNs are updated to URL-encode credentials; `memory-api` consumes a full DB URL assembled from env vars
 - **Openclaw config schema (v2026.2.26+)** — `trustedProxies` and `controlUi` inside `gateway` section; `gateway.auth.rateLimit` uses `maxAttempts/windowMs/lockoutMs/exemptLoopback` (not `enabled/window/maxFailures`)
 - **Openclaw security audit baseline** — 0 critical on both dev/prod (2026-03-03); see `ops/security-audit-2026-03-03.md`
-- **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.4.9`
+- **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.4.26`
 - **Caddy bind-mount reload** — Caddyfile changes require explicit `docker compose restart caddy`; `docker compose up -d` does not detect bind-mount file changes
 - **Openclaw device pairing** — new browser platforms (e.g., iPhone) require approval from an already-paired session; pending devices visible in `openclaw/devices/pending.json`
 - **Openclaw basic_auth removed** — `openclaw.satoic.com` no longer uses Caddy basic_auth; gateway token (256-bit) is sole auth. Portainer still has basic_auth.
