@@ -11,7 +11,8 @@ ARG OPENCLAW_VERSION=2026.4.26
 # to replace the bundled CLI with the explicitly pinned version for reproducibility.
 RUN npm i -g --force "openclaw@${OPENCLAW_VERSION}" && \
     rm -rf /app/* && \
-    cp -a /usr/local/lib/node_modules/openclaw/. /app/
+    cp -a /usr/local/lib/node_modules/openclaw/. /app/ && \
+    ln -s /app /app/node_modules/openclaw
 
 # Install Python tooling in a distro-agnostic way (Debian/Ubuntu or Alpine base images).
 RUN set -eux; \
