@@ -1,7 +1,7 @@
 # Today — Current Build State
 
 > Manually maintained. Update at the end of each session alongside the dated session log.
-> Last updated: 2026-04-10
+> Last updated: 2026-05-18
 
 ---
 
@@ -9,7 +9,7 @@
 
 **Production stack** (`automation` project on Oracle Free Tier VM):
 - All 11 services up: caddy, db, redis, n8n, n8n-worker, n8n-webhook, n8n-task-runner, openclaw, chromium, portainer, toolbox
-- **Stack versions (updated 2026-04-29):** n8n 2.11.2, Openclaw 2026.4.26, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
+- **Stack versions (updated 2026-05-18):** n8n 2.11.2, Openclaw 2026.5.18, Portainer CE lts, Caddy 2-alpine, Postgres 16-alpine, Redis 7-alpine, Python 3.12-slim
 - Public endpoints:
   - `https://n8n.satoic.com` → 200 (app auth)
   - `https://openclaw.satoic.com` → 200 (gateway token auth only, no Caddy basic_auth)
@@ -18,9 +18,9 @@
 - Openclaw paired to Telegram (`@sg_tar_bot`), n8n API wired, Chromium CDP connected
 - Openclaw hooks enabled: `http://openclaw:18789/hooks/` (internal only, dedicated token)
 - Openclaw durable-memory recall now uses the internal Docker route (`http://n8n-webhook:5678/webhook/memory`) instead of the public HTTPS path
-- Production Openclaw Codex OAuth was refreshed on 2026-03-27 after a `refresh_token_reused` failure; live agent queries are working again and the current OAuth expiry is `2026-04-06T16:44:11Z`
-- Openclaw upgraded `2026.3.24` -> `2026.4.9` on both dev and production (2026-04-10)
-- Builtin Openclaw semantic memory status is healthy again after the `2026.4.9` recreate; the prior `database is not open` search-sync failure was not present in fresh post-upgrade logs
+- Production Openclaw Codex OAuth has two stored profiles: the legacy default is expired, while `openai-codex:sgkmeyer@gmail.com` is healthy and expires at `2026-05-22T10:26:47Z`; live agent queries are working on `openai-codex/gpt-5.4`.
+- Openclaw upgraded `2026.4.26` -> `2026.5.18` on both dev and production (2026-05-18)
+- Builtin Openclaw semantic memory status is healthy after the `2026.5.18` rollout; the prior `database is not open` search-sync failure was not present in fresh post-upgrade logs
 - n8n credentials configured: Gmail, Google Drive, Postgres, HubSpot, Google OAuth (drive.file)
 - `public.leads` table live (unique on `domain`)
 - JS-01 workflow **active** (id: `chwneHrHVCQON462`) — full pipeline wired by TAR
@@ -103,6 +103,7 @@ Roadmap lock-in:
 - [x] Openclaw upgraded v2026.3.2 → v2026.3.8; dev-validated, production deployed (2026-03-11)
 - [x] Openclaw upgraded v2026.3.8 → v2026.3.24 (2026-03-27)
 - [x] Openclaw upgraded v2026.3.24 → v2026.4.9; dev/prod validated and GitOps ownership fix added (2026-04-10)
+- [x] Openclaw upgraded v2026.4.26 → v2026.5.18; dev/prod validated, production deployed via GitOps wrapper (2026-05-18)
 - [x] n8n upgraded 2.9.2 → 2.11.2; dev-validated, production deployed (2026-03-11)
 - [x] Openclaw UID ownership fix: explicit UID 1000 chown in gitops-deploy, vm-cron-backup, restore (2026-03-11)
 - [x] gitops-deploy-dev.sh: added stash/ownership handling parity with production deploy script (2026-03-11)
@@ -181,7 +182,7 @@ See `ops/runbooks.md` for step-by-step procedure.
 - **`POSTGRES_PASSWORD` format** — keep it URL-safe (`A-Za-z0-9._~-`) unless the compose-built DSNs are updated to URL-encode credentials; `memory-api` consumes a full DB URL assembled from env vars
 - **Openclaw config schema (v2026.2.26+)** — `trustedProxies` and `controlUi` inside `gateway` section; `gateway.auth.rateLimit` uses `maxAttempts/windowMs/lockoutMs/exemptLoopback` (not `enabled/window/maxFailures`)
 - **Openclaw security audit baseline** — 0 critical on both dev/prod (2026-03-03); see `ops/security-audit-2026-03-03.md`
-- **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.4.26`
+- **Openclaw version pinned** — Dockerfile uses `ARG OPENCLAW_VERSION=2026.5.18`
 - **Caddy bind-mount reload** — Caddyfile changes require explicit `docker compose restart caddy`; `docker compose up -d` does not detect bind-mount file changes
 - **Openclaw device pairing** — new browser platforms (e.g., iPhone) require approval from an already-paired session; pending devices visible in `openclaw/devices/pending.json`
 - **Openclaw basic_auth removed** — `openclaw.satoic.com` no longer uses Caddy basic_auth; gateway token (256-bit) is sole auth. Portainer still has basic_auth.
