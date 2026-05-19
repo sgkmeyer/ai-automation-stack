@@ -18,7 +18,7 @@
 - Openclaw paired to Telegram (`@sg_tar_bot`), n8n API wired, Chromium CDP connected
 - Openclaw hooks enabled: `http://openclaw:18789/hooks/` (internal only, dedicated token)
 - Openclaw durable-memory recall now uses the internal Docker route (`http://n8n-webhook:5678/webhook/memory`) instead of the public HTTPS path
-- Production Openclaw Codex OAuth has two stored profiles: the legacy default is expired, while `openai-codex:sgkmeyer@gmail.com` is healthy and expires at `2026-05-22T10:26:47Z`; live agent queries are working on `openai-codex/gpt-5.4`.
+- Production Openclaw Codex OAuth has two stored profiles: the legacy default is expired, while `openai-codex:sgkmeyer@gmail.com` is healthy and expires at `2026-05-22T10:26:47Z`; live agent queries are working on `openai-codex/gpt-5.5`.
 - Openclaw upgraded `2026.4.26` -> `2026.5.18` on both dev and production (2026-05-18)
 - Builtin Openclaw semantic memory status is healthy after the `2026.5.18` rollout; the prior `database is not open` search-sync failure was not present in fresh post-upgrade logs
 - n8n credentials configured: Gmail, Google Drive, Postgres, HubSpot, Google OAuth (drive.file)
@@ -104,6 +104,7 @@ Roadmap lock-in:
 - [x] Openclaw upgraded v2026.3.8 → v2026.3.24 (2026-03-27)
 - [x] Openclaw upgraded v2026.3.24 → v2026.4.9; dev/prod validated and GitOps ownership fix added (2026-04-10)
 - [x] Openclaw upgraded v2026.4.26 → v2026.5.18; dev/prod validated, production deployed via GitOps wrapper (2026-05-18)
+- [x] Openclaw default model upgraded from `openai-codex/gpt-5.4` to `openai-codex/gpt-5.5`; dev one-off smoke and production default smoke passed (2026-05-18)
 - [x] n8n upgraded 2.9.2 → 2.11.2; dev-validated, production deployed (2026-03-11)
 - [x] Openclaw UID ownership fix: explicit UID 1000 chown in gitops-deploy, vm-cron-backup, restore (2026-03-11)
 - [x] gitops-deploy-dev.sh: added stash/ownership handling parity with production deploy script (2026-03-11)
