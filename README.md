@@ -102,6 +102,9 @@ git push origin main
 ./scripts/vm-safe.sh deploy
 ```
 
+GitHub Actions handles CI, dev auto-deploy, and manual production smoke checks. Production
+runtime apply is intentionally operator-approved through `vm-safe.sh`.
+
 Emergency-only direct sync path:
 
 ```bash

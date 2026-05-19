@@ -38,7 +38,7 @@ Production changes should follow one default path:
 1. Make the repo change locally.
 2. If the change affects images, Compose, Caddy, auth, or runtime behavior, validate on dev first.
 3. Push to the appropriate branch.
-4. Deploy with the GitOps path.
+4. Deploy production with `./scripts/vm-safe.sh deploy`, which runs the VM GitOps script after explicit approval.
 5. Run the defined smoke or health checks.
 6. Update `ops/today.md` if live state or risks changed.
 7. Record the session details in the dated session log.
@@ -47,12 +47,14 @@ Break-glass paths exist, but they are exceptions:
 
 - `scripts/sync-to-vm.sh` is emergency-only
 - Direct VM edits are not part of routine operations
+- GitHub Actions provides CI, dev auto-deploy, and manual production smoke checks. It is not the normal production deploy authority.
 
 ## Operational Invariants
 
 These rules should stay true unless intentionally changed:
 
-- One normal deploy path: GitOps
+- One normal production deploy surface: `vm-safe.sh deploy`
+- One normal production apply mechanism: VM-side GitOps
 - One live-state document: `ops/today.md`
 - Dev-first validation for runtime-affecting changes
 - Secrets and runtime state stay out of git

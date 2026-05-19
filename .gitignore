@@ -27,6 +27,8 @@ ops/start-session-*.log
 .dr-backups/
 .claude/
 .DS_Store
+output/
+tmp/
 automation/.env.save
 __pycache__/
 *.py[cod]

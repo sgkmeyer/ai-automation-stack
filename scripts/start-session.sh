@@ -57,7 +57,8 @@ git diff --stat || true
 hr
 
 say "3) Deployment path"
-say "   GitOps: push to main → GitHub Actions CI → SSH → gitops-deploy.sh on VM"
+say "   Production: push to main → ./scripts/vm-safe.sh deploy → gitops-deploy.sh on VM"
+say "   Dev: push to dev → GitHub Actions → gitops-deploy-dev.sh on VM"
 say "   Emergency only: ./scripts/sync-to-vm.sh (rsync direct)"
 hr
 

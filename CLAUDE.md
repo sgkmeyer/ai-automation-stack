@@ -24,10 +24,11 @@ Live environment state belongs in `ops/today.md`, not here. Keep this file focus
 
 ## Deployment Rules
 
-- **Default path:** commit → push → `./scripts/vm-safe.sh deploy` (GitOps)
+- **Default path:** commit → push → `./scripts/vm-safe.sh deploy` (VM-safe GitOps)
 - **Emergency only:** `./scripts/sync-to-vm.sh` (rsync direct copy)
 - **Never edit the VM directly** for routine changes — use `vm-safe.sh`
 - Changes to `automation/` take effect on the VM only after a GitOps deploy
+- GitHub Actions handles CI, dev auto-deploy, and manual production smoke checks; it is not the normal production deploy authority.
 
 ### Dev-First Rule (MANDATORY)
 

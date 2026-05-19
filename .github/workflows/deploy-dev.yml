@@ -56,7 +56,23 @@ jobs:
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
-      - name: Check dev n8n via Tailscale
+      - name: Load SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.VM_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Configure SSH known_hosts
+        env:
+          VM_SSH_KNOWN_HOSTS: ${{ secrets.VM_SSH_KNOWN_HOSTS }}
+        run: |
+          : > ~/.ssh/known_hosts
+          if [[ -n "${VM_SSH_KNOWN_HOSTS}" ]]; then
+            printf '%s\n' "${VM_SSH_KNOWN_HOSTS}" >> ~/.ssh/known_hosts
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Check dev stack via Tailscale
         run: |
           VM_HOST_RAW="${{ secrets.VM_TAILSCALE_HOST }}"
           VM_HOST="$(printf '%s' "${VM_HOST_RAW}" | tr -d '[:space:]')"
@@ -71,3 +87,11 @@ jobs:
             echo "FAIL dev n8n -> $code (expected 200)"
             exit 1
           fi
+          ssh -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=~/.ssh/known_hosts -o ConnectTimeout=15 \
+            ubuntu@"${VM_HOST}" \
+            'set -euo pipefail
+             cd /home/ubuntu/ai-automation-stack/automation
+             docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml -f docker-compose.dev.yml --project-name automation-dev ps
+             docker exec automation-dev-openclaw-1 sh -lc "openclaw --version && node -e \"fetch(\\\"http://127.0.0.1:18789/healthz\\\").then(async r=>{console.log(r.status); console.log((await r.text()).slice(0,200)); if(!r.ok) process.exit(1)}).catch(e=>{console.error(e); process.exit(1)})\""
+             cd /home/ubuntu/ai-automation-stack
+             docker compose --env-file automation/.env -f automation/docker-compose.yml -f automation/docker-compose.chromium-native.yml -f automation/docker-compose.chromium-ip.yml -f automation/docker-compose.dev.yml --project-name automation-dev exec -T memory-api python -c "import urllib.request; print(urllib.request.urlopen(\"http://localhost:8100/health\").read().decode())"'

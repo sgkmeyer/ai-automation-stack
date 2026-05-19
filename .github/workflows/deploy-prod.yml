@@ -1,63 +1,14 @@
-name: Deploy to Production
+name: Production Smoke
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  deploy:
-    name: GitOps deploy
-    runs-on: ubuntu-latest
-    environment: production      # manual approval gate — configure in GitHub repo settings
-
-    steps:
-      - name: Connect Tailscale
-        uses: tailscale/github-action@v2
-        with:
-          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-
-      - name: Verify Tailscale connection
-        run: tailscale status
-
-      - name: Load SSH key
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.VM_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keygen -l -f ~/.ssh/id_rsa
-
-      - name: Configure SSH known_hosts
-        env:
-          VM_SSH_KNOWN_HOSTS: ${{ secrets.VM_SSH_KNOWN_HOSTS }}
-        run: |
-          : > ~/.ssh/known_hosts
-          # Use pinned host keys when provided.
-          if [[ -n "${VM_SSH_KNOWN_HOSTS}" ]]; then
-            printf '%s\n' "${VM_SSH_KNOWN_HOSTS}" >> ~/.ssh/known_hosts
-          fi
-          chmod 600 ~/.ssh/known_hosts
-
-      - name: Deploy via GitOps
-        run: |
-          VM_HOST_RAW="${{ secrets.VM_TAILSCALE_HOST }}"
-          VM_HOST="$(printf '%s' "${VM_HOST_RAW}" | tr -d '[:space:]')"
-          if [[ -z "${VM_HOST}" || ! "${VM_HOST}" =~ ^[A-Za-z0-9.-]+$ ]]; then
-            VM_HOST="100.82.169.113"
-          fi
-          echo "Deploy target: ${VM_HOST}"
-          ssh -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=~/.ssh/known_hosts -o ConnectTimeout=15 \
-            ubuntu@"${VM_HOST}" \
-            '/home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh'
-
   smoke-test:
-    name: Smoke test
-    needs: deploy
+    name: Smoke test production
     runs-on: ubuntu-latest
 
     steps:
-      - name: Wait for services to stabilize
-        run: sleep 30
-
       - name: External endpoint checks
         run: |
           check() {

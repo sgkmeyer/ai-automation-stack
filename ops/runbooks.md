@@ -213,8 +213,8 @@ Notes:
 - `sync-to-vm.sh` now runs a `--dry-run` preview and asks for confirmation before applying `--delete`.
 - Use `./scripts/sync-to-vm.sh --yes` only in trusted automation contexts.
 
-## GitOps Deployment (Preferred)
-Goal: make the VM pull from GitHub and apply the stack from the repo checkout (single source of truth).
+## Production Deploy Path
+Goal: make the VM pull from GitHub and apply the stack from the repo checkout, with `vm-safe.sh` as the human-approved production control surface.
 
 ### One-time VM setup
 1. Ensure repo exists on VM at `/home/ubuntu/ai-automation-stack` and has an SSH remote to GitHub.
@@ -224,12 +224,12 @@ Goal: make the VM pull from GitHub and apply the stack from the repo checkout (s
    - `/home/ubuntu/automation/.env`
    - `/home/ubuntu/automation/openclaw/config.json`
    - other Openclaw runtime folders (`credentials/`, `telegram/`, etc.)
-4. Ensure GitHub Actions secret `VM_SSH_KNOWN_HOSTS` is set with the VM host key line(s).
+4. Ensure GitHub Actions secret `VM_SSH_KNOWN_HOSTS` is set with the VM host key line(s) for dev deploy and manual smoke workflows.
 
 ### Deploy
 From laptop:
 ```bash
-ssh satoic-production /home/ubuntu/ai-automation-stack/scripts/gitops-deploy.sh
+./scripts/vm-safe.sh deploy
 ```
 
 ### Guarded VM Operations (Recommended)
@@ -248,16 +248,25 @@ cd /Users/sgkmeyer/ai-automation-stack
 ./scripts/verify-memory-webhook.sh
 ```
 Notes:
-- Every action prints the exact command and requires explicit approval.
+- Every mutating VM action prints the exact command and requires explicit approval.
 - Actions are restricted to an allowlist to reduce accidental destructive changes.
 - For non-interactive runs, pass `--yes` (only for trusted contexts).
 - `check-external` and `verify.sh` enforce the public smoke contract: `n8n=200`, `openclaw=200`, `portainer=401`, with retries.
 - `verify-memory-webhook.sh` exercises the live `memory/context` webhook using a dedicated smoke-only key and cleans it up afterward.
+- `verify-krisp-ingest.sh` is a freshness/activity audit. It is useful after real Krisp traffic or adapter changes, but recent-ingest absence should not fail routine deploy health checks.
 - `dr-backup` creates VM archives, copies them to local `.dr-backups/`, and writes `ops/dr-manifests/dr-backup-*.md`.
 - `deploy-dev` is safe against Caddy port collisions (runs dev compose with `--scale caddy=0`).
 
+### Runtime mount boundary
+
+`automation/openclaw/` currently mixes tracked workspace policy/wrapper files with runtime
+state owned by the Openclaw container. The deploy scripts preserve that state by fixing
+ownership and stashing VM-local drift before pulling git changes. Do not clean this directory
+aggressively without a fresh DR backup and an explicit mount-split plan.
+
 ### GitHub Actions Notes
-- `Deploy to Dev` / `Deploy to Production` currently use Tailscale authkey mode and may show a deprecation warning.
+- `Deploy to Dev` uses Tailscale authkey mode and may show a deprecation warning.
+- `Production Smoke` is manual-only and checks public endpoints. Production pushes should not create an automatic production deploy queue.
 - Planned cleanup: migrate `tailscale/github-action` to OAuth client credentials.
 
 ## Session Handoff Workflow
@@ -311,7 +320,15 @@ ssh satoic-production "docker exec -u root automation-openclaw-1 chown -R node:n
 ssh satoic-production "cd /home/ubuntu/automation && docker compose -f docker-compose.yml -f docker-compose.chromium-native.yml -f docker-compose.chromium-ip.yml restart openclaw"
 ```
 
-3. **Re-inject gateway token into browser** via SSH tunnel:
+3. **Re-bootstrap the browser token for `openclaw.satoic.com` from the laptop:**
+```bash
+./scripts/openclaw-control-ui.sh copy-url
+```
+
+4. **Open the copied URL in a fresh browser tab.** If the browser still fails,
+   continue with the tunnel fallback below.
+
+5. **Fallback: re-inject gateway token into browser** via SSH tunnel:
 ```bash
 # From Mac — create tunnel
 ssh -N -L 18789:$(ssh satoic-production "docker inspect automation-openclaw-1 --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' | head -1"):18789 satoic-production &
@@ -320,7 +337,7 @@ ssh -N -L 18789:$(ssh satoic-production "docker inspect automation-openclaw-1 --
 # http://localhost:18789/#token=<OPENCLAW_GATEWAY_TOKEN>
 ```
 
-4. **Approve device pairing** (run after "pairing required" appears):
+6. **Approve device pairing** (run after "pairing required" appears):
 ```bash
 ssh satoic-production 'docker exec automation-openclaw-1 node -e "
 const fs = require(\"fs\");
@@ -344,20 +361,20 @@ fs.writeFileSync(\"/home/node/.openclaw/devices/pending.json\", JSON.stringify(p
 "'
 ```
 
-5. **Reload Openclaw** (hot reload, no full restart):
+7. **Reload Openclaw** (hot reload, no full restart):
 ```bash
 ssh satoic-production "docker exec automation-openclaw-1 kill -USR1 1"
 ```
 
-6. **Verify** by opening `https://openclaw.satoic.com` — should show Health Online.
+8. **Verify** by opening `https://openclaw.satoic.com` — should show Health Online.
 
-7. **If accessing via Caddy**, you may need to repeat steps 3–5 for the `openclaw.satoic.com` origin (different browser local storage than `localhost`).
+9. **If accessing via Caddy**, you may need to repeat steps 3–7 for the `openclaw.satoic.com` origin (different browser local storage than `localhost`).
 
 **Prevention:** The `gitops-deploy.sh` script automatically fixes `.openclaw` ownership after every deploy.
 
 ### Openclaw shows token missing in UI (legacy — simple case)
-- Confirm gateway token exists in config and env.
-- Recreate `automation-openclaw-1`.
+- From the laptop, run `./scripts/openclaw-control-ui.sh copy-url` and open the copied URL in a fresh tab.
+- If that still fails, confirm the gateway token exists in config and env, then recreate `automation-openclaw-1`.
 
 ### Portainer setup timeout screen
 ```bash

@@ -14,7 +14,7 @@
   - `https://n8n.satoic.com` → 200 (app auth)
   - `https://openclaw.satoic.com` → 200 (gateway token auth only, no Caddy basic_auth)
   - `https://portainer.satoic.com` → 401 pre-auth (expected)
-- GitOps deploy active: push to `main` → SSH → `gitops-deploy.sh`
+- Production deploy path active: push to `main` → `./scripts/vm-safe.sh deploy` → VM-side `gitops-deploy.sh`
 - Openclaw paired to Telegram (`@sg_tar_bot`), n8n API wired, Chromium CDP connected
 - Openclaw hooks enabled: `http://openclaw:18789/hooks/` (internal only, dedicated token)
 - Openclaw durable-memory recall now uses the internal Docker route (`http://n8n-webhook:5678/webhook/memory`) instead of the public HTTPS path
@@ -105,6 +105,8 @@ Roadmap lock-in:
 - [x] Openclaw upgraded v2026.3.24 → v2026.4.9; dev/prod validated and GitOps ownership fix added (2026-04-10)
 - [x] Openclaw upgraded v2026.4.26 → v2026.5.18; dev/prod validated, production deployed via GitOps wrapper (2026-05-18)
 - [x] Openclaw default model upgraded from `openai-codex/gpt-5.4` to `openai-codex/gpt-5.5`; dev one-off smoke and production default smoke passed (2026-05-18)
+- [x] Dev/prod deploy process simplified: production GitHub workflow changed to manual smoke-only, `vm-safe.sh deploy` documented as canonical production deploy surface, and routine verification split health from Krisp freshness (2026-05-18)
+- [x] Conservative cleanup pass completed after DR backup: stale production approval runs canceled, old VM auto-stashes pruned, and duplicate Openclaw `config.json.clobbered.*` files removed while preserving named recovery backups (2026-05-18)
 - [x] n8n upgraded 2.9.2 → 2.11.2; dev-validated, production deployed (2026-03-11)
 - [x] Openclaw UID ownership fix: explicit UID 1000 chown in gitops-deploy, vm-cron-backup, restore (2026-03-11)
 - [x] gitops-deploy-dev.sh: added stash/ownership handling parity with production deploy script (2026-03-11)
@@ -160,7 +162,7 @@ See `ops/runbooks.md` for step-by-step procedure.
 
 ## Open Items / Known Risks
 
-- **Dev/prod GitOps lanes** — `dev` branch live, auto-deploy green, smoke test green
+- **Dev/prod GitOps lanes** — `dev` branch live with auto-deploy smoke; production deploy is operator-approved through `vm-safe.sh deploy`
 - **Obsidian ingress path** — currently manual `./scripts/sync-obsidian-vault.sh` from Mac to VM; no schedule yet
 - **Krisp upstream wiring** — live in production at `POST /webhook/memory/ingest/krisp`; first real meeting ingest validated on 2026-03-12 (`Stephan / Dana`, source_ref `krisp:019ce2c77998759e9e3d93b1baf7c19b`)
 - **Content registry v1** — live in production at `https://n8n.satoic.com/webhook/registry`; governed workflows `REG-01..REG-04` are active, TAR's ad hoc `Link Registry - Capture (private webhook)` workflows are all disabled, and registry items now store canonical URL, summary, why-it-matters, takeaways, capture history, review state, and raw archive path
@@ -176,7 +178,7 @@ See `ops/runbooks.md` for step-by-step procedure.
 - **Registry blocked-page fallback** — now preserves usable items for blocked sources, but summaries are intentionally minimal when only URL-level metadata is available
 - **Dev deploy helper** — `vm-safe.sh deploy-dev` now calls `gitops-deploy-dev.sh` so dev validations rebuild project-scoped images instead of reusing stale containers
 - **Tailscale GitHub Action authkey deprecation warning** — OAuth clients require a paid plan (not available on Free); authkey still works, revisit if plan upgraded or Tailscale forces migration
-- **Dev stack running** — Openclaw v2026.4.9 validated on dev after redeploy (2026-04-10)
+- **Dev stack running** — Openclaw v2026.5.18 validated on dev after redeploy (2026-05-18)
 - **Builtin semantic memory incident** — production briefly logged `[memory] sync failed (search): Error: database is not open` on 2026-04-10 before the upgrade; shared routed recall remained healthy, and fresh post-upgrade memory status is healthy on both dev and prod
 - **`scripts/backup.sh` / `vm-safe.sh dr-backup` only work from local Mac** — do not suggest running these on the VM
 - **Gateway token** — verified matching between `.env` and `openclaw/config.json`; propagated to all n8n services (2026-02-23)
