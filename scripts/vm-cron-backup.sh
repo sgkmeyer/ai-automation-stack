@@ -34,6 +34,7 @@ if sudo tar --warning=no-file-changed --ignore-failed-read -hczf "${TMP_CFG_ARCH
   --exclude='automation/openclaw/plugin-runtime-deps' \
   --exclude='automation/openclaw/plugin-skills' \
   --exclude='automation/openclaw/npm/node_modules' \
+  --exclude='automation/openclaw/npm/projects/*/node_modules' \
   --exclude='automation/openclaw/logs' \
   --exclude='automation/openclaw/tasks' \
   --exclude='automation/openclaw/delivery-queue' \
