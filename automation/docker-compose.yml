@@ -15,7 +15,7 @@ services:
   # Exposes ports 80/443 to the internet.
   #############################################
   caddy:
-    image: caddy:2-alpine
+    image: caddy:2.11.4-alpine
     restart: unless-stopped
     ports:
       - "80:80"
@@ -405,7 +405,7 @@ services:
   # - Access only via Caddy or SSH tunnel
   #############################################
   portainer:
-    image: portainer/portainer-ce:lts
+    image: portainer/portainer-ce:2.39.5-alpine
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -427,7 +427,7 @@ services:
   # - Protected with Browserless token
   #############################################
   chromium:
-    image: ghcr.io/browserless/chromium:latest
+    image: ghcr.io/browserless/chromium:v2.55.0
     restart: unless-stopped
     environment:
       - TOKEN=${BROWSERLESS_TOKEN}
@@ -444,7 +444,7 @@ services:
   # in an isolated sidecar container.
   #############################################
   n8n-task-runner:
-    image: n8nio/runners:latest
+    image: n8nio/runners:2.11.2
     restart: unless-stopped
     environment:
       - N8N_RUNNERS_TASK_BROKER_URI=http://n8n:5679

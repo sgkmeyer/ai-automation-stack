@@ -1,7 +1,7 @@
 ---
 services:
   chromium:
-    image: chromedp/headless-shell:latest
+    image: chromedp/headless-shell:145.0.7632.76
     restart: unless-stopped
     command:
       - "--no-sandbox"
